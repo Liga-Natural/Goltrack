@@ -1,25 +1,15 @@
-import { notFound, redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth";
 import { Tournaments, Teams, Players, CheckIns } from "@/lib/models";
-import { TournamentTabs } from "@/components/TournamentTabs";
 import { CheckInScanner } from "@/components/CheckInScanner";
 import { setTeamCheckedIn } from "@/lib/actions";
 
 export default async function CheckInPage({ params }: { params: { id: string } }) {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
-  const tournament = Tournaments.byId(params.id);
-  if (!tournament || tournament.ownerId !== user.id) notFound();
-
+  const tournament = Tournaments.byId(params.id)!;
   const teams = Teams.listByTournament(tournament.id);
   const checkIns = CheckIns.listByTournament(tournament.id);
   const checkedInPlayerIds = new Set(checkIns.map((c) => c.playerId));
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-1">{tournament.name}</h1>
-      <TournamentTabs tournamentId={tournament.id} />
-
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-3">
           <h2 className="font-semibold mb-1">Team roster check-in</h2>

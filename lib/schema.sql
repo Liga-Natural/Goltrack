@@ -79,3 +79,13 @@ CREATE TABLE IF NOT EXISTS checkins (
   checkedInAt TEXT NOT NULL,
   UNIQUE(tournamentId, playerId)
 );
+
+CREATE TABLE IF NOT EXISTS inquiries (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
+  tournamentType TEXT,
+  message TEXT NOT NULL,
+  createdAt TEXT NOT NULL
+);

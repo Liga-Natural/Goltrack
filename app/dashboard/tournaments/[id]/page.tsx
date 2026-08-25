@@ -1,16 +1,8 @@
-import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
-import { getCurrentUser } from "@/lib/auth";
 import { Tournaments, Teams, Matches } from "@/lib/models";
-import { TournamentTabs } from "@/components/TournamentTabs";
-import { generateSchedule, generateKnockout, setTournamentStatus } from "@/lib/actions";
+import { generateSchedule, generateKnockout } from "@/lib/actions";
 
 export default async function TournamentOverviewPage({ params }: { params: { id: string } }) {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
-  const tournament = Tournaments.byId(params.id);
-  if (!tournament || tournament.ownerId !== user.id) notFound();
-
+  const tournament = Tournaments.byId(params.id)!;
   const teams = Teams.listByTournament(tournament.id);
   const matches = Matches.listByTournament(tournament.id);
   const publicUrl = `/t/${tournament.slug}`;
@@ -20,22 +12,6 @@ export default async function TournamentOverviewPage({ params }: { params: { id:
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
-        <div>
-          <h1 className="text-2xl font-semibold">{tournament.name}</h1>
-          <p className="text-white/50 text-sm mt-1">
-            {tournament.sport} · {tournament.format === "ROUND_ROBIN" ? "Round robin" : "Groups + knockout"} ·{" "}
-            {new Date(tournament.startDate).toLocaleDateString()}
-            {tournament.location ? ` · ${tournament.location}` : ""}
-          </p>
-        </div>
-        <Link href={publicUrl} target="_blank" className="btn-secondary text-sm">
-          View public page →
-        </Link>
-      </div>
-
-      <TournamentTabs tournamentId={tournament.id} />
-
       <div className="grid sm:grid-cols-3 gap-4 mb-8">
         <div className="card p-5">
           <p className="text-xs uppercase tracking-wide text-white/40 mb-1">Teams registered</p>

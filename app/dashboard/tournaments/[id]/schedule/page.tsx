@@ -1,18 +1,11 @@
-import { notFound, redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth";
 import { Tournaments, Teams, Matches } from "@/lib/models";
-import { TournamentTabs } from "@/components/TournamentTabs";
 import { StandingsTable } from "@/components/StandingsTable";
 import { BracketView } from "@/components/BracketView";
 import { MatchStatusBadge } from "@/components/MatchStatusBadge";
 import { computeStandings, groupNames } from "@/lib/standings";
 
 export default async function SchedulePage({ params }: { params: { id: string } }) {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
-  const tournament = Tournaments.byId(params.id);
-  if (!tournament || tournament.ownerId !== user.id) notFound();
-
+  const tournament = Tournaments.byId(params.id)!;
   const teams = Teams.listByTournament(tournament.id);
   const matches = Matches.listByTournament(tournament.id);
   const teamsById = new Map(teams.map((t) => [t.id, t]));
@@ -22,9 +15,6 @@ export default async function SchedulePage({ params }: { params: { id: string } 
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-1">{tournament.name}</h1>
-      <TournamentTabs tournamentId={tournament.id} />
-
       {matches.length === 0 && (
         <div className="card p-8 text-center text-white/50">
           No schedule yet — go to Overview and click &quot;Generate schedule&quot;.

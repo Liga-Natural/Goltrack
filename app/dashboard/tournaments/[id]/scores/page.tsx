@@ -1,16 +1,9 @@
-import { notFound, redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth";
 import { Tournaments, Teams, Matches, Referees } from "@/lib/models";
-import { TournamentTabs } from "@/components/TournamentTabs";
 import { MatchStatusBadge } from "@/components/MatchStatusBadge";
 import { ScoreForm } from "@/components/ScoreForm";
 
 export default async function ScoresPage({ params }: { params: { id: string } }) {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
-  const tournament = Tournaments.byId(params.id);
-  if (!tournament || tournament.ownerId !== user.id) notFound();
-
+  const tournament = Tournaments.byId(params.id)!;
   const teams = Teams.listByTournament(tournament.id);
   const matches = Matches.listByTournament(tournament.id);
   const referees = Referees.listByTournament(tournament.id);
@@ -19,9 +12,6 @@ export default async function ScoresPage({ params }: { params: { id: string } })
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-1">{tournament.name}</h1>
-      <TournamentTabs tournamentId={tournament.id} />
-
       {matches.length === 0 ? (
         <div className="card p-8 text-center text-white/50">Generate a schedule first from the Overview tab.</div>
       ) : (

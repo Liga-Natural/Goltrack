@@ -282,6 +282,39 @@ export const CheckIns = {
   },
 };
 
+// ---------- Inquiries ----------
+// Public, no-account "ask us about a tournament" submissions.
+
+export interface Inquiry {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  tournamentType: string | null;
+  message: string;
+  createdAt: string;
+}
+
+export const Inquiries = {
+  create(input: { name: string; email: string; phone?: string | null; tournamentType?: string | null; message: string }): Inquiry {
+    const i: Inquiry = {
+      id: uid(),
+      name: input.name,
+      email: input.email,
+      phone: input.phone ?? null,
+      tournamentType: input.tournamentType ?? null,
+      message: input.message,
+      createdAt: nowIso(),
+    };
+    run(
+      `INSERT INTO inquiries (id, name, email, phone, tournamentType, message, createdAt)
+       VALUES ($id,$name,$email,$phone,$tournamentType,$message,$createdAt)`,
+      i as any
+    );
+    return i;
+  },
+};
+
 export function slugify(name: string): string {
   return name
     .toLowerCase()

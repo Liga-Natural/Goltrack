@@ -49,7 +49,13 @@ export default function Home() {
       <header className="border-b border-white/5 sticky top-0 z-20 bg-navy-900/80 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4 flex items-center justify-between">
           <Logo />
-          <nav className="flex items-center gap-2">
+          <nav className="flex items-center gap-1 sm:gap-2">
+            <Link href="/tour" className="btn-ghost hidden sm:inline-flex">
+              See how it works
+            </Link>
+            <Link href="/inquire" className="btn-ghost hidden sm:inline-flex">
+              Get in touch
+            </Link>
             <Link href="/login" className="btn-ghost">
               Log in
             </Link>
@@ -80,10 +86,21 @@ export default function Home() {
               <Link href="/signup" className="btn-primary text-base px-6 py-3">
                 Create your first tournament
               </Link>
-              <Link href="/t/coastal-cup" className="btn-secondary text-base px-6 py-3">
-                View a live demo tournament →
+              <Link href="/tour" className="btn-secondary text-base px-6 py-3">
+                Explore the management interface →
               </Link>
             </div>
+            <p className="mt-4 text-sm text-white/40">
+              No account needed —{" "}
+              <Link href="/tour" className="text-pitch-400 hover:underline">
+                click into the live console
+              </Link>{" "}
+              or see the{" "}
+              <Link href="/t/coastal-cup" className="text-pitch-400 hover:underline">
+                public tournament page
+              </Link>
+              .
+            </p>
           </div>
 
           <div className="relative flex justify-center lg:justify-end">
@@ -153,9 +170,17 @@ export default function Home() {
       </section>
 
       <footer className="border-t border-white/5">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-white/30">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
           <Logo className="text-sm" markClassName="h-5 w-5" />
-          <p>© {new Date().getFullYear()} GolTrack. Built for organizers, players, and families.</p>
+          <nav className="flex items-center gap-5 text-white/40">
+            <Link href="/tour" className="hover:text-white/70">
+              See how it works
+            </Link>
+            <Link href="/inquire" className="hover:text-white/70">
+              Get in touch
+            </Link>
+          </nav>
+          <p className="text-white/30">© {new Date().getFullYear()} GolTrack. Built for organizers, players, and families.</p>
         </div>
       </footer>
     </main>

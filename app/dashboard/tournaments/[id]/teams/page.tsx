@@ -1,23 +1,13 @@
-import { notFound, redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth";
 import { Tournaments, Teams, Players } from "@/lib/models";
-import { TournamentTabs } from "@/components/TournamentTabs";
 import { addTeam, addPlayer, removeTeam, setTeamPaid } from "@/lib/actions";
 
 export default async function TeamsPage({ params }: { params: { id: string } }) {
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
-  const tournament = Tournaments.byId(params.id);
-  if (!tournament || tournament.ownerId !== user.id) notFound();
-
+  const tournament = Tournaments.byId(params.id)!;
   const teams = Teams.listByTournament(tournament.id);
   const addTeamWithId = addTeam.bind(null, tournament.id);
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-1">{tournament.name}</h1>
-      <TournamentTabs tournamentId={tournament.id} />
-
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           {teams.length === 0 && <p className="text-white/50">No teams yet — add one, or share the registration link.</p>}
