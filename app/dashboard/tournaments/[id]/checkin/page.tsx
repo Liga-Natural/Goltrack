@@ -4,7 +4,7 @@ import { setTeamCheckedIn } from "@/lib/actions";
 
 export default async function CheckInPage({ params }: { params: { id: string } }) {
   const tournament = Tournaments.byId(params.id)!;
-  const teams = Teams.listByTournament(tournament.id);
+  const teams = Teams.listByTournament(tournament.id).filter((t) => t.name);
   const checkIns = CheckIns.listByTournament(tournament.id);
   const checkedInPlayerIds = new Set(checkIns.map((c) => c.playerId));
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Tournament } from "@/lib/models";
+import { getSportTheme } from "@/lib/sportTheme";
 
 const statusColors: Record<string, string> = {
   DRAFT: "bg-white/10 text-white/60",
@@ -10,11 +11,15 @@ const statusColors: Record<string, string> = {
 };
 
 export function TournamentHeader({ tournament }: { tournament: Tournament }) {
+  const theme = getSportTheme(tournament.sport);
   return (
     <div className="flex flex-wrap items-start justify-between gap-3 mb-6 pb-6 border-b border-white/5">
       <div>
         <div className="flex items-center gap-2.5 mb-1.5">
           <h1 className="text-2xl font-semibold">{tournament.name}</h1>
+          <span className="badge bg-white/10 text-white/70">
+            {theme.emoji} {theme.label}
+          </span>
           <span className={`badge ${statusColors[tournament.status]}`}>{tournament.status.replace("_", " ")}</span>
         </div>
         <p className="text-white/50 text-sm">

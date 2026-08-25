@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { all, get, run, uid, nowIso } from "./db";
 
 // ---------- Types ----------
@@ -42,6 +43,8 @@ export interface Team {
   groupName: string | null;
   paid: number; // 0/1
   checkedIn: number; // 0/1
+  inviteToken: string | null; // set while the slot is an unclaimed invite link, cleared on claim
+  invitedAt: string | null;
   createdAt: string;
 }
 
@@ -71,6 +74,7 @@ export interface Match {
   scheduledAt: string | null;
   status: MatchStatus;
   refereeId: string | null;
+  motmPlayerId: string | null;
   orderIndex: number;
 }
 
@@ -125,6 +129,11 @@ export const Tournaments = {
   listByOwner(ownerId: string): Tournament[] {
     return all<Tournament>(`SELECT * FROM tournaments WHERE ownerId = $ownerId ORDER BY createdAt DESC`, { $ownerId: ownerId } as any);
   },
+  listPublic(): Tournament[] {
+    return all<Tournament>(
+      `SELECT * FROM tournaments WHERE status != 'DRAFT' ORDER BY startDate DESC`
+    );
+  },
   updateStatus(id: string, status: TournamentStatus) {
     run(`UPDATE tournaments SET status = $status WHERE id = $id`, { $id: id, $status: status } as any);
   },
@@ -135,8 +144,26 @@ export const Tournaments = {
 
 // ---------- Teams ----------
 
+// Unique registration-link tokens: 10 random bytes, base62-encoded (~14
+// chars — short enough to paste into a text message, long enough that
+// guessing one is infeasible). Collisions are already astronomically
+// unlikely at this length, but the DB's UNIQUE constraint is the real
+// backstop — regenerateInviteToken() below retries if it ever fires.
+const BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+function generateInviteToken(): string {
+  const bytes = randomBytes(10);
+  let token = "";
+  for (const byte of bytes) token += BASE62[byte % BASE62.length];
+  return token;
+}
+
 export const Teams = {
-  create(input: Omit<Team, "id" | "createdAt" | "paid" | "checkedIn" | "groupName"> & { paid?: boolean; groupName?: string | null }): Team {
+  create(
+    input: Omit<Team, "id" | "createdAt" | "paid" | "checkedIn" | "groupName" | "inviteToken" | "invitedAt"> & {
+      paid?: boolean;
+      groupName?: string | null;
+    }
+  ): Team {
     const t: Team = {
       id: uid(),
       tournamentId: input.tournamentId,
@@ -146,11 +173,39 @@ export const Teams = {
       groupName: input.groupName ?? null,
       paid: input.paid ? 1 : 0,
       checkedIn: 0,
+      inviteToken: null,
+      invitedAt: null,
       createdAt: nowIso(),
     };
     run(
-      `INSERT INTO teams (id, tournamentId, name, contactName, contactEmail, groupName, paid, checkedIn, createdAt)
-       VALUES ($id,$tournamentId,$name,$contactName,$contactEmail,$groupName,$paid,$checkedIn,$createdAt)`,
+      `INSERT INTO teams (id, tournamentId, name, contactName, contactEmail, groupName, paid, checkedIn, inviteToken, invitedAt, createdAt)
+       VALUES ($id,$tournamentId,$name,$contactName,$contactEmail,$groupName,$paid,$checkedIn,$inviteToken,$invitedAt,$createdAt)`,
+      t as any
+    );
+    return t;
+  },
+  // Creates an empty placeholder slot with a unique claim link — the
+  // gotsport-style flow where an organizer invites a specific team before
+  // that team has entered any of its own details.
+  createInvite(tournamentId: string): Team {
+    let token = generateInviteToken();
+    while (Teams.byInviteToken(token)) token = generateInviteToken(); // defeat the astronomically unlikely collision
+    const t: Team = {
+      id: uid(),
+      tournamentId,
+      name: "",
+      contactName: "",
+      contactEmail: "",
+      groupName: null,
+      paid: 0,
+      checkedIn: 0,
+      inviteToken: token,
+      invitedAt: nowIso(),
+      createdAt: nowIso(),
+    };
+    run(
+      `INSERT INTO teams (id, tournamentId, name, contactName, contactEmail, groupName, paid, checkedIn, inviteToken, invitedAt, createdAt)
+       VALUES ($id,$tournamentId,$name,$contactName,$contactEmail,$groupName,$paid,$checkedIn,$inviteToken,$invitedAt,$createdAt)`,
       t as any
     );
     return t;
@@ -158,8 +213,20 @@ export const Teams = {
   byId(id: string): Team | undefined {
     return get<Team>(`SELECT * FROM teams WHERE id = $id`, { $id: id } as any);
   },
+  byInviteToken(token: string): Team | undefined {
+    return get<Team>(`SELECT * FROM teams WHERE inviteToken = $token`, { $token: token } as any);
+  },
   listByTournament(tournamentId: string): Team[] {
     return all<Team>(`SELECT * FROM teams WHERE tournamentId = $tournamentId ORDER BY createdAt ASC`, { $tournamentId: tournamentId } as any);
+  },
+  // Fills in an invited slot's details and clears the token so the link
+  // can't be claimed a second time.
+  claimInvite(id: string, input: { name: string; contactName: string; contactEmail: string }): Team | undefined {
+    run(
+      `UPDATE teams SET name=$name, contactName=$contactName, contactEmail=$contactEmail, inviteToken=NULL WHERE id=$id`,
+      { $id: id, $name: input.name, $contactName: input.contactName, $contactEmail: input.contactEmail } as any
+    );
+    return Teams.byId(id);
   },
   setGroup(id: string, groupName: string | null) {
     run(`UPDATE teams SET groupName = $groupName WHERE id = $id`, { $id: id, $groupName: groupName } as any);
@@ -210,11 +277,11 @@ export const Players = {
 // ---------- Matches ----------
 
 export const Matches = {
-  create(input: Omit<Match, "id">): Match {
-    const m: Match = { ...input, id: uid() };
+  create(input: Omit<Match, "id" | "motmPlayerId">): Match {
+    const m: Match = { ...input, motmPlayerId: null, id: uid() };
     run(
-      `INSERT INTO matches (id, tournamentId, stage, round, groupName, homeTeamId, awayTeamId, homeLabel, awayLabel, homeScore, awayScore, field, scheduledAt, status, refereeId, orderIndex)
-       VALUES ($id,$tournamentId,$stage,$round,$groupName,$homeTeamId,$awayTeamId,$homeLabel,$awayLabel,$homeScore,$awayScore,$field,$scheduledAt,$status,$refereeId,$orderIndex)`,
+      `INSERT INTO matches (id, tournamentId, stage, round, groupName, homeTeamId, awayTeamId, homeLabel, awayLabel, homeScore, awayScore, field, scheduledAt, status, refereeId, motmPlayerId, orderIndex)
+       VALUES ($id,$tournamentId,$stage,$round,$groupName,$homeTeamId,$awayTeamId,$homeLabel,$awayLabel,$homeScore,$awayScore,$field,$scheduledAt,$status,$refereeId,$motmPlayerId,$orderIndex)`,
       m as any
     );
     return m;
@@ -238,6 +305,15 @@ export const Matches = {
   },
   assignReferee(id: string, refereeId: string | null) {
     run(`UPDATE matches SET refereeId = $refereeId WHERE id = $id`, { $id: id, $refereeId: refereeId } as any);
+  },
+  setMotm(id: string, playerId: string | null) {
+    run(`UPDATE matches SET motmPlayerId = $playerId WHERE id = $id`, { $id: id, $playerId: playerId } as any);
+  },
+  listByTeam(teamId: string): Match[] {
+    return all<Match>(
+      `SELECT * FROM matches WHERE homeTeamId = $teamId OR awayTeamId = $teamId ORDER BY orderIndex ASC`,
+      { $teamId: teamId } as any
+    );
   },
   setTeams(id: string, homeTeamId: string | null, awayTeamId: string | null) {
     run(`UPDATE matches SET homeTeamId=$homeTeamId, awayTeamId=$awayTeamId WHERE id=$id`, {

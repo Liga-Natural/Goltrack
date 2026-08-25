@@ -1,4 +1,4 @@
-import { Tournaments, Teams, Matches, Referees } from "@/lib/models";
+import { Tournaments, Teams, Matches, Referees, Players } from "@/lib/models";
 import { MatchStatusBadge } from "@/components/MatchStatusBadge";
 import { ScoreForm } from "@/components/ScoreForm";
 
@@ -9,6 +9,7 @@ export default async function ScoresPage({ params }: { params: { id: string } })
   const referees = Referees.listByTournament(tournament.id);
   const teamsById = new Map(teams.map((t) => [t.id, t]));
   const refsById = new Map(referees.map((r) => [r.id, r]));
+  const playersByTeam = new Map(teams.map((t) => [t.id, Players.listByTeam(t.id)]));
 
   return (
     <div>
@@ -36,6 +37,8 @@ export default async function ScoresPage({ params }: { params: { id: string } })
                   initialHome={m.homeScore}
                   initialAway={m.awayScore}
                   initialStatus={m.status}
+                  initialMotm={m.motmPlayerId}
+                  eligiblePlayers={[...(playersByTeam.get(m.homeTeamId || "") || []), ...(playersByTeam.get(m.awayTeamId || "") || [])]}
                 />
               </div>
             </div>

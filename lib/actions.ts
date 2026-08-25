@@ -85,6 +85,12 @@ export async function removeTeam(tournamentId: string, teamId: string) {
   revalidatePath(`/dashboard/tournaments/${tournamentId}/teams`);
 }
 
+export async function createTeamInvite(tournamentId: string) {
+  await requireOwnedTournament(tournamentId);
+  Teams.createInvite(tournamentId);
+  revalidatePath(`/dashboard/tournaments/${tournamentId}/teams`);
+}
+
 export async function addPlayer(tournamentId: string, teamId: string, formData: FormData) {
   await requireOwnedTournament(tournamentId);
   const name = String(formData.get("name") || "").trim();
@@ -135,9 +141,15 @@ export async function assignReferee(tournamentId: string, matchId: string, refer
   revalidatePath(`/dashboard/tournaments/${tournamentId}/scores`);
 }
 
+export async function setMatchMotm(tournamentId: string, matchId: string, playerId: string) {
+  await requireOwnedTournament(tournamentId);
+  Matches.setMotm(matchId, playerId || null);
+  revalidatePath(`/dashboard/tournaments/${tournamentId}/scores`);
+}
+
 export async function generateSchedule(tournamentId: string) {
   const { tournament } = await requireOwnedTournament(tournamentId);
-  const teams = Teams.listByTournament(tournamentId);
+  const teams = Teams.listByTournament(tournamentId).filter((t) => t.name); // skip unclaimed invite slots
   if (teams.length < 2) throw new Error("Add at least two teams first");
 
   Matches.deleteByTournament(tournamentId);
@@ -269,6 +281,31 @@ export async function registerTeamPublic(slug: string, formData: FormData) {
   });
 
   redirect(`/t/${slug}/register/pay?team=${team.id}`);
+}
+
+export async function claimTeamInvite(token: string, formData: FormData) {
+  const team = Teams.byInviteToken(token);
+  if (!team) throw new Error("This invite link is invalid or has already been used.");
+  const tournament = Tournaments.byId(team.tournamentId);
+  if (!tournament) throw new Error("Tournament not found");
+
+  const name = String(formData.get("name") || "").trim();
+  const contactName = String(formData.get("contactName") || "").trim();
+  const contactEmail = String(formData.get("contactEmail") || "").trim();
+  if (!name || !contactName || !contactEmail) throw new Error("All team fields are required");
+
+  const claimed = Teams.claimInvite(team.id, { name, contactName, contactEmail });
+  if (!claimed) throw new Error("Could not claim this invite");
+
+  const playerNames = formData.getAll("playerName") as string[];
+  const playerJerseys = formData.getAll("playerJersey") as string[];
+  playerNames.forEach((pname, i) => {
+    const trimmed = pname.trim();
+    if (!trimmed) return;
+    Players.create({ teamId: claimed.id, name: trimmed, jerseyNumber: playerJerseys[i]?.trim() || null });
+  });
+
+  redirect(`/t/${tournament.slug}/register/pay?team=${claimed.id}`);
 }
 
 export async function markTeamPaidDemo(teamId: string) {

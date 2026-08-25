@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS teams (
   groupName TEXT,
   paid INTEGER NOT NULL DEFAULT 0,
   checkedIn INTEGER NOT NULL DEFAULT 0,
+  inviteToken TEXT UNIQUE,
+  invitedAt TEXT,
   createdAt TEXT NOT NULL
 );
 
@@ -62,6 +64,7 @@ CREATE TABLE IF NOT EXISTS matches (
   scheduledAt TEXT,
   status TEXT NOT NULL DEFAULT 'SCHEDULED',
   refereeId TEXT,
+  motmPlayerId TEXT,
   orderIndex INTEGER NOT NULL DEFAULT 0
 );
 

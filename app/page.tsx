@@ -50,6 +50,9 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4 flex items-center justify-between">
           <Logo />
           <nav className="flex items-center gap-1 sm:gap-2">
+            <Link href="/tournaments" className="btn-ghost hidden sm:inline-flex">
+              Tournaments
+            </Link>
             <Link href="/tour" className="btn-ghost hidden sm:inline-flex">
               See how it works
             </Link>
@@ -87,17 +90,17 @@ export default function Home() {
                 Create your first tournament
               </Link>
               <Link href="/tour" className="btn-secondary text-base px-6 py-3">
-                Explore the management interface →
+                See what you get →
               </Link>
             </div>
             <p className="mt-4 text-sm text-white/40">
               No account needed —{" "}
               <Link href="/tour" className="text-pitch-400 hover:underline">
-                click into the live console
+                browse the console
               </Link>{" "}
-              or see the{" "}
+              or check out a{" "}
               <Link href="/t/coastal-cup" className="text-pitch-400 hover:underline">
-                public tournament page
+                live tournament page
               </Link>
               .
             </p>
@@ -173,6 +176,9 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
           <Logo className="text-sm" markClassName="h-5 w-5" />
           <nav className="flex items-center gap-5 text-white/40">
+            <Link href="/tournaments" className="hover:text-white/70">
+              Tournaments
+            </Link>
             <Link href="/tour" className="hover:text-white/70">
               See how it works
             </Link>

@@ -3,7 +3,9 @@ import { generateSchedule, generateKnockout } from "@/lib/actions";
 
 export default async function TournamentOverviewPage({ params }: { params: { id: string } }) {
   const tournament = Tournaments.byId(params.id)!;
-  const teams = Teams.listByTournament(tournament.id);
+  const allTeams = Teams.listByTournament(tournament.id);
+  const teams = allTeams.filter((t) => t.name);
+  const pendingInvites = allTeams.length - teams.length;
   const matches = Matches.listByTournament(tournament.id);
   const publicUrl = `/t/${tournament.slug}`;
 
@@ -16,6 +18,7 @@ export default async function TournamentOverviewPage({ params }: { params: { id:
         <div className="card p-5">
           <p className="text-xs uppercase tracking-wide text-white/40 mb-1">Teams registered</p>
           <p className="text-3xl font-semibold">{teams.length}</p>
+          {pendingInvites > 0 && <p className="text-xs text-white/30 mt-1">{pendingInvites} invite{pendingInvites === 1 ? "" : "s"} pending</p>}
         </div>
         <div className="card p-5">
           <p className="text-xs uppercase tracking-wide text-white/40 mb-1">Matches scheduled</p>

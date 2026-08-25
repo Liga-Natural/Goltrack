@@ -1,16 +1,22 @@
 import { Tournaments, Teams, Players } from "@/lib/models";
-import { addTeam, addPlayer, removeTeam, setTeamPaid } from "@/lib/actions";
+import { addTeam, addPlayer, removeTeam, setTeamPaid, createTeamInvite } from "@/lib/actions";
+import { CopyLinkButton } from "@/components/CopyLinkButton";
 
 export default async function TeamsPage({ params }: { params: { id: string } }) {
   const tournament = Tournaments.byId(params.id)!;
-  const teams = Teams.listByTournament(tournament.id);
+  const allTeams = Teams.listByTournament(tournament.id);
+  const teams = allTeams.filter((t) => t.name);
+  const pendingInvites = allTeams.filter((t) => !t.name && t.inviteToken);
   const addTeamWithId = addTeam.bind(null, tournament.id);
+  const createInviteWithId = createTeamInvite.bind(null, tournament.id);
 
   return (
     <div>
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
-          {teams.length === 0 && <p className="text-white/50">No teams yet — add one, or share the registration link.</p>}
+          {teams.length === 0 && pendingInvites.length === 0 && (
+            <p className="text-white/50">No teams yet — add one, generate an invite link, or share the registration link.</p>
+          )}
           {teams.map((team) => {
             const players = Players.listByTeam(team.id);
             const addPlayerWithIds = addPlayer.bind(null, tournament.id, team.id);
@@ -67,8 +73,38 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
           })}
         </div>
 
-        <div>
+        <div className="space-y-6">
           <div className="card p-5 sticky top-6">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="font-semibold">Invite links</h3>
+              <form action={createInviteWithId}>
+                <button className="btn-secondary text-xs px-2.5 py-1.5">+ Generate</button>
+              </form>
+            </div>
+            <p className="text-xs text-white/40 mb-3">
+              Each link is unique to one team and works once — like a gotsport-style invite. Send one per team you
+              want to reserve a spot.
+            </p>
+            {pendingInvites.length === 0 ? (
+              <p className="text-xs text-white/30">No pending invites.</p>
+            ) : (
+              <div className="space-y-2">
+                {pendingInvites.map((invite) => (
+                  <div key={invite.id} className="flex items-center justify-between gap-2 bg-navy-800 rounded-lg px-2.5 py-2">
+                    <code className="text-xs text-pitch-400 truncate">…/invite/{invite.inviteToken}</code>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <CopyLinkButton path={`/t/${tournament.slug}/invite/${invite.inviteToken}`} />
+                      <form action={removeTeam.bind(null, tournament.id, invite.id)}>
+                        <button className="text-xs text-white/30 hover:text-red-400 px-1">✕</button>
+                      </form>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="card p-5">
             <h3 className="font-semibold mb-3">Add a team manually</h3>
             <form action={addTeamWithId} className="space-y-3">
               <div>
