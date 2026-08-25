@@ -33,6 +33,22 @@ const config: Config = {
       },
       boxShadow: {
         card: "0 1px 2px rgba(10,15,26,0.04), 0 8px 24px -8px rgba(10,15,26,0.12)",
+        glow: "0 0 60px -10px rgba(230,57,70,0.35)",
+      },
+      keyframes: {
+        "fade-up": {
+          "0%": { opacity: "0", transform: "translateY(14px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        drift: {
+          "0%, 100%": { transform: "translate(0, 0) scale(1)" },
+          "50%": { transform: "translate(-3%, 4%) scale(1.06)" },
+        },
+      },
+      animation: {
+        "fade-up": "fade-up 0.7s ease-out both",
+        drift: "drift 14s ease-in-out infinite",
+        "drift-slow": "drift 22s ease-in-out infinite reverse",
       },
     },
   },

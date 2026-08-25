@@ -39,6 +39,11 @@ function getDb(): DatabaseSync {
   const dbPath = resolveDbPath();
   const database = new DatabaseSync(dbPath);
   database.exec("PRAGMA foreign_keys = ON;");
+  // Next's build step imports every route module (each opening this same file)
+  // concurrently from separate workers; WAL + a busy timeout keep that from
+  // failing with "database is locked" instead of just waiting its turn.
+  database.exec("PRAGMA journal_mode = WAL;");
+  database.exec("PRAGMA busy_timeout = 5000;");
   const schema = fs.readFileSync(path.join(process.cwd(), "lib", "schema.sql"), "utf-8");
   database.exec(schema);
   global.__goltrackDb = database;

@@ -58,8 +58,12 @@ export default async function PublicTournamentPage({
 
         {liveMatches.length > 0 && (
           <div className="card p-5 mb-8 border-volt-400/30">
-            <h2 className="font-semibold mb-3 flex items-center gap-2">
-              <span className="text-volt-400">● LIVE NOW</span>
+            <h2 className="font-semibold mb-3 flex items-center gap-2 text-volt-400">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-volt-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-volt-400" />
+              </span>
+              LIVE NOW
             </h2>
             <div className="space-y-2">
               {liveMatches.map((m) => (
