@@ -79,8 +79,8 @@ export function ProductShowcase({
       preview: (
         <div className="space-y-2">
           {groupMatches.slice(0, 3).map((m) => (
-            <div key={m.id} className="card p-3 flex items-center justify-between text-sm">
-              <span className="truncate">
+            <div key={m.id} className="card p-3 flex items-center justify-between gap-2 text-sm">
+              <span className="truncate min-w-0">
                 {teamsById.get(m.homeTeamId || "")?.name} <span className="text-white/30">vs</span>{" "}
                 {teamsById.get(m.awayTeamId || "")?.name}
               </span>

@@ -31,6 +31,7 @@ export async function createTournament(formData: FormData) {
 
   const name = String(formData.get("name") || "").trim();
   const sport = String(formData.get("sport") || "Soccer").trim();
+  const teamFormat = String(formData.get("teamFormat") || "11v11").trim();
   const format = (String(formData.get("format") || "GROUPS_KNOCKOUT") as Format);
   const location = String(formData.get("location") || "").trim() || null;
   const startDate = String(formData.get("startDate") || "");
@@ -39,8 +40,12 @@ export async function createTournament(formData: FormData) {
   const fieldsCount = Math.max(1, Number(formData.get("fieldsCount") || 2));
   const groupsCount = Math.max(1, Number(formData.get("groupsCount") || 2));
   const advancePerGroup = Math.max(1, Number(formData.get("advancePerGroup") || 2));
+  const supervisorName = String(formData.get("supervisorName") || "").trim();
+  const supervisorEmail = String(formData.get("supervisorEmail") || "").trim();
+  const supervisorPhone = String(formData.get("supervisorPhone") || "").trim() || null;
 
   if (!name || !startDate) throw new Error("Name and start date are required");
+  if (!supervisorName || !supervisorEmail) throw new Error("Tournament director name and email are required");
 
   let baseSlug = slugify(name);
   let slug = baseSlug;
@@ -54,6 +59,7 @@ export async function createTournament(formData: FormData) {
     slug,
     name,
     sport,
+    teamFormat,
     format,
     status: "REGISTRATION_OPEN",
     location,
@@ -63,6 +69,9 @@ export async function createTournament(formData: FormData) {
     fieldsCount,
     groupsCount,
     advancePerGroup,
+    supervisorName,
+    supervisorEmail,
+    supervisorPhone,
     ownerId: user.id,
   });
 

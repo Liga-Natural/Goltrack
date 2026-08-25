@@ -1,6 +1,17 @@
 import { Tournaments, Teams, Matches } from "@/lib/models";
 import { generateSchedule, generateKnockout } from "@/lib/actions";
 
+function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
+  return (
+    <div className="card p-5 relative overflow-hidden">
+      <div className="absolute top-0 left-0 h-[2px] w-8 bg-pitch-400" />
+      <p className="text-xs uppercase tracking-wide text-white/40 mb-1.5">{label}</p>
+      <p className="text-3xl font-semibold font-mono tabular-nums">{value}</p>
+      {sub && <p className="text-xs text-white/30 mt-1">{sub}</p>}
+    </div>
+  );
+}
+
 export default async function TournamentOverviewPage({ params }: { params: { id: string } }) {
   const tournament = Tournaments.byId(params.id)!;
   const allTeams = Teams.listByTournament(tournament.id);
@@ -15,25 +26,29 @@ export default async function TournamentOverviewPage({ params }: { params: { id:
   return (
     <div>
       <div className="grid sm:grid-cols-3 gap-4 mb-8">
-        <div className="card p-5">
-          <p className="text-xs uppercase tracking-wide text-white/40 mb-1">Teams registered</p>
-          <p className="text-3xl font-semibold">{teams.length}</p>
-          {pendingInvites > 0 && <p className="text-xs text-white/30 mt-1">{pendingInvites} invite{pendingInvites === 1 ? "" : "s"} pending</p>}
-        </div>
-        <div className="card p-5">
-          <p className="text-xs uppercase tracking-wide text-white/40 mb-1">Matches scheduled</p>
-          <p className="text-3xl font-semibold">{matches.length}</p>
-        </div>
-        <div className="card p-5">
-          <p className="text-xs uppercase tracking-wide text-white/40 mb-1">Entry fee</p>
-          <p className="text-3xl font-semibold">${(tournament.feeCents / 100).toFixed(0)}</p>
-        </div>
+        <StatCard
+          label="Teams registered"
+          value={teams.length}
+          sub={pendingInvites > 0 ? `${pendingInvites} invite${pendingInvites === 1 ? "" : "s"} pending` : undefined}
+        />
+        <StatCard label="Matches scheduled" value={matches.length} />
+        <StatCard label="Entry fee" value={`$${(tournament.feeCents / 100).toFixed(0)}`} />
       </div>
 
-      <div className="card p-6 mb-6">
-        <h2 className="font-semibold mb-1">Public registration link</h2>
-        <p className="text-sm text-white/50 mb-3">Share this with team captains so they can register and pay.</p>
-        <code className="block bg-navy-800 rounded-lg px-3 py-2 text-sm text-pitch-400 break-all">{publicUrl}/register</code>
+      <div className="grid sm:grid-cols-2 gap-6 mb-6">
+        <div className="card p-6">
+          <h2 className="font-semibold mb-1">Public registration link</h2>
+          <p className="text-sm text-white/50 mb-3">Share this with team captains so they can register and pay.</p>
+          <code className="block bg-navy-800 rounded-lg px-3 py-2 text-sm text-pitch-400 break-all">{publicUrl}/register</code>
+        </div>
+
+        <div className="card p-6">
+          <h2 className="font-semibold mb-1">Tournament director</h2>
+          <p className="text-sm text-white/50 mb-3">On file as the point of contact for this event.</p>
+          <p className="text-sm font-medium">{tournament.supervisorName}</p>
+          <p className="text-sm text-white/50">{tournament.supervisorEmail}</p>
+          {tournament.supervisorPhone && <p className="text-sm text-white/50">{tournament.supervisorPhone}</p>}
+        </div>
       </div>
 
       <div className="card p-6">

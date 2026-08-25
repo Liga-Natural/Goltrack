@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { Tournaments } from "@/lib/models";
+import { getSportTheme } from "@/lib/sportTheme";
 
 const statusColors: Record<string, string> = {
   DRAFT: "bg-white/10 text-white/60",
@@ -16,12 +17,12 @@ export default async function DashboardHome() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-semibold">Your tournaments</h1>
           <p className="text-white/50 text-sm mt-1">Create, schedule, and run your events.</p>
         </div>
-        <Link href="/dashboard/tournaments/new" className="btn-primary">
+        <Link href="/dashboard/tournaments/new" className="btn-primary shrink-0 self-start sm:self-auto whitespace-nowrap">
           + New tournament
         </Link>
       </div>
@@ -35,17 +36,27 @@ export default async function DashboardHome() {
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tournaments.map((t) => (
-            <Link key={t.id} href={`/dashboard/tournaments/${t.id}`} className="card p-5 hover:border-pitch-400/30 transition-colors">
-              <div className="flex items-start justify-between mb-3">
-                <h2 className="font-semibold">{t.name}</h2>
-                <span className={`badge ${statusColors[t.status]}`}>{t.status.replace("_", " ")}</span>
-              </div>
-              <p className="text-sm text-white/50">{t.sport} · {t.format === "ROUND_ROBIN" ? "Round robin" : "Groups + knockout"}</p>
-              <p className="text-sm text-white/40 mt-1">{new Date(t.startDate).toLocaleDateString()}</p>
-              {t.location && <p className="text-sm text-white/40">{t.location}</p>}
-            </Link>
-          ))}
+          {tournaments.map((t) => {
+            const theme = getSportTheme(t.sport);
+            return (
+              <Link
+                key={t.id}
+                href={`/dashboard/tournaments/${t.id}`}
+                className="card p-5 hover:border-pitch-400/30 hover:-translate-y-0.5 transition-all"
+              >
+                <div className="flex items-start justify-between mb-3 gap-2">
+                  <h2 className="font-semibold">{t.name}</h2>
+                  <span className={`badge shrink-0 ${statusColors[t.status]}`}>{t.status.replace("_", " ")}</span>
+                </div>
+                <p className="text-sm text-white/50">
+                  {theme.emoji} {t.sport} · {t.teamFormat} ·{" "}
+                  {t.format === "ROUND_ROBIN" ? "Round robin" : "Groups + knockout"}
+                </p>
+                <p className="text-sm text-white/40 mt-1">{new Date(t.startDate).toLocaleDateString()}</p>
+                {t.location && <p className="text-sm text-white/40">{t.location}</p>}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

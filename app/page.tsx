@@ -38,8 +38,8 @@ const features = [
 ];
 
 const steps = [
-  { n: "01", title: "Set up your tournament", body: "Add fields, groups, and dates in a few minutes." },
-  { n: "02", title: "Teams register & pay", body: "Share a link — rosters and fees roll in on their own." },
+  { n: "01", title: "Set up your tournament", body: "Sport, format, fields, fees, and your director's contact — a few minutes." },
+  { n: "02", title: "Teams register & pay", body: "Send unique invite links or open registration — rosters and fees roll in." },
   { n: "03", title: "Run match day", body: "Score from the sideline while standings and brackets update live." },
 ];
 
@@ -72,20 +72,38 @@ export default function Home() {
       <section className="relative">
         <div className="glow-blob -top-24 -left-32 h-80 w-80 bg-pitch-400/20 animate-drift" />
         <div className="glow-blob top-32 right-0 h-72 w-72 bg-volt-400/10 animate-drift-slow" />
+        <PitchPattern className="pointer-events-none absolute -z-10 h-[560px] w-[560px] text-white/[0.035] -right-40 -top-24" />
 
-        <div className="relative mx-auto max-w-6xl px-4 sm:px-6 pt-16 pb-20 sm:pt-24 sm:pb-28 grid lg:grid-cols-2 gap-12 items-center">
+        <div className="relative mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-20 sm:pt-20 sm:pb-28 grid lg:grid-cols-[1.15fr_1fr] gap-12 items-center">
           <div className="max-w-2xl animate-fade-up">
-            <span className="badge bg-pitch-400/10 text-pitch-400 border border-pitch-400/20 mb-5">
-              Soccer & futsal tournament software
-            </span>
-            <h1 className="text-4xl sm:text-5xl font-semibold leading-tight tracking-tight text-white">
-              Run your league. <span className="text-pitch-400">Own the match day.</span>
+            <div className="flex items-center gap-2 mb-6 text-pitch-400">
+              <span className="h-1.5 w-1.5 rounded-sm bg-pitch-400" />
+              <span className="text-xs font-semibold uppercase tracking-[0.2em]">
+                Soccer · Futsal · Basketball · Flag football
+              </span>
+            </div>
+            <h1 className="font-display text-[2.75rem] leading-[0.98] sm:text-6xl lg:text-[4.5rem] tracking-tight text-white">
+              RUN YOUR
+              <br />
+              LEAGUE.
+              <br />
+              <span className="relative inline-block text-pitch-400">
+                OWN MATCH DAY.
+                <svg
+                  className="absolute left-0 -bottom-2 w-full h-3 text-pitch-400/50"
+                  viewBox="0 0 300 12"
+                  preserveAspectRatio="none"
+                  fill="none"
+                >
+                  <path d="M2 8 Q75 2 150 6 T298 4" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                </svg>
+              </span>
             </h1>
-            <p className="mt-5 text-lg text-white/60">
-              GolTrack is the all-in-one platform to organize, run, and grow soccer and futsal tournaments —
-              registration, scheduling, brackets, live scores, and digital player passports in one place.
+            <p className="mt-7 text-lg text-white/60 max-w-lg">
+              GolTrack is the all-in-one platform to organize, run, and grow tournaments — registration, scheduling,
+              brackets, live scores, and digital player passports in one place.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-9 flex flex-wrap items-center gap-3">
               <Link href="/signup" className="btn-primary text-base px-6 py-3">
                 Create your first tournament
               </Link>
@@ -93,7 +111,7 @@ export default function Home() {
                 See what you get →
               </Link>
             </div>
-            <p className="mt-4 text-sm text-white/40">
+            <p className="mt-5 text-sm text-white/40">
               No account needed —{" "}
               <Link href="/tour" className="text-pitch-400 hover:underline">
                 browse the console
@@ -106,33 +124,53 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="relative flex justify-center lg:justify-end">
-            <PitchPattern className="absolute -z-10 h-[420px] w-[420px] text-white/[0.06] -right-6 -top-10" />
-            <LiveScoreCard />
+          <div className="relative flex justify-center lg:justify-end lg:pr-6">
+            <div className="w-full max-w-sm">
+              <LiveScoreCard />
+              <div className="ticket-perforation mx-2" style={{ ["--ticket-punch-bg" as any]: "#0a0a0a" }} />
+              <p className="text-center text-[11px] uppercase tracking-[0.2em] text-white/25 pt-3">
+                Real screen, real tournament — coastalcup/live
+              </p>
+            </div>
           </div>
         </div>
+
+        <svg className="block w-full text-navy-800/40" viewBox="0 0 1440 40" preserveAspectRatio="none" style={{ height: "40px" }}>
+          <path d="M0 40 L1440 8 L1440 40 Z" fill="currentColor" />
+        </svg>
       </section>
 
-      <section className="border-y border-white/5 bg-navy-800/40 relative overflow-hidden">
+      <section className="border-b border-white/5 bg-navy-800/40 relative overflow-hidden">
         <div className="grain-overlay" />
-        <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-16">
-          <h2 className="text-2xl font-semibold mb-2">Everything organizers need, connected end to end</h2>
-          <p className="text-white/50 mb-10 max-w-2xl">
-            Registration feeds scheduling, scheduling feeds live scores, and live scores populate every player&apos;s
-            passport — one system instead of five spreadsheets and a group chat.
-          </p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
+          <div className="flex items-end justify-between gap-6 mb-12 flex-wrap">
+            <div>
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-pitch-400">The system</span>
+              <h2 className="text-2xl sm:text-3xl font-semibold mt-2 max-w-lg">
+                Everything organizers need, connected end to end
+              </h2>
+            </div>
+            <p className="text-white/50 max-w-sm text-sm">
+              Registration feeds scheduling, scheduling feeds live scores, and live scores populate every player&apos;s
+              passport — one system instead of five spreadsheets and a group chat.
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-x-10">
             {features.map((f, i) => (
               <div
                 key={f.title}
-                className="card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-pitch-400/30 hover:shadow-glow animate-fade-up"
-                style={{ animationDelay: `${i * 70}ms` }}
+                className="group flex items-start gap-5 py-6 border-t border-white/10 animate-fade-up"
+                style={{ animationDelay: `${i * 60}ms` }}
               >
-                <div className="h-9 w-9 rounded-lg bg-pitch-400/10 text-pitch-400 flex items-center justify-center mb-3">
-                  <f.icon className="h-5 w-5" />
+                <span className="font-mono text-sm text-white/25 pt-0.5 shrink-0 w-6">{String(i + 1).padStart(2, "0")}</span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2.5 mb-1.5">
+                    <f.icon className="h-4 w-4 text-pitch-400 shrink-0" />
+                    <h3 className="font-semibold text-white">{f.title}</h3>
+                  </div>
+                  <p className="text-sm text-white/50 leading-relaxed">{f.body}</p>
                 </div>
-                <h3 className="font-semibold text-white mb-1.5">{f.title}</h3>
-                <p className="text-sm text-white/50 leading-relaxed">{f.body}</p>
               </div>
             ))}
           </div>

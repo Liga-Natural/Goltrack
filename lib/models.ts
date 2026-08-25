@@ -21,6 +21,7 @@ export interface Tournament {
   slug: string;
   name: string;
   sport: string;
+  teamFormat: string; // e.g. "7v7", "9v9", "11v11", "5v5", "3v3"
   format: Format;
   status: TournamentStatus;
   location: string | null;
@@ -30,6 +31,9 @@ export interface Tournament {
   fieldsCount: number;
   groupsCount: number;
   advancePerGroup: number;
+  supervisorName: string;
+  supervisorEmail: string;
+  supervisorPhone: string | null;
   ownerId: string;
   createdAt: string;
 }
@@ -114,8 +118,8 @@ export const Tournaments = {
   create(input: Omit<Tournament, "id" | "createdAt">): Tournament {
     const t: Tournament = { ...input, id: uid(), createdAt: nowIso() };
     run(
-      `INSERT INTO tournaments (id, slug, name, sport, format, status, location, startDate, endDate, feeCents, fieldsCount, groupsCount, advancePerGroup, ownerId, createdAt)
-       VALUES ($id,$slug,$name,$sport,$format,$status,$location,$startDate,$endDate,$feeCents,$fieldsCount,$groupsCount,$advancePerGroup,$ownerId,$createdAt)`,
+      `INSERT INTO tournaments (id, slug, name, sport, teamFormat, format, status, location, startDate, endDate, feeCents, fieldsCount, groupsCount, advancePerGroup, supervisorName, supervisorEmail, supervisorPhone, ownerId, createdAt)
+       VALUES ($id,$slug,$name,$sport,$teamFormat,$format,$status,$location,$startDate,$endDate,$feeCents,$fieldsCount,$groupsCount,$advancePerGroup,$supervisorName,$supervisorEmail,$supervisorPhone,$ownerId,$createdAt)`,
       t as any
     );
     return t;

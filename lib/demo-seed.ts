@@ -75,14 +75,15 @@ function seedDemoDataUnsafe(database: DatabaseSync): void {
   const now = Date.now();
   database
     .prepare(
-      `INSERT INTO tournaments (id, slug, name, sport, format, status, location, startDate, endDate, feeCents, fieldsCount, groupsCount, advancePerGroup, ownerId, createdAt)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
+      `INSERT INTO tournaments (id, slug, name, sport, teamFormat, format, status, location, startDate, endDate, feeCents, fieldsCount, groupsCount, advancePerGroup, supervisorName, supervisorEmail, supervisorPhone, ownerId, createdAt)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
     )
     .run(
       tournamentId,
       "coastal-cup",
       "Coastal Cup Youth Invitational",
       "Soccer",
+      "9v9",
       "GROUPS_KNOCKOUT",
       "LIVE",
       "Magic City Fields, Miami FL",
@@ -92,6 +93,9 @@ function seedDemoDataUnsafe(database: DatabaseSync): void {
       2,
       2,
       2,
+      "Alex Rivera",
+      "demo@goltrack.app",
+      null,
       ownerId,
       nowIso()
     );

@@ -26,6 +26,10 @@ const config: Config = {
           400: "#e63946",
           500: "#c62838",
         },
+        gold: {
+          400: "#e8b84b",
+          500: "#d4a12f",
+        },
       },
       fontFamily: {
         display: ["'Archivo Black'", "system-ui", "sans-serif"],

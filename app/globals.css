@@ -62,3 +62,27 @@
   opacity: 0.05;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 }
+
+/* Match-ticket perforation: a dashed tear line with punched half-circles at
+   each end, used as a recurring signature motif instead of a plain card
+   border — the one visual idea this design leans on hardest. */
+.ticket-perforation {
+  position: relative;
+  border-top: 2px dashed rgba(255, 255, 255, 0.12);
+}
+.ticket-perforation::before,
+.ticket-perforation::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: var(--ticket-punch-bg, #0a0a0a);
+}
+.ticket-perforation::before {
+  left: -8px;
+}
+.ticket-perforation::after {
+  right: -8px;
+}

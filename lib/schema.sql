@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS tournaments (
   slug TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
   sport TEXT NOT NULL DEFAULT 'Soccer',
+  teamFormat TEXT NOT NULL DEFAULT '11v11',
   format TEXT NOT NULL DEFAULT 'GROUPS_KNOCKOUT',
   status TEXT NOT NULL DEFAULT 'DRAFT',
   location TEXT,
@@ -20,6 +21,9 @@ CREATE TABLE IF NOT EXISTS tournaments (
   fieldsCount INTEGER NOT NULL DEFAULT 2,
   groupsCount INTEGER NOT NULL DEFAULT 2,
   advancePerGroup INTEGER NOT NULL DEFAULT 2,
+  supervisorName TEXT NOT NULL DEFAULT '',
+  supervisorEmail TEXT NOT NULL DEFAULT '',
+  supervisorPhone TEXT,
   ownerId TEXT NOT NULL,
   createdAt TEXT NOT NULL
 );

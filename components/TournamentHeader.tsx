@@ -18,12 +18,12 @@ export function TournamentHeader({ tournament }: { tournament: Tournament }) {
         <div className="flex items-center gap-2.5 mb-1.5">
           <h1 className="text-2xl font-semibold">{tournament.name}</h1>
           <span className="badge bg-white/10 text-white/70">
-            {theme.emoji} {theme.label}
+            {theme.emoji} {theme.label} {tournament.teamFormat}
           </span>
           <span className={`badge ${statusColors[tournament.status]}`}>{tournament.status.replace("_", " ")}</span>
         </div>
         <p className="text-white/50 text-sm">
-          {tournament.sport} · {tournament.format === "ROUND_ROBIN" ? "Round robin" : "Groups + knockout"} ·{" "}
+          {tournament.format === "ROUND_ROBIN" ? "Round robin" : "Groups + knockout"} ·{" "}
           {new Date(tournament.startDate).toLocaleDateString()}
           {tournament.location ? ` · ${tournament.location}` : ""}
         </p>
