@@ -9,6 +9,7 @@ import { Logo } from "@/components/Logo";
 import { PitchPattern } from "@/components/PitchPattern";
 import { CourtPattern } from "@/components/CourtPattern";
 import { TeamCard } from "@/components/TeamCard";
+import { TeamInline } from "@/components/TeamInline";
 import { getSportTheme } from "@/lib/sportTheme";
 
 export const revalidate = 5;
@@ -94,8 +95,10 @@ export default async function PublicTournamentPage({
               <div className="space-y-2">
                 {liveMatches.map((m) => (
                   <div key={m.id} className="flex items-center justify-between text-sm">
-                    <span>
-                      {teamsById.get(m.homeTeamId || "")?.name} vs {teamsById.get(m.awayTeamId || "")?.name}
+                    <span className="flex items-center gap-2">
+                      <TeamInline team={teamsById.get(m.homeTeamId || "")} sport={tournament.sport} />
+                      <span className="text-black/30">vs</span>
+                      <TeamInline team={teamsById.get(m.awayTeamId || "")} sport={tournament.sport} />
                     </span>
                     <span className="font-mono font-semibold">
                       {m.homeScore} - {m.awayScore}
@@ -128,7 +131,7 @@ export default async function PublicTournamentPage({
               <h2 className="font-semibold mb-4">Standings</h2>
               <div className="grid sm:grid-cols-2 gap-8">
                 {groups.map((g) => (
-                  <StandingsTable key={g} rows={computeStandings(teams, matches, g)} title={`Group ${g}`} />
+                  <StandingsTable key={g} rows={computeStandings(teams, matches, g)} title={`Group ${g}`} sport={tournament.sport} />
                 ))}
               </div>
             </section>
@@ -145,7 +148,9 @@ export default async function PublicTournamentPage({
                       <div className="flex items-center justify-between text-sm">
                         <div>
                           <span className="text-black/40 text-xs mr-2">{m.round}</span>
-                          {teamsById.get(m.homeTeamId || "")?.name} vs {teamsById.get(m.awayTeamId || "")?.name}
+                          <TeamInline team={teamsById.get(m.homeTeamId || "")} sport={tournament.sport} />
+                          <span className="mx-1.5 text-black/30">vs</span>
+                          <TeamInline team={teamsById.get(m.awayTeamId || "")} sport={tournament.sport} />
                         </div>
                         <div className="flex items-center gap-3">
                           <span className="text-black/40 text-xs hidden sm:inline">{m.field}</span>
@@ -170,7 +175,7 @@ export default async function PublicTournamentPage({
           {knockoutMatches.length > 0 && (
             <section className="card p-6">
               <h2 className="font-semibold mb-4">Knockout bracket</h2>
-              <BracketView matches={knockoutMatches} teams={teams} />
+              <BracketView matches={knockoutMatches} teams={teams} sport={tournament.sport} />
             </section>
           )}
 

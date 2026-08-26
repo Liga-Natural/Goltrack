@@ -1,6 +1,7 @@
 import { Tournaments, Teams, Matches, Referees, Players } from "@/lib/models";
 import { MatchStatusBadge } from "@/components/MatchStatusBadge";
 import { ScoreForm } from "@/components/ScoreForm";
+import { TeamInline } from "@/components/TeamInline";
 
 export default async function ScoresPage({ params }: { params: { id: string } }) {
   const tournament = Tournaments.byId(params.id)!;
@@ -23,10 +24,10 @@ export default async function ScoresPage({ params }: { params: { id: string } })
                 <p className="text-xs text-black/40 mb-0.5">
                   {m.round} · {m.field} {m.refereeId && refsById.has(m.refereeId) ? `· Ref: ${refsById.get(m.refereeId)!.name}` : ""}
                 </p>
-                <p className="font-medium">
-                  {teamsById.get(m.homeTeamId || "")?.name || m.homeLabel || "TBD"}
-                  <span className="text-black/30 mx-2">vs</span>
-                  {teamsById.get(m.awayTeamId || "")?.name || m.awayLabel || "TBD"}
+                <p className="font-medium flex items-center flex-wrap gap-x-1">
+                  <TeamInline team={teamsById.get(m.homeTeamId || "")} sport={tournament.sport} fallback={m.homeLabel || "TBD"} />
+                  <span className="text-black/30 mx-1">vs</span>
+                  <TeamInline team={teamsById.get(m.awayTeamId || "")} sport={tournament.sport} fallback={m.awayLabel || "TBD"} />
                 </p>
               </div>
               <div className="flex items-center gap-3">

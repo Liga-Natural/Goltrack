@@ -1,6 +1,7 @@
 import { StandingRow } from "@/lib/standings";
+import { TeamBadge } from "@/components/TeamBadge";
 
-export function StandingsTable({ rows, title }: { rows: StandingRow[]; title?: string }) {
+export function StandingsTable({ rows, title, sport }: { rows: StandingRow[]; title?: string; sport: string }) {
   return (
     <div className="overflow-x-auto">
       {title && <h3 className="font-semibold mb-2 text-sm text-black/70">{title}</h3>}
@@ -22,8 +23,19 @@ export function StandingsTable({ rows, title }: { rows: StandingRow[]; title?: s
           {rows.map((r, i) => (
             <tr key={r.team.id} className="border-t border-black/5">
               <td className="py-2 pr-2 font-medium">
-                <span className="text-black/30 mr-2">{i + 1}</span>
-                {r.team.name}
+                <div className="flex items-center gap-2">
+                  <span className="text-black/30">{i + 1}</span>
+                  <TeamBadge
+                    id={r.team.id}
+                    name={r.team.name}
+                    hasCrest={r.team.hasCrest}
+                    crestUpdatedAt={r.team.crestUpdatedAt}
+                    logoUrl={r.team.logoUrl}
+                    sport={sport}
+                    size="sm"
+                  />
+                  <span>{r.team.name}</span>
+                </div>
               </td>
               <td className="py-2 px-2 text-center text-black/60">{r.played}</td>
               <td className="py-2 px-2 text-center text-black/60">{r.won}</td>

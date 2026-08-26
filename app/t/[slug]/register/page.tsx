@@ -31,6 +31,7 @@ export default function RegisterPage() {
           <div>
             <label className="label">Team name</label>
             <input className="input" name="name" required />
+            <p className="text-xs text-black/30 mt-1">You&apos;ll get a link to upload your team crest right after this.</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
@@ -41,12 +42,6 @@ export default function RegisterPage() {
               <label className="label">Contact email</label>
               <input className="input" type="email" name="contactEmail" required />
             </div>
-          </div>
-
-          <div>
-            <label className="label">Team logo URL (optional)</label>
-            <input className="input" type="url" name="logoUrl" placeholder="https://..." />
-            <p className="text-xs text-black/30 mt-1">Left blank, your team shows up with colored initials instead.</p>
           </div>
 
           <div>

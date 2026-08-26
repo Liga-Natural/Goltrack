@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Tournaments, Teams, Players } from "@/lib/models";
 import { Logo } from "@/components/Logo";
+import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { markTeamPaidDemo } from "@/lib/actions";
 
 export default function PayPage({
@@ -16,6 +17,7 @@ export default function PayPage({
   const team = Teams.byId(searchParams.team);
   if (!team || team.tournamentId !== tournament.id) notFound();
   const players = Players.listByTeam(team.id);
+  const logoToken = team.logoToken || Teams.ensureLogoToken(team.id);
 
   const stripeConfigured = !!process.env.STRIPE_SECRET_KEY;
 
@@ -53,6 +55,19 @@ export default function PayPage({
           <form action={markTeamPaidDemo.bind(null, team.id)}>
             <button className="btn-primary w-full">{stripeConfigured ? "Pay now" : "Pay now (demo)"}</button>
           </form>
+        </div>
+
+        <div className="card p-5 mt-4">
+          <h2 className="font-semibold text-sm mb-1">Add your team crest</h2>
+          <p className="text-xs text-black/40 mb-3">
+            This link is yours to keep — no login needed. Use it now or send it to whoever manages your team&apos;s logo; it also lets you replace the crest later.
+          </p>
+          <div className="flex items-center gap-2">
+            <Link href={`/t/${params.slug}/crest/${logoToken}`} className="btn-secondary text-sm flex-1 text-center">
+              Upload crest
+            </Link>
+            <CopyLinkButton path={`/t/${params.slug}/crest/${logoToken}`} />
+          </div>
         </div>
       </div>
     </main>

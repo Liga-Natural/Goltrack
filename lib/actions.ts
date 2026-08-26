@@ -18,6 +18,41 @@ import { generateGroupStage, generateRoundRobinOnly, generateKnockoutBracket } f
 import { computeStandings, groupNames } from "@/lib/standings";
 import { getSportTheme } from "@/lib/sportTheme";
 
+// Crest uploads are validated by sniffing the file's actual bytes rather
+// than trusting the browser-supplied Content-Type (which is easy to spoof
+// by renaming a file) — this determines the stored mimeType too, so what we
+// serve later always matches what the bytes actually are.
+const MAX_CREST_BYTES = 5 * 1024 * 1024;
+
+async function validateCrestFile(file: File): Promise<{ bytes: Uint8Array; mimeType: string }> {
+  if (file.size === 0) throw new Error("No file selected");
+  if (file.size > MAX_CREST_BYTES) throw new Error("Image must be 5MB or smaller");
+
+  const bytes = new Uint8Array(await file.arrayBuffer());
+
+  if (bytes.length >= 8 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
+    return { bytes, mimeType: "image/png" };
+  }
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return { bytes, mimeType: "image/jpeg" };
+  }
+  if (
+    bytes.length >= 12 &&
+    bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+    bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50
+  ) {
+    return { bytes, mimeType: "image/webp" };
+  }
+  // SVG has no fixed magic bytes — it's text — so sniff the start of the
+  // decoded content instead of the raw bytes.
+  const head = new TextDecoder("utf-8", { fatal: false }).decode(bytes.slice(0, 512)).trimStart();
+  if (/^(<\?xml[^>]*>\s*)?(<!--[\s\S]*?-->\s*)*<svg[\s>]/i.test(head)) {
+    return { bytes, mimeType: "image/svg+xml" };
+  }
+
+  throw new Error("Unsupported image format — use PNG, JPG, WEBP, or SVG");
+}
+
 async function requireOwnedTournament(tournamentId: string) {
   const user = await getCurrentUser();
   if (!user) throw new Error("Not authenticated");
@@ -100,6 +135,40 @@ export async function createTeamInvite(tournamentId: string) {
   await requireOwnedTournament(tournamentId);
   Teams.createInvite(tournamentId);
   revalidatePath(`/dashboard/tournaments/${tournamentId}/teams`);
+}
+
+// Organizer-side crest upload, from the tournament's Teams management page.
+export async function uploadTeamCrest(tournamentId: string, teamId: string, formData: FormData) {
+  const { tournament } = await requireOwnedTournament(tournamentId);
+  const team = Teams.byId(teamId);
+  if (!team || team.tournamentId !== tournament.id) throw new Error("Team not found");
+  const file = formData.get("crest");
+  if (!(file instanceof File)) throw new Error("No file uploaded");
+  const { bytes, mimeType } = await validateCrestFile(file);
+  Teams.setCrest(teamId, bytes, mimeType);
+  revalidatePath(`/dashboard/tournaments/${tournamentId}/teams`);
+  revalidatePath(`/t/${tournament.slug}`);
+  revalidatePath(`/t/${tournament.slug}/teams/${teamId}`);
+}
+
+// No-login, token-based self-service crest upload for a team's own
+// manager/coach — same trust model as the existing invite-link token
+// (long random, unguessable), except this one is never consumed, so it can
+// be reused to replace the crest later.
+export async function uploadTeamCrestPublic(token: string, formData: FormData) {
+  const team = Teams.byLogoToken(token);
+  if (!team) throw new Error("This crest upload link is invalid.");
+  const file = formData.get("crest");
+  if (!(file instanceof File)) throw new Error("No file uploaded");
+  const { bytes, mimeType } = await validateCrestFile(file);
+  Teams.setCrest(team.id, bytes, mimeType);
+  const tournament = Tournaments.byId(team.tournamentId);
+  revalidatePath(`/dashboard/tournaments/${team.tournamentId}/teams`);
+  if (tournament) {
+    revalidatePath(`/t/${tournament.slug}`);
+    revalidatePath(`/t/${tournament.slug}/teams/${team.id}`);
+  }
+  revalidatePath(`/t/${tournament?.slug}/crest/${token}`);
 }
 
 export async function addPlayer(tournamentId: string, teamId: string, formData: FormData) {

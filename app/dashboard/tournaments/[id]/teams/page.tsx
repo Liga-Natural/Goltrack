@@ -1,5 +1,5 @@
 import { Tournaments, Teams, Players } from "@/lib/models";
-import { addTeam, addPlayer, removeTeam, setTeamPaid, createTeamInvite } from "@/lib/actions";
+import { addTeam, addPlayer, removeTeam, setTeamPaid, createTeamInvite, uploadTeamCrest } from "@/lib/actions";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { TeamBadge } from "@/components/TeamBadge";
 
@@ -24,11 +24,16 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
             const removeTeamWithIds = removeTeam.bind(null, tournament.id, team.id);
             const setPaidTrue = setTeamPaid.bind(null, tournament.id, team.id, true);
             const setPaidFalse = setTeamPaid.bind(null, tournament.id, team.id, false);
+            const uploadCrestWithIds = uploadTeamCrest.bind(null, tournament.id, team.id);
+            // Teams created before the crest feature shipped won't have a
+            // logoToken yet — this backfills one the first time this page
+            // renders them, so the self-service link is always available.
+            const logoToken = team.logoToken || Teams.ensureLogoToken(team.id);
             return (
               <div key={team.id} className="card p-5">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3">
-                    <TeamBadge name={team.name} logoUrl={team.logoUrl} sport={tournament.sport} />
+                    <TeamBadge id={team.id} name={team.name} hasCrest={team.hasCrest} crestUpdatedAt={team.crestUpdatedAt} logoUrl={team.logoUrl} sport={tournament.sport} />
                     <div>
                       <h3 className="font-semibold">
                         {team.name} {team.groupName && <span className="text-black/40 font-normal text-sm">· Group {team.groupName}</span>}
@@ -47,6 +52,28 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
                     </form>
                   </div>
                 </div>
+
+                <div className="flex flex-wrap items-center gap-2 mb-3 bg-gray-50 rounded-lg px-3 py-2">
+                  <form action={uploadCrestWithIds} className="flex items-center gap-2 flex-1 min-w-[220px]">
+                    <input
+                      className="text-xs flex-1 file:mr-2 file:btn-secondary file:text-xs file:px-2.5 file:py-1 file:border-0 file:cursor-pointer"
+                      type="file"
+                      name="crest"
+                      accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                      required
+                    />
+                    <button className="btn-secondary text-xs px-2.5 py-1.5 shrink-0">
+                      {team.hasCrest ? "Replace crest" : "Upload crest"}
+                    </button>
+                  </form>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <code className="text-xs text-pitch-600">…/crest/{logoToken}</code>
+                    <CopyLinkButton path={`/t/${tournament.slug}/crest/${logoToken}`} />
+                  </div>
+                </div>
+                <p className="text-xs text-black/30 -mt-2 mb-3">
+                  Send the crest link above to {team.contactName || "the team"}&apos;s manager to let them upload their own logo — no account needed.
+                </p>
 
                 <div className="space-y-1.5 mb-3">
                   {players.map((p) => (
@@ -123,11 +150,9 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
                 <label className="label">Contact email</label>
                 <input className="input" type="email" name="contactEmail" required />
               </div>
-              <div>
-                <label className="label">Logo image URL (optional)</label>
-                <input className="input" type="url" name="logoUrl" placeholder="https://..." />
-                <p className="text-xs text-black/30 mt-1">No image host yet — paste a link to one. Left blank, we show colored initials.</p>
-              </div>
+              <p className="text-xs text-black/30">
+                Crest upload happens after the team is created — use the &quot;Upload crest&quot; control on the team&apos;s card.
+              </p>
               <button className="btn-primary w-full">Add team</button>
             </form>
           </div>

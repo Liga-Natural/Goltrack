@@ -70,7 +70,7 @@ export function ProductShowcase({
       icon: IconCalendar,
       title: "Schedules & standings that build themselves",
       body: "Generate a balanced round-robin or groups-and-knockout schedule across every field in seconds, then watch standings recalculate live as results come in.",
-      preview: groups[0] ? <StandingsTable rows={standingsByGroup[groups[0]].slice(0, 4)} title={`Group ${groups[0]}`} /> : null,
+      preview: groups[0] ? <StandingsTable rows={standingsByGroup[groups[0]].slice(0, 4)} title={`Group ${groups[0]}`} sport={tournament.sport} /> : null,
     },
     {
       icon: IconPulse,

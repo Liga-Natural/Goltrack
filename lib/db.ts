@@ -38,9 +38,35 @@ function getDb(): DatabaseSync {
   database.exec("PRAGMA busy_timeout = 5000;");
   const schema = fs.readFileSync(path.join(process.cwd(), "lib", "schema.sql"), "utf-8");
   database.exec(schema);
+  runMigrations(database);
   seedDemoData(database);
   global.__goltrackDb = database;
   return database;
+}
+
+// `CREATE TABLE IF NOT EXISTS` (above) only creates tables that don't exist
+// yet — it never adds columns to a table that's already there. Any column
+// added to schema.sql after the app has real data needs an explicit,
+// idempotent ALTER TABLE here so an existing database picks it up without
+// losing what's already in it. Never DROP or rewrite a table this way.
+function ensureColumn(database: DatabaseSync, table: string, column: string, ddl: string) {
+  const existing = database.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+  if (existing.some((c) => c.name === column)) return;
+  database.exec(`ALTER TABLE ${table} ADD COLUMN ${ddl}`);
+}
+
+function runMigrations(database: DatabaseSync) {
+  ensureColumn(database, "teams", "crestBlob", "crestBlob BLOB");
+  ensureColumn(database, "teams", "crestMimeType", "crestMimeType TEXT");
+  ensureColumn(database, "teams", "crestUpdatedAt", "crestUpdatedAt TEXT");
+  ensureColumn(database, "teams", "logoToken", "logoToken TEXT");
+  // logoToken's inline UNIQUE in schema.sql only takes effect on a brand-new
+  // CREATE TABLE; a database that already existed before this column was
+  // added just got it via ALTER TABLE ADD COLUMN above, and SQLite can't
+  // attach a UNIQUE constraint through ALTER TABLE. This index is what
+  // actually enforces uniqueness for that case — must run after the column
+  // above is guaranteed to exist. IF NOT EXISTS makes it a no-op afterward.
+  database.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_logoToken ON teams(logoToken) WHERE logoToken IS NOT NULL;`);
 }
 
 export const db = getDb();

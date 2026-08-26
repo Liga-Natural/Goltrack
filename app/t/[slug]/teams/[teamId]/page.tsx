@@ -38,7 +38,7 @@ export default async function PublicTeamPage({ params }: { params: { slug: strin
 
       <div className="mx-auto max-w-4xl px-4 sm:px-6 py-10">
         <div className="mb-8 flex items-center gap-4">
-          <TeamBadge name={team.name} logoUrl={team.logoUrl} sport={tournament.sport} size="lg" />
+          <TeamBadge id={team.id} name={team.name} hasCrest={team.hasCrest} crestUpdatedAt={team.crestUpdatedAt} logoUrl={team.logoUrl} sport={tournament.sport} size="lg" />
           <div>
             <div className="flex items-center gap-2.5">
               <h1 className="text-3xl font-semibold">{team.name}</h1>

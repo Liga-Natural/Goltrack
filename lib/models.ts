@@ -45,7 +45,11 @@ export interface Team {
   contactName: string;
   contactEmail: string;
   groupName: string | null;
-  logoUrl: string | null;
+  logoUrl: string | null; // legacy paste-a-URL fallback, superseded by the crest upload below
+  crestMimeType: string | null;
+  crestUpdatedAt: string | null;
+  hasCrest: number; // 0/1 — computed from crestBlob IS NOT NULL; the blob itself is never selected here
+  logoToken: string | null; // no-login self-service crest upload link for the team's own manager/coach
   paid: number; // 0/1
   checkedIn: number; // 0/1
   inviteToken: string | null; // set while the slot is an unclaimed invite link, cleared on claim
@@ -149,83 +153,94 @@ export const Tournaments = {
 
 // ---------- Teams ----------
 
-// Unique registration-link tokens: 10 random bytes, base62-encoded (~14
-// chars — short enough to paste into a text message, long enough that
-// guessing one is infeasible). Collisions are already astronomically
-// unlikely at this length, but the DB's UNIQUE constraint is the real
-// backstop — regenerateInviteToken() below retries if it ever fires.
+// Unique link tokens: 10 random bytes, base62-encoded (~14 chars — short
+// enough to paste into a text message, long enough that guessing one is
+// infeasible). Collisions are already astronomically unlikely at this
+// length; generateToken()'s callers retry against their own uniqueness
+// check if one ever fires, and the DB backs that up (see idx_teams_logoToken
+// and the inviteToken UNIQUE column).
 const BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-function generateInviteToken(): string {
+function generateToken(): string {
   const bytes = randomBytes(10);
   let token = "";
   for (const byte of bytes) token += BASE62[byte % BASE62.length];
   return token;
 }
 
+// Every read below selects an explicit column list rather than `SELECT *`
+// so that crestBlob — potentially a multi-MB image — is never pulled off
+// disk for a team list or lookup that only needs metadata. hasCrest is a
+// cheap computed flag; the actual bytes are only ever fetched by
+// Teams.crestBytes(), used solely by the image-serving API route.
+const TEAM_COLUMNS = `id, tournamentId, name, contactName, contactEmail, groupName, logoUrl, crestMimeType, crestUpdatedAt, (crestBlob IS NOT NULL) AS hasCrest, logoToken, paid, checkedIn, inviteToken, invitedAt, createdAt`;
+
 export const Teams = {
   create(
-    input: Omit<Team, "id" | "createdAt" | "paid" | "checkedIn" | "groupName" | "logoUrl" | "inviteToken" | "invitedAt"> & {
+    input: Omit<
+      Team,
+      "id" | "createdAt" | "paid" | "checkedIn" | "groupName" | "logoUrl" | "crestMimeType" | "crestUpdatedAt" | "hasCrest" | "logoToken" | "inviteToken" | "invitedAt"
+    > & {
       paid?: boolean;
       groupName?: string | null;
       logoUrl?: string | null;
     }
   ): Team {
-    const t: Team = {
-      id: uid(),
-      tournamentId: input.tournamentId,
-      name: input.name,
-      contactName: input.contactName,
-      contactEmail: input.contactEmail,
-      groupName: input.groupName ?? null,
-      logoUrl: input.logoUrl ?? null,
-      paid: input.paid ? 1 : 0,
-      checkedIn: 0,
-      inviteToken: null,
-      invitedAt: null,
-      createdAt: nowIso(),
-    };
+    let logoToken = generateToken();
+    while (Teams.byLogoToken(logoToken)) logoToken = generateToken(); // defeat the astronomically unlikely collision
+    const id = uid();
+    const createdAt = nowIso();
     run(
-      `INSERT INTO teams (id, tournamentId, name, contactName, contactEmail, groupName, logoUrl, paid, checkedIn, inviteToken, invitedAt, createdAt)
-       VALUES ($id,$tournamentId,$name,$contactName,$contactEmail,$groupName,$logoUrl,$paid,$checkedIn,$inviteToken,$invitedAt,$createdAt)`,
-      t as any
+      `INSERT INTO teams (id, tournamentId, name, contactName, contactEmail, groupName, logoUrl, logoToken, paid, checkedIn, inviteToken, invitedAt, createdAt)
+       VALUES ($id,$tournamentId,$name,$contactName,$contactEmail,$groupName,$logoUrl,$logoToken,$paid,$checkedIn,NULL,NULL,$createdAt)`,
+      {
+        $id: id,
+        $tournamentId: input.tournamentId,
+        $name: input.name,
+        $contactName: input.contactName,
+        $contactEmail: input.contactEmail,
+        $groupName: input.groupName ?? null,
+        $logoUrl: input.logoUrl ?? null,
+        $logoToken: logoToken,
+        $paid: input.paid ? 1 : 0,
+        $checkedIn: 0,
+        $createdAt: createdAt,
+      } as any
     );
-    return t;
+    return Teams.byId(id)!;
   },
   // Creates an empty placeholder slot with a unique claim link — the
   // gotsport-style flow where an organizer invites a specific team before
-  // that team has entered any of its own details.
+  // that team has entered any of its own details. Also gets its own
+  // logoToken up front, so the crest self-service link is ready the moment
+  // the invite is claimed (no separate backfill step needed for new teams).
   createInvite(tournamentId: string): Team {
-    let token = generateInviteToken();
-    while (Teams.byInviteToken(token)) token = generateInviteToken(); // defeat the astronomically unlikely collision
-    const t: Team = {
-      id: uid(),
-      tournamentId,
-      name: "",
-      contactName: "",
-      contactEmail: "",
-      groupName: null,
-      logoUrl: null,
-      paid: 0,
-      checkedIn: 0,
-      inviteToken: token,
-      invitedAt: nowIso(),
-      createdAt: nowIso(),
-    };
+    let inviteToken = generateToken();
+    while (Teams.byInviteToken(inviteToken)) inviteToken = generateToken();
+    let logoToken = generateToken();
+    while (Teams.byLogoToken(logoToken)) logoToken = generateToken();
+    const id = uid();
+    const now = nowIso();
     run(
-      `INSERT INTO teams (id, tournamentId, name, contactName, contactEmail, groupName, logoUrl, paid, checkedIn, inviteToken, invitedAt, createdAt)
-       VALUES ($id,$tournamentId,$name,$contactName,$contactEmail,$groupName,$logoUrl,$paid,$checkedIn,$inviteToken,$invitedAt,$createdAt)`,
-      t as any
+      `INSERT INTO teams (id, tournamentId, name, contactName, contactEmail, groupName, logoUrl, logoToken, paid, checkedIn, inviteToken, invitedAt, createdAt)
+       VALUES ($id,$tournamentId,'','','',NULL,NULL,$logoToken,0,0,$inviteToken,$invitedAt,$createdAt)`,
+      { $id: id, $tournamentId: tournamentId, $logoToken: logoToken, $inviteToken: inviteToken, $invitedAt: now, $createdAt: now } as any
     );
-    return t;
+    return Teams.byId(id)!;
   },
   byId(id: string): Team | undefined {
-    return get<Team>(`SELECT * FROM teams WHERE id = $id`, { $id: id } as any);
+    return get<Team>(`SELECT ${TEAM_COLUMNS} FROM teams WHERE id = $id`, { $id: id } as any);
   },
   byInviteToken(token: string): Team | undefined {
-    return get<Team>(`SELECT * FROM teams WHERE inviteToken = $token`, { $token: token } as any);
+    return get<Team>(`SELECT ${TEAM_COLUMNS} FROM teams WHERE inviteToken = $token`, { $token: token } as any);
+  },
+  // Looks up a team by its no-login crest-upload token. Unlike inviteToken,
+  // this is never cleared after use — a coach can come back and replace the
+  // crest later — so this alone can't tell you whether it's "already used".
+  byLogoToken(token: string): Team | undefined {
+    return get<Team>(`SELECT ${TEAM_COLUMNS} FROM teams WHERE logoToken = $token`, { $token: token } as any);
   },
   listByTournament(tournamentId: string): Team[] {
-    return all<Team>(`SELECT * FROM teams WHERE tournamentId = $tournamentId ORDER BY createdAt ASC`, { $tournamentId: tournamentId } as any);
+    return all<Team>(`SELECT ${TEAM_COLUMNS} FROM teams WHERE tournamentId = $tournamentId ORDER BY createdAt ASC`, { $tournamentId: tournamentId } as any);
   },
   // Fills in an invited slot's details and clears the token so the link
   // can't be claimed a second time.
@@ -250,6 +265,37 @@ export const Teams = {
   },
   setCheckedIn(id: string, checkedIn: boolean) {
     run(`UPDATE teams SET checkedIn = $checkedIn WHERE id = $id`, { $id: id, $checkedIn: checkedIn ? 1 : 0 } as any);
+  },
+  // Retrofits a logoToken onto a team that predates this feature (created
+  // before the migration, or seeded via demo-seed.ts's raw INSERT). Called
+  // lazily wherever the link needs to be shown, rather than as a one-time
+  // migration pass over every row.
+  ensureLogoToken(id: string): string {
+    const team = Teams.byId(id);
+    if (!team) throw new Error("Team not found");
+    if (team.logoToken) return team.logoToken;
+    let token = generateToken();
+    while (Teams.byLogoToken(token)) token = generateToken();
+    run(`UPDATE teams SET logoToken = $token WHERE id = $id`, { $id: id, $token: token } as any);
+    return token;
+  },
+  setCrest(id: string, bytes: Uint8Array, mimeType: string) {
+    run(`UPDATE teams SET crestBlob = $blob, crestMimeType = $mimeType, crestUpdatedAt = $updatedAt WHERE id = $id`, {
+      $id: id,
+      $blob: bytes,
+      $mimeType: mimeType,
+      $updatedAt: nowIso(),
+    } as any);
+  },
+  // The only place crestBlob is ever read out — used exclusively by the
+  // /api/teams/[teamId]/crest route that serves the image.
+  crestBytes(id: string): { blob: Uint8Array; mimeType: string } | undefined {
+    const row = get<{ crestBlob: Uint8Array | null; crestMimeType: string | null }>(
+      `SELECT crestBlob, crestMimeType FROM teams WHERE id = $id`,
+      { $id: id } as any
+    );
+    if (!row || !row.crestBlob || !row.crestMimeType) return undefined;
+    return { blob: row.crestBlob, mimeType: row.crestMimeType };
   },
   remove(id: string) {
     run(`DELETE FROM players WHERE teamId = $id`, { $id: id } as any);

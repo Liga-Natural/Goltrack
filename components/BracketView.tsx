@@ -1,13 +1,13 @@
 import { Match, Team } from "@/lib/models";
+import { TeamInline } from "@/components/TeamInline";
 
-function teamLabel(match: Match, side: "home" | "away", teamsById: Map<string, Team>) {
+function teamOrLabel(match: Match, side: "home" | "away", teamsById: Map<string, Team>) {
   const id = side === "home" ? match.homeTeamId : match.awayTeamId;
   const label = side === "home" ? match.homeLabel : match.awayLabel;
-  if (id && teamsById.has(id)) return teamsById.get(id)!.name;
-  return label || "TBD";
+  return { team: id ? teamsById.get(id) : undefined, label: label || "TBD" };
 }
 
-export function BracketView({ matches, teams }: { matches: Match[]; teams: Team[] }) {
+export function BracketView({ matches, teams, sport }: { matches: Match[]; teams: Team[]; sport: string }) {
   const teamsById = new Map(teams.map((t) => [t.id, t]));
   const rounds = new Map<string, Match[]>();
   for (const m of matches) {
@@ -28,11 +28,11 @@ export function BracketView({ matches, teams }: { matches: Match[]; teams: Team[
           {roundMatches.map((m) => (
             <div key={m.id} className="card p-3">
               <div className={`flex items-center justify-between text-sm py-1 ${m.status === "FINAL" && (m.homeScore ?? 0) > (m.awayScore ?? 0) ? "font-semibold text-pitch-600" : ""}`}>
-                <span>{teamLabel(m, "home", teamsById)}</span>
+                <TeamInline team={teamOrLabel(m, "home", teamsById).team} sport={sport} fallback={teamOrLabel(m, "home", teamsById).label} />
                 <span>{m.homeScore ?? "-"}</span>
               </div>
               <div className={`flex items-center justify-between text-sm py-1 border-t border-black/5 ${m.status === "FINAL" && (m.awayScore ?? 0) > (m.homeScore ?? 0) ? "font-semibold text-pitch-600" : ""}`}>
-                <span>{teamLabel(m, "away", teamsById)}</span>
+                <TeamInline team={teamOrLabel(m, "away", teamsById).team} sport={sport} fallback={teamOrLabel(m, "away", teamsById).label} />
                 <span>{m.awayScore ?? "-"}</span>
               </div>
             </div>
