@@ -4,13 +4,16 @@ import { useState } from "react";
 import { updateSiteAccentColor } from "@/lib/actions";
 import { isValidHex } from "@/lib/colorRamp";
 
+// Jogo's identity is black, red, and white — these presets are all
+// variations of "red," not a jump to an unrelated hue like blue or green,
+// so picking any of them keeps that identity intact.
 const PRESETS = [
   { name: "Sideline Red", hex: "#F2545C" },
   { name: "Signal Coral", hex: "#FF5A36" },
-  { name: "Ocean Blue", hex: "#2F6FED" },
-  { name: "Royal Purple", hex: "#7C3AED" },
-  { name: "Forest Green", hex: "#16A34A" },
-  { name: "Sunshine Gold", hex: "#F5A623" },
+  { name: "Crimson", hex: "#DC2626" },
+  { name: "Cherry Rose", hex: "#E11D48" },
+  { name: "Blood Orange", hex: "#EA580C" },
+  { name: "Brick", hex: "#B91C1C" },
 ];
 
 export function AccentColorPicker({ currentColor }: { currentColor: string }) {
@@ -74,6 +77,7 @@ export function AccentColorPicker({ currentColor }: { currentColor: string }) {
           />
           {!valid && <span className="text-xs text-black/40">6-digit hex, e.g. #F2545C</span>}
         </div>
+        <p className="text-xs text-black/30 mt-1.5">For a shade the presets above don&apos;t cover — stick to a red tone to keep the black/red/white identity.</p>
       </div>
 
       <div className="border-t border-black/5 pt-5">
