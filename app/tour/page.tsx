@@ -4,7 +4,7 @@ import { ProductShowcase } from "@/components/ProductShowcase";
 
 export const revalidate = 30;
 
-// Public, no-login "here's what you get" page. GolTrack is a paid product,
+// Public, no-login "here's what you get" page. Jogo is a paid product,
 // so this shows real screens built from the seeded demo tournament instead
 // of handing out a free-to-use sandbox of the actual console.
 export default function TourPage() {

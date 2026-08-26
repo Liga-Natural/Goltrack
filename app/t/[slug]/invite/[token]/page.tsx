@@ -42,7 +42,7 @@ export default function InviteClaimPage({ params }: { params: { slug: string; to
             <h1 className="text-2xl font-semibold mb-1">Claim your team&apos;s spot</h1>
             <p className="text-black/50 mb-6 text-sm">
               This link is unique to your team and can only be used once. Add your roster now — each player gets a
-              digital GolTrack Passport with a QR code for fast check-in on match day.
+              digital Jogo Passport with a QR code for fast check-in on match day.
             </p>
             <InviteClaimForm token={params.token} />
           </>

@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 
 // Seeds the same "Coastal Cup" demo tournament that scripts/seed.ts creates,
 // but runs synchronously inside db.ts's getDb() so the demo and the
-// demo@goltrack.app login work on a totally fresh database with zero manual
+// demo@jogo.app login work on a totally fresh database with zero manual
 // steps — which matters on serverless, where /tmp is wiped on every cold
 // start and nobody is around to run `npm run seed`.
 //
@@ -59,7 +59,7 @@ function seedDemoDataUnsafe(database: DatabaseSync): void {
   if (already) return;
 
   let ownerId: string;
-  const existingUser = database.prepare(`SELECT id FROM users WHERE email = ?`).get("demo@goltrack.app") as
+  const existingUser = database.prepare(`SELECT id FROM users WHERE email = ?`).get("demo@jogo.app") as
     | { id: string }
     | undefined;
   if (existingUser) {
@@ -68,7 +68,7 @@ function seedDemoDataUnsafe(database: DatabaseSync): void {
     ownerId = uid();
     database
       .prepare(`INSERT INTO users (id, email, passwordHash, name, createdAt) VALUES (?,?,?,?,?)`)
-      .run(ownerId, "demo@goltrack.app", bcrypt.hashSync("demo1234", 10), "Alex Rivera", nowIso());
+      .run(ownerId, "demo@jogo.app", bcrypt.hashSync("demo1234", 10), "Alex Rivera", nowIso());
   }
 
   const tournamentId = uid();
@@ -94,7 +94,7 @@ function seedDemoDataUnsafe(database: DatabaseSync): void {
       2,
       2,
       "Alex Rivera",
-      "demo@goltrack.app",
+      "demo@jogo.app",
       null,
       ownerId,
       nowIso()

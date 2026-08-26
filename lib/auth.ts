@@ -3,7 +3,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { Users, User } from "./models";
 
-const SESSION_COOKIE = "goltrack_session";
+const SESSION_COOKIE = "jogo_session";
 const secretKey = new TextEncoder().encode(process.env.SESSION_SECRET || "dev-only-secret-change-me-32chars");
 
 export async function hashPassword(password: string): Promise<string> {

@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { seedDemoData } from "./demo-seed";
 
-// GolTrack uses Node's built-in `node:sqlite` module instead of an ORM.
+// Jogo uses Node's built-in `node:sqlite` module instead of an ORM.
 // Why: this sandbox's network policy blocks Prisma's engine-binary CDN, and
 // node:sqlite ships with Node 22+ with zero native/network dependencies —
 // which also makes it trivial to run anywhere without a build step.
@@ -23,11 +23,11 @@ function resolveDbPath(): string {
 
 declare global {
   // eslint-disable-next-line no-var
-  var __goltrackDb: DatabaseSync | undefined;
+  var __jogoDb: DatabaseSync | undefined;
 }
 
 function getDb(): DatabaseSync {
-  if (global.__goltrackDb) return global.__goltrackDb;
+  if (global.__jogoDb) return global.__jogoDb;
   const dbPath = resolveDbPath();
   const database = new DatabaseSync(dbPath);
   database.exec("PRAGMA foreign_keys = ON;");
@@ -40,7 +40,7 @@ function getDb(): DatabaseSync {
   database.exec(schema);
   runMigrations(database);
   seedDemoData(database);
-  global.__goltrackDb = database;
+  global.__jogoDb = database;
   return database;
 }
 

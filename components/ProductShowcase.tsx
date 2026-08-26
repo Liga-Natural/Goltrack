@@ -130,7 +130,7 @@ export function ProductShowcase({
           A look inside the console
         </span>
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
-          What you get when you run a tournament on GolTrack
+          What you get when you run a tournament on Jogo
         </h1>
         <p className="text-black/60 max-w-xl mx-auto">
           Every screen below is built from a real tournament (Coastal Cup) — this is exactly what you and your teams
@@ -157,7 +157,7 @@ export function ProductShowcase({
         <div className="mx-auto max-w-3xl px-4 sm:px-6 py-16 text-center">
           <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Ready to run your own tournament?</h2>
           <p className="text-black/50 mb-8">
-            GolTrack is a paid product built for organizers who are done juggling spreadsheets and group chats.
+            Jogo is a paid product built for organizers who are done juggling spreadsheets and group chats.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link href="/signup" className="btn-primary text-base px-6 py-3">

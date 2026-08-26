@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GolTrack — Soccer & Futsal Tournament Software",
+  title: "Jogo — Soccer & Futsal Tournament Software",
   description: "Organize, run, and grow soccer and futsal tournaments: registration, scheduling, brackets, live scores, and digital player passports.",
 };
 

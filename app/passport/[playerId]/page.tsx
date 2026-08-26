@@ -42,7 +42,7 @@ export default async function PassportPage({ params }: { params: { playerId: str
         <div className="rounded-2xl border border-black/10 shadow-card overflow-hidden">
           <div className="bg-navy-900 text-white p-5 flex items-center justify-between">
             <div>
-              <p className="text-xs uppercase tracking-wide text-white/40">GolTrack Passport</p>
+              <p className="text-xs uppercase tracking-wide text-white/40">Jogo Passport</p>
               <h1 className="text-xl font-semibold mt-0.5">{player.name}</h1>
               <p className="text-sm text-white/50">
                 {team.name} {player.jerseyNumber && `· #${player.jerseyNumber}`}

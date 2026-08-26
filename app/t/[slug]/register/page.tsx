@@ -23,7 +23,7 @@ export default function RegisterPage() {
       <div className="mx-auto max-w-2xl px-4 sm:px-6 py-10">
         <h1 className="text-2xl font-semibold mb-1">Register your team</h1>
         <p className="text-black/50 mb-6 text-sm">
-          Add your roster now — each player gets a digital GolTrack Passport with a QR code for fast check-in on
+          Add your roster now — each player gets a digital Jogo Passport with a QR code for fast check-in on
           match day.
         </p>
 

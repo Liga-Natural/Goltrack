@@ -100,7 +100,7 @@ export default function Home() {
               </span>
             </h1>
             <p className="mt-7 text-lg text-black/60 max-w-lg">
-              GolTrack is the all-in-one platform to organize, run, and grow tournaments — registration, scheduling,
+              Jogo is the all-in-one platform to organize, run, and grow tournaments — registration, scheduling,
               brackets, live scores, and digital player passports in one place.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-3">
@@ -195,7 +195,7 @@ export default function Home() {
             <span className="absolute inset-0 rounded-2xl bg-pitch-400/20 blur-lg" />
             <LogoMark className="relative h-16 w-16" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Ready to run your next event on GolTrack?</h2>
+          <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Ready to run your next event on Jogo?</h2>
           <p className="text-black/50 mb-8 max-w-xl mx-auto">
             Set up a tournament, open registration, and have a full bracket ready before your first team even checks in.
           </p>
@@ -219,7 +219,7 @@ export default function Home() {
               Get in touch
             </Link>
           </nav>
-          <p className="text-black/30">© {new Date().getFullYear()} GolTrack. Built for organizers, players, and families.</p>
+          <p className="text-black/30">© {new Date().getFullYear()} Jogo. Built for organizers, players, and families.</p>
         </div>
       </footer>
     </main>

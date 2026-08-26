@@ -4,7 +4,7 @@ import { jwtVerify } from "jose";
 const secretKey = new TextEncoder().encode(process.env.SESSION_SECRET || "dev-only-secret-change-me-32chars");
 
 export async function middleware(req: NextRequest) {
-  const token = req.cookies.get("goltrack_session")?.value;
+  const token = req.cookies.get("jogo_session")?.value;
   let valid = false;
   if (token) {
     try {

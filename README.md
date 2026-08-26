@@ -1,12 +1,12 @@
-# GolTrack
+# Jogo
 
 Soccer & futsal tournament management software, in the spirit of KopaPlay: registration and payments, auto-balanced scheduling, brackets, live scoring, referee management, on-site check-in, and a QR digital player passport.
 
-The name blends *gol* (Spanish for "goal") with "Track" — it tracks live scores, standings, and brackets in real time, which is literally what the platform does.
+*Jogo* — Portuguese for "game" — sport-neutral and short, which matters since the platform isn't soccer-only under the hood (Soccer, Futsal, Basketball, Flag Football are all first-class sports today).
 
 ## Demo login
 
-- Organizer dashboard: `/login` — **demo@goltrack.app** / **demo1234** (pre-filled on the login page)
+- Organizer dashboard: `/login` — **demo@jogo.app** / **demo1234** (pre-filled on the login page)
 - Public tournament page: `/t/coastal-cup`
 - Try a player passport from the Teams tab in the dashboard (each player has a "passport →" link)
 
@@ -42,7 +42,7 @@ To create a real (non-demo) organizer account: `npm run create-admin -- you@exam
 
 ## Known limitations / next steps for production
 
-1. **Serverless persistence.** SQLite on a serverless platform (Vercel and similar) only has a writable, *ephemeral* `/tmp` — it resets on cold starts and isn't shared across instances. `lib/demo-seed.ts` recreates the demo tournament from scratch on every cold start so the public demo and `demo@goltrack.app` login always work, but any *real* organizer data (teams, rosters, payments) entered against a live deployment can vanish on the next cold start. For a real pilot with paying teams you'll want a hosted database (Postgres via Neon/Supabase/Vercel Postgres, or hosted libSQL/Turso) — swap `lib/db.ts` for a client against that instead; `lib/models.ts` is the only other file that touches SQL.
+1. **Serverless persistence.** SQLite on a serverless platform (Vercel and similar) only has a writable, *ephemeral* `/tmp` — it resets on cold starts and isn't shared across instances. `lib/demo-seed.ts` recreates the demo tournament from scratch on every cold start so the public demo and `demo@jogo.app` login always work, but any *real* organizer data (teams, rosters, payments) entered against a live deployment can vanish on the next cold start. For a real pilot with paying teams you'll want a hosted database (Postgres via Neon/Supabase/Vercel Postgres, or hosted libSQL/Turso) — swap `lib/db.ts` for a client against that instead; `lib/models.ts` is the only other file that touches SQL.
 2. **Real payments.** Stripe (or another processor) needs to be wired in for real fee collection — see the note above.
 3. **Player stats.** Passports currently show matches played/won for the player's team, not individual goal-scorer stats — add a `Goal` model + scorer entry in the score form to go further.
 4. **Notifications.** No email/SMS is sent on registration, payment, or schedule changes yet.
@@ -50,4 +50,4 @@ To create a real (non-demo) organizer account: `npm run create-admin -- you@exam
 
 ## Trademark note
 
-"GolTrack" is an original name generated for this project — it has not been trademark-cleared. Do a proper search (USPTO + domain availability) before using it commercially, especially given the South Florida target market.
+"Jogo" is an original name generated for this project — it has not been trademark-cleared. Do a proper search (USPTO + domain availability) before using it commercially, especially given the South Florida target market. Note also that the GitHub repo (`Liga-Natural/Goltrack`) and the linked Vercel project still carry the old "Goltrack" name — renaming those is a platform-settings action, not a code change, and hasn't been done here.

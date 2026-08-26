@@ -7,7 +7,7 @@ import { Logo } from "@/components/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("demo@goltrack.app");
+  const [email, setEmail] = useState("demo@jogo.app");
   const [password, setPassword] = useState("demo1234");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -59,7 +59,7 @@ export default function LoginPage() {
             </button>
           </form>
           <p className="text-sm text-black/50 mt-6 text-center">
-            New to GolTrack?{" "}
+            New to Jogo?{" "}
             <Link href="/signup" className="text-pitch-600 font-semibold hover:underline">
               Create an account
             </Link>

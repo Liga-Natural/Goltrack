@@ -22,7 +22,7 @@ const formats = [
   {
     title: "Futsal / indoor",
     icon: IconWhistle,
-    body: "Shorter rosters, tighter schedules, indoor courts — GolTrack's scheduling adapts field counts and slot lengths to fit.",
+    body: "Shorter rosters, tighter schedules, indoor courts — Jogo's scheduling adapts field counts and slot lengths to fit.",
   },
 ];
 
@@ -47,7 +47,7 @@ export default function InquirePage() {
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-8 text-center">
         <span className="badge bg-pitch-400/10 text-pitch-600 border border-pitch-400/20 mb-5">No account needed</span>
-        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">Not sure GolTrack fits your event?</h1>
+        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">Not sure Jogo fits your event?</h1>
         <p className="text-black/60 mt-3 max-w-xl mx-auto">
           Browse the formats we support below, or just send us a note about what you&apos;re planning — no sign-up required
           either way.
@@ -85,7 +85,7 @@ export default function InquirePage() {
       <footer className="border-t border-black/5">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-black/30">
           <Logo className="text-sm" markClassName="h-5 w-5" />
-          <p>© {new Date().getFullYear()} GolTrack. Built for organizers, players, and families.</p>
+          <p>© {new Date().getFullYear()} Jogo. Built for organizers, players, and families.</p>
         </div>
       </footer>
     </main>
