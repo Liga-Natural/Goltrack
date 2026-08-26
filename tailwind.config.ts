@@ -18,13 +18,13 @@ const config: Config = {
         // as part of this identity, so a live badge and a primary button
         // read as one consistent brand color instead of two different reds.
         pitch: {
-          50: "#fdecee",
-          100: "#f8c6cb",
-          400: "#E4162A",
-          500: "#C81020",
-          600: "#A80D1A",
-          700: "#8C0B15",
-          900: "#430509",
+          50: "#fef0f1",
+          100: "#fbd2d5",
+          400: "#F2545C",
+          500: "#E23A43",
+          600: "#C22D35",
+          700: "#A12329",
+          900: "#4D0F12",
         },
         navy: {
           50: "#f2f2f2",
@@ -35,8 +35,8 @@ const config: Config = {
           900: "#121212",
         },
         volt: {
-          400: "#E4162A",
-          500: "#C81020",
+          400: "#F2545C",
+          500: "#E23A43",
         },
         soccer: {
           50: "#e6faf1",
@@ -74,7 +74,7 @@ const config: Config = {
       },
       boxShadow: {
         card: "0 1px 2px rgba(10,15,26,0.04), 0 8px 24px -8px rgba(10,15,26,0.12)",
-        glow: "0 0 60px -10px rgba(228,22,42,0.35)",
+        glow: "0 0 60px -10px rgba(242,84,92,0.35)",
       },
       keyframes: {
         "fade-up": {
