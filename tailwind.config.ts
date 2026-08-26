@@ -10,21 +10,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // "pitch" is the general brand accent — "Sideline Red". Kept the
-        // name (rather than renaming every call site) since its role
-        // hasn't changed: primary buttons, links, general CTAs. "volt"
-        // (LIVE-status indicators) is deliberately the same red family now
-        // — the earlier "red is reserved for live only" split was retired
-        // as part of this identity, so a live badge and a primary button
-        // read as one consistent brand color instead of two different reds.
+        // "pitch" is the general brand accent, chosen by whoever runs the
+        // site from /dashboard/settings (defaults to "Sideline Red",
+        // #F2545C). Every shade below reads from a CSS variable — set at
+        // request time in app/layout.tsx from the saved color in
+        // SiteSettings, via lib/colorRamp.ts — rather than a fixed hex, so
+        // picking a new color in Settings doesn't require a rebuild.
+        // "volt" (LIVE-status indicators) intentionally tracks the same
+        // variables: the earlier "red is reserved for live only" split was
+        // retired as part of the Jogo identity, so a live badge and a
+        // primary button always read as one consistent brand color.
         pitch: {
-          50: "#fef0f1",
-          100: "#fbd2d5",
-          400: "#F2545C",
-          500: "#E23A43",
-          600: "#C22D35",
-          700: "#A12329",
-          900: "#4D0F12",
+          50: "rgb(var(--pitch-50) / <alpha-value>)",
+          100: "rgb(var(--pitch-100) / <alpha-value>)",
+          400: "rgb(var(--pitch-400) / <alpha-value>)",
+          500: "rgb(var(--pitch-500) / <alpha-value>)",
+          600: "rgb(var(--pitch-600) / <alpha-value>)",
+          700: "rgb(var(--pitch-700) / <alpha-value>)",
+          900: "rgb(var(--pitch-900) / <alpha-value>)",
         },
         navy: {
           50: "#f2f2f2",
@@ -35,8 +38,8 @@ const config: Config = {
           900: "#121212",
         },
         volt: {
-          400: "#F2545C",
-          500: "#E23A43",
+          400: "rgb(var(--pitch-400) / <alpha-value>)",
+          500: "rgb(var(--pitch-500) / <alpha-value>)",
         },
         soccer: {
           50: "#e6faf1",
@@ -74,7 +77,7 @@ const config: Config = {
       },
       boxShadow: {
         card: "0 1px 2px rgba(10,15,26,0.04), 0 8px 24px -8px rgba(10,15,26,0.12)",
-        glow: "0 0 60px -10px rgba(242,84,92,0.35)",
+        glow: "0 0 60px -10px rgb(var(--pitch-400) / 0.35)",
       },
       keyframes: {
         "fade-up": {

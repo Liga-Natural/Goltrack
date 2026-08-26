@@ -101,3 +101,13 @@ CREATE TABLE IF NOT EXISTS inquiries (
   message TEXT NOT NULL,
   createdAt TEXT NOT NULL
 );
+
+-- Single-row site-wide settings (the brand accent color chosen from
+-- /dashboard/settings). A brand-new table, so plain CREATE TABLE IF NOT
+-- EXISTS is safe here even on an already-live database — no ALTER TABLE
+-- migration needed the way an added column would require.
+CREATE TABLE IF NOT EXISTS site_settings (
+  id TEXT PRIMARY KEY,
+  accentColor TEXT NOT NULL DEFAULT '#F2545C',
+  updatedAt TEXT NOT NULL
+);

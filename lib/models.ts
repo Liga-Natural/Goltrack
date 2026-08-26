@@ -384,6 +384,40 @@ export const Matches = {
   },
 };
 
+// ---------- Site settings ----------
+// Single-row, site-wide brand settings (currently just the accent color
+// picked from /dashboard/settings). "singleton" is a fixed id — there is
+// only ever one row.
+
+const SITE_SETTINGS_ID = "singleton";
+const DEFAULT_ACCENT_COLOR = "#F2545C";
+
+export const SiteSettings = {
+  // Called from the root layout, so it runs on every single page render —
+  // unlike every other model method here, it must never throw. A transient
+  // SQLITE_BUSY (e.g. many routes' build-time page-data collection opening
+  // the DB concurrently) would otherwise take down an entire route's build
+  // over what's ultimately just a cosmetic color, so this falls back to the
+  // default instead of propagating the error.
+  getAccentColor(): string {
+    try {
+      const row = get<{ accentColor: string }>(`SELECT accentColor FROM site_settings WHERE id = $id`, {
+        $id: SITE_SETTINGS_ID,
+      } as any);
+      return row?.accentColor || DEFAULT_ACCENT_COLOR;
+    } catch {
+      return DEFAULT_ACCENT_COLOR;
+    }
+  },
+  setAccentColor(hex: string) {
+    run(
+      `INSERT INTO site_settings (id, accentColor, updatedAt) VALUES ($id,$accentColor,$updatedAt)
+       ON CONFLICT(id) DO UPDATE SET accentColor = excluded.accentColor, updatedAt = excluded.updatedAt`,
+      { $id: SITE_SETTINGS_ID, $accentColor: hex, $updatedAt: nowIso() } as any
+    );
+  },
+};
+
 // ---------- Referees ----------
 
 export const Referees = {

@@ -10,6 +10,7 @@ import {
   Matches,
   Referees,
   CheckIns,
+  SiteSettings,
   slugify,
   Format,
 } from "@/lib/models";
@@ -17,6 +18,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { generateGroupStage, generateRoundRobinOnly, generateKnockoutBracket } from "@/lib/bracket";
 import { computeStandings, groupNames } from "@/lib/standings";
 import { getSportTheme } from "@/lib/sportTheme";
+import { isValidHex } from "@/lib/colorRamp";
 
 // Crest uploads are validated by sniffing the file's actual bytes rather
 // than trusting the browser-supplied Content-Type (which is easy to spoof
@@ -339,6 +341,20 @@ export async function setTournamentStatus(tournamentId: string, status: "DRAFT" 
   await requireOwnedTournament(tournamentId);
   Tournaments.updateStatus(tournamentId, status);
   revalidatePath(`/dashboard/tournaments/${tournamentId}`);
+}
+
+// The site accent color is a global, not per-tournament, setting — gated
+// behind being logged in (like the rest of /dashboard) rather than any
+// particular tournament ownership, since it applies to the whole product.
+export async function updateSiteAccentColor(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Not authenticated");
+  const hex = String(formData.get("accentColor") || "").trim();
+  if (!isValidHex(hex)) throw new Error("Enter a color as a 6-digit hex code, e.g. #F2545C");
+  SiteSettings.setAccentColor(hex);
+  // The accent color reaches every route, not just one tournament's pages,
+  // so revalidate the whole tree rather than a single path.
+  revalidatePath("/", "layout");
 }
 
 // ---------- Public actions (registration + demo payment) ----------

@@ -16,6 +16,7 @@ import {
   IconArrowLeft,
   IconMenu,
   IconX,
+  IconPalette,
 } from "./icons";
 
 const tournamentNav = [
@@ -79,6 +80,13 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
             label="New tournament"
             icon={IconPlus}
             active={pathname === "/dashboard/tournaments/new"}
+            onNavigate={() => setOpen(false)}
+          />
+          <NavItem
+            href="/dashboard/settings"
+            label="Branding"
+            icon={IconPalette}
+            active={pathname === "/dashboard/settings"}
             onNavigate={() => setOpen(false)}
           />
         </>

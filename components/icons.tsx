@@ -141,3 +141,14 @@ export function IconQr({ className = base }: IconProps) {
     </svg>
   );
 }
+
+export function IconPalette({ className = base }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1 .8-1.9 1.9-1.9H16a4 4 0 0 0 4-4c0-4.4-3.6-7.5-8-7.5Z" />
+      <circle cx="7.5" cy="11" r="1.2" fill="currentColor" stroke="none" />
+      <circle cx="10.5" cy="7" r="1.2" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="8" r="1.2" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}

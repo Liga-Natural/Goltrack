@@ -32,10 +32,13 @@ function getDb(): DatabaseSync {
   const database = new DatabaseSync(dbPath);
   database.exec("PRAGMA foreign_keys = ON;");
   // Next's build step imports every route module (each opening this same file)
-  // concurrently from separate workers; WAL + a busy timeout keep that from
-  // failing with "database is locked" instead of just waiting its turn.
+  // concurrently from separate workers — and since the root layout now reads
+  // SiteSettings on every route too, that's every route's build-time page-data
+  // collection touching the DB, not just the ones that already did. WAL + a
+  // busy timeout keep that from failing with "database is locked" instead of
+  // just waiting its turn.
   database.exec("PRAGMA journal_mode = WAL;");
-  database.exec("PRAGMA busy_timeout = 5000;");
+  database.exec("PRAGMA busy_timeout = 8000;");
   const schema = fs.readFileSync(path.join(process.cwd(), "lib", "schema.sql"), "utf-8");
   database.exec(schema);
   runMigrations(database);
