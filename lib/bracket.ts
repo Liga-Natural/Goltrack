@@ -67,9 +67,10 @@ function roundRobinPairs(teamIds: (string | null)[]): [string | null, string | n
 
 export function generateGroupStage(
   teams: Team[],
-  opts: { groupsCount: number; fieldsCount: number; startTime: Date; slotMinutes?: number }
+  opts: { groupsCount: number; fieldsCount: number; startTime: Date; slotMinutes?: number; surfaceWord?: string }
 ): GeneratedMatch[] {
   const slotMinutes = opts.slotMinutes ?? 45;
+  const surfaceWord = opts.surfaceWord ?? "Field";
   const groups = assignGroups(teams, Math.max(1, opts.groupsCount));
   const matches: GeneratedMatch[] = [];
   let orderIndex = 0;
@@ -94,7 +95,7 @@ export function generateGroupStage(
       if (!round) continue;
       for (const [home, away] of round) {
         if (home === null || away === null) continue; // bye
-        const field = `Field ${((fieldCursor % fields) + 1)}`;
+        const field = `${surfaceWord} ${((fieldCursor % fields) + 1)}`;
         const scheduledAt = new Date(opts.startTime.getTime() + slotCursor * slotMinutes * 60000);
         matches.push({
           stage: "GROUP",
@@ -119,7 +120,7 @@ export function generateGroupStage(
 
 export function generateRoundRobinOnly(
   teams: Team[],
-  opts: { fieldsCount: number; startTime: Date; slotMinutes?: number }
+  opts: { fieldsCount: number; startTime: Date; slotMinutes?: number; surfaceWord?: string }
 ): GeneratedMatch[] {
   return generateGroupStage(teams, { ...opts, groupsCount: 1 }).map((m) => ({ ...m, groupName: null, round: m.round.replace(/^Group A - /, "") }));
 }

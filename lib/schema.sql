@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS teams (
   contactName TEXT NOT NULL,
   contactEmail TEXT NOT NULL,
   groupName TEXT,
+  logoUrl TEXT,
   paid INTEGER NOT NULL DEFAULT 0,
   checkedIn INTEGER NOT NULL DEFAULT 0,
   inviteToken TEXT UNIQUE,

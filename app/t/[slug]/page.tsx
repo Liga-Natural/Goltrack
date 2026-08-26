@@ -8,6 +8,7 @@ import { MatchStatusBadge } from "@/components/MatchStatusBadge";
 import { Logo } from "@/components/Logo";
 import { PitchPattern } from "@/components/PitchPattern";
 import { CourtPattern } from "@/components/CourtPattern";
+import { TeamCard } from "@/components/TeamCard";
 import { getSportTheme } from "@/lib/sportTheme";
 
 export const revalidate = 5;
@@ -30,10 +31,12 @@ export default async function PublicTournamentPage({
   const groups = groupNames(teams);
   const liveMatches = matches.filter((m) => m.status === "LIVE");
   const theme = getSportTheme(tournament.sport);
-  const Pattern = tournament.sport === "Futsal" ? CourtPattern : PitchPattern;
+  const Pattern = tournament.sport === "Futsal" || tournament.sport === "Basketball" ? CourtPattern : PitchPattern;
 
   const motmPlayerIds = Array.from(new Set(matches.map((m) => m.motmPlayerId).filter(Boolean))) as string[];
   const motmPlayers = new Map(motmPlayerIds.map((id) => [id, Players.byId(id)]));
+  const overallStandings = computeStandings(teams, matches);
+  const standingByTeamId = new Map(overallStandings.map((r) => [r.team.id, r]));
 
   return (
     <main className="min-h-screen">
@@ -54,7 +57,10 @@ export default async function PublicTournamentPage({
       </header>
 
       <div className="relative overflow-hidden">
-        <Pattern className="absolute -z-10 h-[360px] w-[360px] text-black/[0.04] -right-16 -top-16" />
+        <Pattern
+          className="absolute -z-10 h-[360px] w-[360px] -right-16 -top-16"
+          style={{ color: theme.hex, opacity: 0.07 }}
+        />
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
           {searchParams.paid && (
             <div className="mb-6 rounded-xl bg-pitch-400/10 border border-pitch-400/30 text-pitch-600 px-4 py-3 text-sm">
@@ -65,7 +71,7 @@ export default async function PublicTournamentPage({
           <div className="mb-8">
             <div className="flex items-center gap-2.5 mb-1.5">
               <h1 className="text-3xl font-semibold">{tournament.name}</h1>
-              <span className="badge bg-black/10 text-black/70">
+              <span className={`badge ${theme.soft}`}>
                 {theme.emoji} {theme.label}
               </span>
             </div>
@@ -101,18 +107,17 @@ export default async function PublicTournamentPage({
           )}
 
           {teams.length > 0 && (
-            <section className="card p-6 mb-8">
+            <section className="mb-8">
               <h2 className="font-semibold mb-4">Teams</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {teams.map((t) => (
-                  <Link
+                  <TeamCard
                     key={t.id}
+                    team={t}
+                    sport={tournament.sport}
                     href={`/t/${tournament.slug}/teams/${t.id}`}
-                    className="rounded-lg border border-black/10 bg-gray-50 px-3 py-2.5 text-sm hover:border-pitch-400/40 transition-colors flex items-center justify-between"
-                  >
-                    <span className="font-medium">{t.name}</span>
-                    {t.groupName && <span className="text-black/30 text-xs">Group {t.groupName}</span>}
-                  </Link>
+                    standing={standingByTeamId.get(t.id)}
+                  />
                 ))}
               </div>
             </section>

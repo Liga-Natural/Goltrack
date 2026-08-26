@@ -16,6 +16,7 @@ import {
 import { getCurrentUser } from "@/lib/auth";
 import { generateGroupStage, generateRoundRobinOnly, generateKnockoutBracket } from "@/lib/bracket";
 import { computeStandings, groupNames } from "@/lib/standings";
+import { getSportTheme } from "@/lib/sportTheme";
 
 async function requireOwnedTournament(tournamentId: string) {
   const user = await getCurrentUser();
@@ -83,8 +84,9 @@ export async function addTeam(tournamentId: string, formData: FormData) {
   const name = String(formData.get("name") || "").trim();
   const contactName = String(formData.get("contactName") || "").trim();
   const contactEmail = String(formData.get("contactEmail") || "").trim();
+  const logoUrl = String(formData.get("logoUrl") || "").trim() || null;
   if (!name || !contactName || !contactEmail) throw new Error("All team fields are required");
-  Teams.create({ tournamentId: tournament.id, name, contactName, contactEmail });
+  Teams.create({ tournamentId: tournament.id, name, contactName, contactEmail, logoUrl });
   revalidatePath(`/dashboard/tournaments/${tournamentId}/teams`);
 }
 
@@ -164,15 +166,17 @@ export async function generateSchedule(tournamentId: string) {
   Matches.deleteByTournament(tournamentId);
 
   const startTime = new Date(tournament.startDate);
+  const surfaceWord = getSportTheme(tournament.sport).surfaceWord;
   let generated;
   if (tournament.format === "ROUND_ROBIN") {
-    generated = generateRoundRobinOnly(teams, { fieldsCount: tournament.fieldsCount, startTime });
+    generated = generateRoundRobinOnly(teams, { fieldsCount: tournament.fieldsCount, startTime, surfaceWord });
     teams.forEach((t) => Teams.setGroup(t.id, null));
   } else {
     generated = generateGroupStage(teams, {
       groupsCount: tournament.groupsCount,
       fieldsCount: tournament.fieldsCount,
       startTime,
+      surfaceWord,
     });
     // Persist group assignments back onto the teams.
     const byId = new Map(teams.map((t) => [t.id, t]));
@@ -232,7 +236,7 @@ export async function generateKnockout(tournamentId: string) {
 
   if (qualifiers.length < 2) throw new Error("Not enough teams with completed group results yet");
 
-  const generated = generateKnockoutBracket(qualifiers, new Date(tournament.endDate));
+  const generated = generateKnockoutBracket(qualifiers, new Date(tournament.endDate), `${getSportTheme(tournament.sport).surfaceWord} 1`);
   for (const m of generated) {
     Matches.create({
       tournamentId,
@@ -277,9 +281,10 @@ export async function registerTeamPublic(slug: string, formData: FormData) {
   const name = String(formData.get("name") || "").trim();
   const contactName = String(formData.get("contactName") || "").trim();
   const contactEmail = String(formData.get("contactEmail") || "").trim();
+  const logoUrl = String(formData.get("logoUrl") || "").trim() || null;
   if (!name || !contactName || !contactEmail) throw new Error("All team fields are required");
 
-  const team = Teams.create({ tournamentId: tournament.id, name, contactName, contactEmail });
+  const team = Teams.create({ tournamentId: tournament.id, name, contactName, contactEmail, logoUrl });
 
   const playerNames = formData.getAll("playerName") as string[];
   const playerJerseys = formData.getAll("playerJersey") as string[];
@@ -301,9 +306,10 @@ export async function claimTeamInvite(token: string, formData: FormData) {
   const name = String(formData.get("name") || "").trim();
   const contactName = String(formData.get("contactName") || "").trim();
   const contactEmail = String(formData.get("contactEmail") || "").trim();
+  const logoUrl = String(formData.get("logoUrl") || "").trim() || null;
   if (!name || !contactName || !contactEmail) throw new Error("All team fields are required");
 
-  const claimed = Teams.claimInvite(team.id, { name, contactName, contactEmail });
+  const claimed = Teams.claimInvite(team.id, { name, contactName, contactEmail, logoUrl });
   if (!claimed) throw new Error("Could not claim this invite");
 
   const playerNames = formData.getAll("playerName") as string[];

@@ -4,6 +4,8 @@ import { Tournaments, Teams, Players, Matches } from "@/lib/models";
 import { computeStandings } from "@/lib/standings";
 import { MatchStatusBadge } from "@/components/MatchStatusBadge";
 import { Logo } from "@/components/Logo";
+import { TeamBadge } from "@/components/TeamBadge";
+import { getSportTheme } from "@/lib/sportTheme";
 
 export const revalidate = 5;
 
@@ -35,12 +37,18 @@ export default async function PublicTeamPage({ params }: { params: { slug: strin
       </header>
 
       <div className="mx-auto max-w-4xl px-4 sm:px-6 py-10">
-        <div className="mb-8">
-          <h1 className="text-3xl font-semibold">{team.name}</h1>
-          <p className="text-black/50 mt-1">
-            {tournament.name}
-            {team.groupName ? ` · Group ${team.groupName}` : ""} · Captain {team.contactName}
-          </p>
+        <div className="mb-8 flex items-center gap-4">
+          <TeamBadge name={team.name} logoUrl={team.logoUrl} sport={tournament.sport} size="lg" />
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-3xl font-semibold">{team.name}</h1>
+              <span className={`badge ${getSportTheme(tournament.sport).soft}`}>{getSportTheme(tournament.sport).emoji}</span>
+            </div>
+            <p className="text-black/50 mt-1">
+              {tournament.name}
+              {team.groupName ? ` · Group ${team.groupName}` : ""} · Captain {team.contactName}
+            </p>
+          </div>
         </div>
 
         {standingsRow && (

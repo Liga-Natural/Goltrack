@@ -1,6 +1,7 @@
 import { Tournaments, Teams, Players } from "@/lib/models";
 import { addTeam, addPlayer, removeTeam, setTeamPaid, createTeamInvite } from "@/lib/actions";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
+import { TeamBadge } from "@/components/TeamBadge";
 
 export default async function TeamsPage({ params }: { params: { id: string } }) {
   const tournament = Tournaments.byId(params.id)!;
@@ -26,11 +27,14 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
             return (
               <div key={team.id} className="card p-5">
                 <div className="flex items-start justify-between gap-3 mb-3">
-                  <div>
-                    <h3 className="font-semibold">
-                      {team.name} {team.groupName && <span className="text-black/40 font-normal text-sm">· Group {team.groupName}</span>}
-                    </h3>
-                    <p className="text-sm text-black/40">{team.contactName} · {team.contactEmail}</p>
+                  <div className="flex items-center gap-3">
+                    <TeamBadge name={team.name} logoUrl={team.logoUrl} sport={tournament.sport} />
+                    <div>
+                      <h3 className="font-semibold">
+                        {team.name} {team.groupName && <span className="text-black/40 font-normal text-sm">· Group {team.groupName}</span>}
+                      </h3>
+                      <p className="text-sm text-black/40">{team.contactName} · {team.contactEmail}</p>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <form action={team.paid ? setPaidFalse : setPaidTrue}>
@@ -118,6 +122,11 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
               <div>
                 <label className="label">Contact email</label>
                 <input className="input" type="email" name="contactEmail" required />
+              </div>
+              <div>
+                <label className="label">Logo image URL (optional)</label>
+                <input className="input" type="url" name="logoUrl" placeholder="https://..." />
+                <p className="text-xs text-black/30 mt-1">No image host yet — paste a link to one. Left blank, we show colored initials.</p>
               </div>
               <button className="btn-primary w-full">Add team</button>
             </form>

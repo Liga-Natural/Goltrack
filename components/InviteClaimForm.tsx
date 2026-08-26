@@ -24,6 +24,12 @@ export function InviteClaimForm({ token }: { token: string }) {
       </div>
 
       <div>
+        <label className="label">Team logo URL (optional)</label>
+        <input className="input" type="url" name="logoUrl" placeholder="https://..." />
+        <p className="text-xs text-black/30 mt-1">Left blank, your team shows up with colored initials instead.</p>
+      </div>
+
+      <div>
         <div className="flex items-center justify-between mb-2">
           <label className="label mb-0">Roster</label>
           <button

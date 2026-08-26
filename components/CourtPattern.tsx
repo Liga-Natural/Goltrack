@@ -1,11 +1,12 @@
 // Indoor futsal court markings — deliberately distinct from PitchPattern's
 // outdoor goal boxes so soccer and futsal tournaments read as different
 // sports at a glance, not just a relabeled template.
-export function CourtPattern({ className = "" }: { className?: string }) {
+export function CourtPattern({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <svg
       viewBox="0 0 400 400"
       className={className}
+      style={style}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.2"

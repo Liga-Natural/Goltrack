@@ -3,6 +3,7 @@ import { Logo, LogoMark } from "@/components/Logo";
 import { PitchPattern } from "@/components/PitchPattern";
 import { LiveScoreCard } from "@/components/LiveScoreCard";
 import { IconClipboard, IconCalendar, IconBracket, IconPulse, IconWhistle, IconQr } from "@/components/icons";
+import { SPORTS, SPORT_NAMES } from "@/lib/sportTheme";
 
 const features = [
   {
@@ -74,11 +75,12 @@ export default function Home() {
 
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-20 sm:pt-20 sm:pb-28 grid lg:grid-cols-[1.15fr_1fr] gap-12 items-center">
           <div className="max-w-2xl animate-fade-up">
-            <div className="flex items-center gap-2 mb-6 text-pitch-600">
-              <span className="h-1.5 w-1.5 rounded-sm bg-pitch-400" />
-              <span className="text-xs font-semibold uppercase tracking-[0.2em]">
-                Soccer · Futsal · Basketball · Flag football
-              </span>
+            <div className="flex flex-wrap items-center gap-1.5 mb-6">
+              {SPORT_NAMES.map((s) => (
+                <span key={s} className={`badge ${SPORTS[s].soft} text-[11px]`}>
+                  {SPORTS[s].emoji} {SPORTS[s].label}
+                </span>
+              ))}
             </div>
             <h1 className="font-display text-[2.75rem] leading-[0.98] sm:text-6xl lg:text-[4.5rem] tracking-tight text-black">
               RUN YOUR

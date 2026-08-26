@@ -45,6 +45,7 @@ export interface Team {
   contactName: string;
   contactEmail: string;
   groupName: string | null;
+  logoUrl: string | null;
   paid: number; // 0/1
   checkedIn: number; // 0/1
   inviteToken: string | null; // set while the slot is an unclaimed invite link, cleared on claim
@@ -163,9 +164,10 @@ function generateInviteToken(): string {
 
 export const Teams = {
   create(
-    input: Omit<Team, "id" | "createdAt" | "paid" | "checkedIn" | "groupName" | "inviteToken" | "invitedAt"> & {
+    input: Omit<Team, "id" | "createdAt" | "paid" | "checkedIn" | "groupName" | "logoUrl" | "inviteToken" | "invitedAt"> & {
       paid?: boolean;
       groupName?: string | null;
+      logoUrl?: string | null;
     }
   ): Team {
     const t: Team = {
@@ -175,6 +177,7 @@ export const Teams = {
       contactName: input.contactName,
       contactEmail: input.contactEmail,
       groupName: input.groupName ?? null,
+      logoUrl: input.logoUrl ?? null,
       paid: input.paid ? 1 : 0,
       checkedIn: 0,
       inviteToken: null,
@@ -182,8 +185,8 @@ export const Teams = {
       createdAt: nowIso(),
     };
     run(
-      `INSERT INTO teams (id, tournamentId, name, contactName, contactEmail, groupName, paid, checkedIn, inviteToken, invitedAt, createdAt)
-       VALUES ($id,$tournamentId,$name,$contactName,$contactEmail,$groupName,$paid,$checkedIn,$inviteToken,$invitedAt,$createdAt)`,
+      `INSERT INTO teams (id, tournamentId, name, contactName, contactEmail, groupName, logoUrl, paid, checkedIn, inviteToken, invitedAt, createdAt)
+       VALUES ($id,$tournamentId,$name,$contactName,$contactEmail,$groupName,$logoUrl,$paid,$checkedIn,$inviteToken,$invitedAt,$createdAt)`,
       t as any
     );
     return t;
@@ -201,6 +204,7 @@ export const Teams = {
       contactName: "",
       contactEmail: "",
       groupName: null,
+      logoUrl: null,
       paid: 0,
       checkedIn: 0,
       inviteToken: token,
@@ -208,8 +212,8 @@ export const Teams = {
       createdAt: nowIso(),
     };
     run(
-      `INSERT INTO teams (id, tournamentId, name, contactName, contactEmail, groupName, paid, checkedIn, inviteToken, invitedAt, createdAt)
-       VALUES ($id,$tournamentId,$name,$contactName,$contactEmail,$groupName,$paid,$checkedIn,$inviteToken,$invitedAt,$createdAt)`,
+      `INSERT INTO teams (id, tournamentId, name, contactName, contactEmail, groupName, logoUrl, paid, checkedIn, inviteToken, invitedAt, createdAt)
+       VALUES ($id,$tournamentId,$name,$contactName,$contactEmail,$groupName,$logoUrl,$paid,$checkedIn,$inviteToken,$invitedAt,$createdAt)`,
       t as any
     );
     return t;
@@ -225,10 +229,16 @@ export const Teams = {
   },
   // Fills in an invited slot's details and clears the token so the link
   // can't be claimed a second time.
-  claimInvite(id: string, input: { name: string; contactName: string; contactEmail: string }): Team | undefined {
+  claimInvite(id: string, input: { name: string; contactName: string; contactEmail: string; logoUrl?: string | null }): Team | undefined {
     run(
-      `UPDATE teams SET name=$name, contactName=$contactName, contactEmail=$contactEmail, inviteToken=NULL WHERE id=$id`,
-      { $id: id, $name: input.name, $contactName: input.contactName, $contactEmail: input.contactEmail } as any
+      `UPDATE teams SET name=$name, contactName=$contactName, contactEmail=$contactEmail, logoUrl=$logoUrl, inviteToken=NULL WHERE id=$id`,
+      {
+        $id: id,
+        $name: input.name,
+        $contactName: input.contactName,
+        $contactEmail: input.contactEmail,
+        $logoUrl: input.logoUrl ?? null,
+      } as any
     );
     return Teams.byId(id);
   },

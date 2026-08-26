@@ -42,17 +42,22 @@ export default async function DashboardHome() {
               <Link
                 key={t.id}
                 href={`/dashboard/tournaments/${t.id}`}
-                className="card p-5 hover:border-pitch-400/30 hover:-translate-y-0.5 transition-all"
+                className="card relative overflow-hidden p-5 hover:-translate-y-0.5 hover:shadow-lg transition-all"
               >
-                <div className="flex items-start justify-between mb-3 gap-2">
+                <div className={`absolute top-0 left-0 right-0 h-1.5 ${theme.dot}`} />
+                <div className="flex items-start justify-between mb-3 gap-2 mt-1">
                   <h2 className="font-semibold">{t.name}</h2>
                   <span className={`badge shrink-0 ${statusColors[t.status]}`}>{t.status.replace("_", " ")}</span>
                 </div>
-                <p className="text-sm text-black/50">
-                  {theme.emoji} {t.sport} · {t.teamFormat} ·{" "}
-                  {t.format === "ROUND_ROBIN" ? "Round robin" : "Groups + knockout"}
-                </p>
-                <p className="text-sm text-black/40 mt-1">{new Date(t.startDate).toLocaleDateString()}</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`badge ${theme.soft}`}>
+                    {theme.emoji} {t.sport} {t.teamFormat}
+                  </span>
+                  <span className="text-xs text-black/40">
+                    {t.format === "ROUND_ROBIN" ? "Round robin" : "Groups + knockout"}
+                  </span>
+                </div>
+                <p className="text-sm text-black/40">{new Date(t.startDate).toLocaleDateString()}</p>
                 {t.location && <p className="text-sm text-black/40">{t.location}</p>}
               </Link>
             );

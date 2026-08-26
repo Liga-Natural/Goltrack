@@ -17,7 +17,7 @@ export function TournamentHeader({ tournament }: { tournament: Tournament }) {
       <div>
         <div className="flex items-center gap-2.5 mb-1.5">
           <h1 className="text-2xl font-semibold">{tournament.name}</h1>
-          <span className="badge bg-black/10 text-black/70">
+          <span className={`badge ${theme.soft}`}>
             {theme.emoji} {theme.label} {tournament.teamFormat}
           </span>
           <span className={`badge ${statusColors[tournament.status]}`}>{tournament.status.replace("_", " ")}</span>

@@ -1,8 +1,9 @@
-export function PitchPattern({ className = "" }: { className?: string }) {
+export function PitchPattern({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <svg
       viewBox="0 0 400 400"
       className={className}
+      style={style}
       fill="none"
       stroke="currentColor"
       strokeWidth="1.2"

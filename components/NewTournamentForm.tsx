@@ -36,7 +36,7 @@ export function NewTournamentForm() {
         </div>
       </Section>
 
-      <Section n="02" title="Sport & format" hint="The roster size and pitch/court graphics adapt to what you pick here.">
+      <Section n="02" title="Sport & format" hint="The roster size, court/field graphics, and color tag adapt to what you pick here.">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="label">Sport</label>
@@ -58,6 +58,11 @@ export function NewTournamentForm() {
               ))}
             </select>
           </div>
+        </div>
+        <div className="mt-3 flex items-center gap-2">
+          <span className={`badge ${SPORTS[sport]?.soft}`}>
+            {SPORTS[sport]?.emoji} This tournament will be tagged {SPORTS[sport]?.label.toLowerCase()}
+          </span>
         </div>
         <div className="mt-4">
           <label className="label">Bracket structure</label>
@@ -85,7 +90,7 @@ export function NewTournamentForm() {
             <input className="input" type="number" min={0} step="0.01" name="fee" defaultValue={150} />
           </div>
           <div>
-            <label className="label"># Fields</label>
+            <label className="label"># {SPORTS[sport]?.surfaceWord}s</label>
             <input className="input" type="number" min={1} name="fieldsCount" defaultValue={2} />
           </div>
           <div>

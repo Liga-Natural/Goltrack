@@ -1,20 +1,14 @@
 import Link from "next/link";
 import { Tournaments, Teams } from "@/lib/models";
 import { Logo } from "@/components/Logo";
-import { getSportTheme } from "@/lib/sportTheme";
+import { TournamentsGrid } from "@/components/TournamentsGrid";
 
 export const revalidate = 30;
 
-const statusColors: Record<string, string> = {
-  DRAFT: "bg-black/10 text-black/60",
-  REGISTRATION_OPEN: "bg-pitch-400/15 text-pitch-600",
-  SCHEDULED: "bg-black/10 text-black/70",
-  LIVE: "bg-volt-400/20 text-volt-500",
-  COMPLETED: "bg-black/10 text-black/40",
-};
-
 export default function TournamentsHubPage() {
   const tournaments = Tournaments.listPublic();
+  const teamCounts: Record<string, number> = {};
+  for (const t of tournaments) teamCounts[t.id] = Teams.listByTournament(t.id).filter((tm) => tm.name).length;
 
   return (
     <main className="min-h-screen">
@@ -38,32 +32,7 @@ export default function TournamentsHubPage() {
         {tournaments.length === 0 ? (
           <div className="card p-10 text-center text-black/50">No public tournaments yet — check back soon.</div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {tournaments.map((t) => {
-              const theme = getSportTheme(t.sport);
-              const teamCount = Teams.listByTournament(t.id).filter((tm) => tm.name).length;
-              return (
-                <Link
-                  key={t.id}
-                  href={`/t/${t.slug}`}
-                  className="card p-5 hover:border-pitch-400/30 hover:-translate-y-1 transition-all duration-300"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="badge bg-black/10 text-black/70">
-                      {theme.emoji} {theme.label}
-                    </span>
-                    <span className={`badge ${statusColors[t.status]}`}>{t.status.replace("_", " ")}</span>
-                  </div>
-                  <h3 className="font-semibold text-black mb-1.5">{t.name}</h3>
-                  <p className="text-sm text-black/50 mb-3">
-                    {new Date(t.startDate).toLocaleDateString()}
-                    {t.location ? ` · ${t.location}` : ""}
-                  </p>
-                  <p className="text-xs text-black/40">{teamCount} team{teamCount === 1 ? "" : "s"} registered</p>
-                </Link>
-              );
-            })}
-          </div>
+          <TournamentsGrid tournaments={tournaments} teamCounts={teamCounts} />
         )}
       </section>
 
