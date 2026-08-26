@@ -10,17 +10,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // "pitch" is the general brand accent — signal coral. Kept the name
-        // (rather than renaming every call site) since its role hasn't
-        // changed: primary buttons, links, general CTAs.
+        // "pitch" is the general brand accent — "Sideline Red". Kept the
+        // name (rather than renaming every call site) since its role
+        // hasn't changed: primary buttons, links, general CTAs. "volt"
+        // (LIVE-status indicators) is deliberately the same red family now
+        // — the earlier "red is reserved for live only" split was retired
+        // as part of this identity, so a live badge and a primary button
+        // read as one consistent brand color instead of two different reds.
         pitch: {
-          50: "#fff1ee",
-          100: "#ffd9ce",
-          400: "#FF5A36",
-          500: "#F5431D",
-          600: "#D93613",
-          700: "#B32D10",
-          900: "#5C1708",
+          50: "#fdecee",
+          100: "#f8c6cb",
+          400: "#E4162A",
+          500: "#C81020",
+          600: "#A80D1A",
+          700: "#8C0B15",
+          900: "#430509",
         },
         navy: {
           50: "#f2f2f2",
@@ -28,13 +32,11 @@ const config: Config = {
           600: "#242424",
           700: "#1a1a1a",
           800: "#141414",
-          900: "#0a0a0a",
+          900: "#121212",
         },
-        // "volt" is reserved for LIVE-status indicators only — never a sport
-        // color, so it can't collide with the sport palette below.
         volt: {
-          400: "#FF3B30",
-          500: "#E0281D",
+          400: "#E4162A",
+          500: "#C81020",
         },
         soccer: {
           50: "#e6faf1",
@@ -62,12 +64,17 @@ const config: Config = {
         },
       },
       fontFamily: {
+        // Archivo Black carries every piece of lettering site-wide now —
+        // headings and body alike — as part of the Sideline Red identity.
         display: ["'Archivo Black'", "system-ui", "sans-serif"],
-        body: ["'Inter'", "system-ui", "sans-serif"],
+        body: ["'Archivo Black'", "system-ui", "sans-serif"],
+        // Scoped to the wordmark only (Logo.tsx) — the rest of the site
+        // stays in Archivo Black above.
+        logo: ["'Unbounded'", "system-ui", "sans-serif"],
       },
       boxShadow: {
         card: "0 1px 2px rgba(10,15,26,0.04), 0 8px 24px -8px rgba(10,15,26,0.12)",
-        glow: "0 0 60px -10px rgba(255,90,54,0.35)",
+        glow: "0 0 60px -10px rgba(228,22,42,0.35)",
       },
       keyframes: {
         "fade-up": {
