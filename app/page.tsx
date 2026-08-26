@@ -46,7 +46,7 @@ const steps = [
 export default function Home() {
   return (
     <main className="min-h-screen overflow-x-clip">
-      <header className="border-b border-white/5 sticky top-0 z-20 bg-navy-900/80 backdrop-blur">
+      <header className="border-b border-black/10 sticky top-0 z-20 bg-white/85 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4 flex items-center justify-between">
           <Logo />
           <nav className="flex items-center gap-1 sm:gap-2">
@@ -70,27 +70,25 @@ export default function Home() {
       </header>
 
       <section className="relative">
-        <div className="glow-blob -top-24 -left-32 h-80 w-80 bg-pitch-400/20 animate-drift" />
-        <div className="glow-blob top-32 right-0 h-72 w-72 bg-volt-400/10 animate-drift-slow" />
-        <PitchPattern className="pointer-events-none absolute -z-10 h-[560px] w-[560px] text-white/[0.035] -right-40 -top-24" />
+        <PitchPattern className="pointer-events-none absolute -z-10 h-[560px] w-[560px] text-black/[0.04] -right-40 -top-24" />
 
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-20 sm:pt-20 sm:pb-28 grid lg:grid-cols-[1.15fr_1fr] gap-12 items-center">
           <div className="max-w-2xl animate-fade-up">
-            <div className="flex items-center gap-2 mb-6 text-pitch-400">
+            <div className="flex items-center gap-2 mb-6 text-pitch-600">
               <span className="h-1.5 w-1.5 rounded-sm bg-pitch-400" />
               <span className="text-xs font-semibold uppercase tracking-[0.2em]">
                 Soccer · Futsal · Basketball · Flag football
               </span>
             </div>
-            <h1 className="font-display text-[2.75rem] leading-[0.98] sm:text-6xl lg:text-[4.5rem] tracking-tight text-white">
+            <h1 className="font-display text-[2.75rem] leading-[0.98] sm:text-6xl lg:text-[4.5rem] tracking-tight text-black">
               RUN YOUR
               <br />
               LEAGUE.
               <br />
-              <span className="relative inline-block text-pitch-400">
+              <span className="relative inline-block text-pitch-600">
                 OWN MATCH DAY.
                 <svg
-                  className="absolute left-0 -bottom-2 w-full h-3 text-pitch-400/50"
+                  className="absolute left-0 -bottom-2 w-full h-3 text-pitch-600/50"
                   viewBox="0 0 300 12"
                   preserveAspectRatio="none"
                   fill="none"
@@ -99,7 +97,7 @@ export default function Home() {
                 </svg>
               </span>
             </h1>
-            <p className="mt-7 text-lg text-white/60 max-w-lg">
+            <p className="mt-7 text-lg text-black/60 max-w-lg">
               GolTrack is the all-in-one platform to organize, run, and grow tournaments — registration, scheduling,
               brackets, live scores, and digital player passports in one place.
             </p>
@@ -111,13 +109,13 @@ export default function Home() {
                 See what you get →
               </Link>
             </div>
-            <p className="mt-5 text-sm text-white/40">
+            <p className="mt-5 text-sm text-black/40">
               No account needed —{" "}
-              <Link href="/tour" className="text-pitch-400 hover:underline">
+              <Link href="/tour" className="text-pitch-600 hover:underline">
                 browse the console
               </Link>{" "}
               or check out a{" "}
-              <Link href="/t/coastal-cup" className="text-pitch-400 hover:underline">
+              <Link href="/t/coastal-cup" className="text-pitch-600 hover:underline">
                 live tournament page
               </Link>
               .
@@ -127,30 +125,26 @@ export default function Home() {
           <div className="relative flex justify-center lg:justify-end lg:pr-6">
             <div className="w-full max-w-sm">
               <LiveScoreCard />
-              <div className="ticket-perforation mx-2" style={{ ["--ticket-punch-bg" as any]: "#0a0a0a" }} />
-              <p className="text-center text-[11px] uppercase tracking-[0.2em] text-white/25 pt-3">
+              <div className="ticket-perforation mx-2" style={{ ["--ticket-punch-bg" as any]: "#ffffff" }} />
+              <p className="text-center text-[11px] uppercase tracking-[0.2em] text-black/25 pt-3">
                 Real screen, real tournament — coastalcup/live
               </p>
             </div>
           </div>
         </div>
-
-        <svg className="block w-full text-navy-800/40" viewBox="0 0 1440 40" preserveAspectRatio="none" style={{ height: "40px" }}>
-          <path d="M0 40 L1440 8 L1440 40 Z" fill="currentColor" />
-        </svg>
       </section>
 
-      <section className="border-b border-white/5 bg-navy-800/40 relative overflow-hidden">
+      <section className="border-y-2 border-black bg-gray-50 relative overflow-hidden">
         <div className="grain-overlay" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
           <div className="flex items-end justify-between gap-6 mb-12 flex-wrap">
             <div>
-              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-pitch-400">The system</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-pitch-600">The system</span>
               <h2 className="text-2xl sm:text-3xl font-semibold mt-2 max-w-lg">
                 Everything organizers need, connected end to end
               </h2>
             </div>
-            <p className="text-white/50 max-w-sm text-sm">
+            <p className="text-black/50 max-w-sm text-sm">
               Registration feeds scheduling, scheduling feeds live scores, and live scores populate every player&apos;s
               passport — one system instead of five spreadsheets and a group chat.
             </p>
@@ -160,16 +154,16 @@ export default function Home() {
             {features.map((f, i) => (
               <div
                 key={f.title}
-                className="group flex items-start gap-5 py-6 border-t border-white/10 animate-fade-up"
+                className="group flex items-start gap-5 py-6 border-t border-black/10 animate-fade-up"
                 style={{ animationDelay: `${i * 60}ms` }}
               >
-                <span className="font-mono text-sm text-white/25 pt-0.5 shrink-0 w-6">{String(i + 1).padStart(2, "0")}</span>
+                <span className="font-mono text-sm text-black/25 pt-0.5 shrink-0 w-6">{String(i + 1).padStart(2, "0")}</span>
                 <div className="flex-1">
                   <div className="flex items-center gap-2.5 mb-1.5">
-                    <f.icon className="h-4 w-4 text-pitch-400 shrink-0" />
-                    <h3 className="font-semibold text-white">{f.title}</h3>
+                    <f.icon className="h-4 w-4 text-pitch-600 shrink-0" />
+                    <h3 className="font-semibold text-black">{f.title}</h3>
                   </div>
-                  <p className="text-sm text-white/50 leading-relaxed">{f.body}</p>
+                  <p className="text-sm text-black/50 leading-relaxed">{f.body}</p>
                 </div>
               </div>
             ))}
@@ -183,25 +177,24 @@ export default function Home() {
           <div className="hidden sm:block absolute top-6 left-[16.5%] right-[16.5%] h-px bg-gradient-to-r from-transparent via-pitch-400/30 to-transparent" />
           {steps.map((s) => (
             <div key={s.n} className="relative text-center sm:text-left">
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-navy-700 border border-pitch-400/30 text-pitch-400 font-display text-sm relative z-10">
+              <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-black text-white font-display text-sm relative z-10">
                 {s.n}
               </span>
-              <h3 className="font-semibold text-white mt-4 mb-1.5">{s.title}</h3>
-              <p className="text-sm text-white/50 leading-relaxed">{s.body}</p>
+              <h3 className="font-semibold text-black mt-4 mb-1.5">{s.title}</h3>
+              <p className="text-sm text-black/50 leading-relaxed">{s.body}</p>
             </div>
           ))}
         </div>
       </section>
 
       <section className="relative mx-auto max-w-6xl px-4 sm:px-6 py-20 text-center overflow-hidden">
-        <div className="glow-blob left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 bg-pitch-400/15 animate-drift" />
         <div className="relative">
           <div className="relative mx-auto mb-5 h-16 w-16">
             <span className="absolute inset-0 rounded-2xl bg-pitch-400/20 blur-lg" />
             <LogoMark className="relative h-16 w-16" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Ready to run your next event on GolTrack?</h2>
-          <p className="text-white/50 mb-8 max-w-xl mx-auto">
+          <p className="text-black/50 mb-8 max-w-xl mx-auto">
             Set up a tournament, open registration, and have a full bracket ready before your first team even checks in.
           </p>
           <Link href="/signup" className="btn-primary text-base px-6 py-3">
@@ -210,21 +203,21 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="border-t border-white/5">
+      <footer className="border-t border-black/5">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
           <Logo className="text-sm" markClassName="h-5 w-5" />
-          <nav className="flex items-center gap-5 text-white/40">
-            <Link href="/tournaments" className="hover:text-white/70">
+          <nav className="flex items-center gap-5 text-black/40">
+            <Link href="/tournaments" className="hover:text-black/70">
               Tournaments
             </Link>
-            <Link href="/tour" className="hover:text-white/70">
+            <Link href="/tour" className="hover:text-black/70">
               See how it works
             </Link>
-            <Link href="/inquire" className="hover:text-white/70">
+            <Link href="/inquire" className="hover:text-black/70">
               Get in touch
             </Link>
           </nav>
-          <p className="text-white/30">© {new Date().getFullYear()} GolTrack. Built for organizers, players, and families.</p>
+          <p className="text-black/30">© {new Date().getFullYear()} GolTrack. Built for organizers, players, and families.</p>
         </div>
       </footer>
     </main>

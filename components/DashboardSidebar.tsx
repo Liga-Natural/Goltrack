@@ -45,7 +45,7 @@ function NavItem({
       href={href}
       onClick={onNavigate}
       className={`group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-        active ? "bg-pitch-400/10 text-pitch-400" : "text-white/55 hover:text-white hover:bg-white/5"
+        active ? "bg-pitch-400/10 text-pitch-600" : "text-black/55 hover:text-black hover:bg-black/5"
       }`}
     >
       <span
@@ -89,12 +89,12 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
           <Link
             href="/dashboard"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-white/35 hover:text-white/60 transition-colors mb-1"
+            className="flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-black/35 hover:text-black/60 transition-colors mb-1"
           >
             <IconArrowLeft className="h-3.5 w-3.5" />
             All tournaments
           </Link>
-          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wide text-white/30">Managing</p>
+          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wide text-black/30">Managing</p>
           {tournamentNav.map((item) => {
             const href = `${base}${item.href}`;
             return (
@@ -115,14 +115,14 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
 
   return (
     <div className="lg:flex min-h-screen">
-      <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3.5 border-b border-white/5 bg-navy-900/90 backdrop-blur">
+      <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3.5 border-b border-black/10 bg-white/90 backdrop-blur">
         <Link href="/dashboard">
           <Logo markClassName="h-6 w-6" />
         </Link>
         <button
           onClick={() => setOpen(true)}
           aria-label="Open menu"
-          className="h-9 w-9 flex items-center justify-center rounded-lg border border-white/10 text-white/70 hover:text-white hover:bg-white/5"
+          className="h-9 w-9 flex items-center justify-center rounded-lg border border-black/10 text-black/70 hover:text-black hover:bg-black/5"
         >
           <IconMenu className="h-5 w-5" />
         </button>
@@ -131,18 +131,18 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
       {open && <div className="fixed inset-0 z-40 bg-black/60 lg:hidden" onClick={() => setOpen(false)} />}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-white/5 bg-navy-800 flex flex-col transition-transform duration-200 lg:static lg:z-auto lg:w-60 lg:shrink-0 lg:bg-navy-800/30 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-black/10 bg-white flex flex-col transition-transform duration-200 lg:static lg:z-auto lg:w-60 lg:shrink-0 lg:bg-gray-50 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="px-4 py-5 border-b border-white/5 flex items-center justify-between">
+        <div className="px-4 py-5 border-b border-black/5 flex items-center justify-between">
           <Link href="/dashboard" onClick={() => setOpen(false)}>
             <Logo markClassName="h-7 w-7" />
           </Link>
           <button
             onClick={() => setOpen(false)}
             aria-label="Close menu"
-            className="lg:hidden h-8 w-8 flex items-center justify-center rounded-lg text-white/50 hover:text-white"
+            className="lg:hidden h-8 w-8 flex items-center justify-center rounded-lg text-black/50 hover:text-black"
           >
             <IconX className="h-5 w-5" />
           </button>
@@ -150,8 +150,8 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
 
         {nav}
 
-        <div className="px-4 py-4 border-t border-white/5 flex items-center justify-between gap-2">
-          <span className="text-sm text-white/50 truncate">{userName}</span>
+        <div className="px-4 py-4 border-t border-black/5 flex items-center justify-between gap-2">
+          <span className="text-sm text-black/50 truncate">{userName}</span>
           <LogoutButton />
         </div>
       </aside>

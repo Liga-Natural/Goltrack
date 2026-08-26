@@ -7,7 +7,7 @@
     @apply scroll-smooth;
   }
   body {
-    @apply bg-navy-900 text-navy-50 font-body antialiased;
+    @apply bg-white text-black font-body antialiased;
   }
   h1, h2, h3, h4 {
     @apply font-display;
@@ -19,22 +19,22 @@
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-primary {
-    @apply btn bg-volt-400 text-white hover:bg-volt-500;
+    @apply btn bg-pitch-400 text-white hover:bg-pitch-500;
   }
   .btn-secondary {
-    @apply btn bg-navy-600 text-white hover:bg-navy-400 border border-white/10;
+    @apply btn bg-black text-white hover:bg-black/80;
   }
   .btn-ghost {
-    @apply btn bg-transparent text-white hover:bg-white/5 border border-white/10;
+    @apply btn bg-transparent text-black hover:bg-black/5 border border-black/15;
   }
   .card {
-    @apply rounded-2xl bg-navy-700/60 border border-white/5 shadow-card;
+    @apply rounded-2xl bg-white border border-black/10 shadow-card;
   }
   .input {
-    @apply w-full rounded-lg bg-navy-800 border border-white/10 px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-pitch-400;
+    @apply w-full rounded-lg bg-white border border-black/15 px-3 py-2 text-sm text-black placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-pitch-400;
   }
   .label {
-    @apply block text-xs font-semibold uppercase tracking-wide text-white/50 mb-1.5;
+    @apply block text-xs font-semibold uppercase tracking-wide text-black/50 mb-1.5;
   }
   .badge {
     @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
@@ -46,20 +46,12 @@
   color-scheme: light;
 }
 
-/* Soft ambient glow blobs used behind hero/CTA sections to add depth without imagery */
-.glow-blob {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(90px);
-  pointer-events: none;
-}
-
-/* Subtle grain overlay so flat dark sections don't look like a plain fill */
+/* Subtle top-rule accent so flat white sections don't look like a plain fill */
 .grain-overlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.05;
+  opacity: 0.025;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 }
 
@@ -68,7 +60,7 @@
    border — the one visual idea this design leans on hardest. */
 .ticket-perforation {
   position: relative;
-  border-top: 2px dashed rgba(255, 255, 255, 0.12);
+  border-top: 2px dashed rgba(0, 0, 0, 0.15);
 }
 .ticket-perforation::before,
 .ticket-perforation::after {
@@ -78,7 +70,7 @@
   width: 16px;
   height: 16px;
   border-radius: 9999px;
-  background: var(--ticket-punch-bg, #0a0a0a);
+  background: var(--ticket-punch-bg, #ffffff);
 }
 .ticket-perforation::before {
   left: -8px;

@@ -21,7 +21,7 @@ export function CheckInScanner({ tournamentId }: { tournamentId: string }) {
   return (
     <div className="card p-5">
       <h3 className="font-semibold mb-1">On-site check-in</h3>
-      <p className="text-sm text-white/50 mb-3">
+      <p className="text-sm text-black/50 mb-3">
         Scan a player&apos;s passport QR code (or type their passport ID) to verify eligibility and check them in.
       </p>
       <form onSubmit={submit} className="flex gap-2">
@@ -37,7 +37,7 @@ export function CheckInScanner({ tournamentId }: { tournamentId: string }) {
         </button>
       </form>
       {message && (
-        <p className={`text-sm mt-3 ${message.ok ? "text-pitch-400" : "text-red-400"}`}>{message.text}</p>
+        <p className={`text-sm mt-3 ${message.ok ? "text-pitch-500" : "text-red-600"}`}>{message.text}</p>
       )}
     </div>
   );

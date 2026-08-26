@@ -37,7 +37,7 @@ export default async function PublicTournamentPage({
 
   return (
     <main className="min-h-screen">
-      <header className="border-b border-white/5">
+      <header className="border-b border-black/5">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link href="/">
             <Logo />
@@ -54,10 +54,10 @@ export default async function PublicTournamentPage({
       </header>
 
       <div className="relative overflow-hidden">
-        <Pattern className="absolute -z-10 h-[360px] w-[360px] text-white/[0.04] -right-16 -top-16" />
+        <Pattern className="absolute -z-10 h-[360px] w-[360px] text-black/[0.04] -right-16 -top-16" />
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
           {searchParams.paid && (
-            <div className="mb-6 rounded-xl bg-pitch-400/10 border border-pitch-400/30 text-pitch-400 px-4 py-3 text-sm">
+            <div className="mb-6 rounded-xl bg-pitch-400/10 border border-pitch-400/30 text-pitch-600 px-4 py-3 text-sm">
               Registration received — you&apos;re all set. Bring your player passports (below) on match day for check-in.
             </div>
           )}
@@ -65,11 +65,11 @@ export default async function PublicTournamentPage({
           <div className="mb-8">
             <div className="flex items-center gap-2.5 mb-1.5">
               <h1 className="text-3xl font-semibold">{tournament.name}</h1>
-              <span className="badge bg-white/10 text-white/70">
+              <span className="badge bg-black/10 text-black/70">
                 {theme.emoji} {theme.label}
               </span>
             </div>
-            <p className="text-white/50 mt-1">
+            <p className="text-black/50 mt-1">
               {new Date(tournament.startDate).toLocaleDateString()} –{" "}
               {new Date(tournament.endDate).toLocaleDateString()}
               {tournament.location ? ` · ${tournament.location}` : ""}
@@ -78,7 +78,7 @@ export default async function PublicTournamentPage({
 
           {liveMatches.length > 0 && (
             <div className="card p-5 mb-8 border-volt-400/30">
-              <h2 className="font-semibold mb-3 flex items-center gap-2 text-volt-400">
+              <h2 className="font-semibold mb-3 flex items-center gap-2 text-volt-500">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-volt-400 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-volt-400" />
@@ -108,10 +108,10 @@ export default async function PublicTournamentPage({
                   <Link
                     key={t.id}
                     href={`/t/${tournament.slug}/teams/${t.id}`}
-                    className="rounded-lg border border-white/5 bg-navy-800/40 px-3 py-2.5 text-sm hover:border-pitch-400/30 transition-colors flex items-center justify-between"
+                    className="rounded-lg border border-black/10 bg-gray-50 px-3 py-2.5 text-sm hover:border-pitch-400/40 transition-colors flex items-center justify-between"
                   >
                     <span className="font-medium">{t.name}</span>
-                    {t.groupName && <span className="text-white/30 text-xs">Group {t.groupName}</span>}
+                    {t.groupName && <span className="text-black/30 text-xs">Group {t.groupName}</span>}
                   </Link>
                 ))}
               </div>
@@ -136,14 +136,14 @@ export default async function PublicTournamentPage({
                 {groupMatches.map((m) => {
                   const motm = m.motmPlayerId ? motmPlayers.get(m.motmPlayerId) : null;
                   return (
-                    <div key={m.id} className="border-b border-white/5 pb-2">
+                    <div key={m.id} className="border-b border-black/5 pb-2">
                       <div className="flex items-center justify-between text-sm">
                         <div>
-                          <span className="text-white/40 text-xs mr-2">{m.round}</span>
+                          <span className="text-black/40 text-xs mr-2">{m.round}</span>
                           {teamsById.get(m.homeTeamId || "")?.name} vs {teamsById.get(m.awayTeamId || "")?.name}
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="text-white/40 text-xs hidden sm:inline">{m.field}</span>
+                          <span className="text-black/40 text-xs hidden sm:inline">{m.field}</span>
                           <span className="font-mono">
                             {m.homeScore ?? "-"} : {m.awayScore ?? "-"}
                           </span>
@@ -151,8 +151,8 @@ export default async function PublicTournamentPage({
                         </div>
                       </div>
                       {motm && (
-                        <p className="text-xs text-white/40 mt-1">
-                          ⭐ Man of the match: <span className="text-white/60">{motm.name}</span>
+                        <p className="text-xs text-black/40 mt-1">
+                          ⭐ Man of the match: <span className="text-black/60">{motm.name}</span>
                         </p>
                       )}
                     </div>
@@ -170,7 +170,7 @@ export default async function PublicTournamentPage({
           )}
 
           {matches.length === 0 && (
-            <div className="card p-10 text-center text-white/50">Schedule hasn&apos;t been published yet — check back soon.</div>
+            <div className="card p-10 text-center text-black/50">Schedule hasn&apos;t been published yet — check back soon.</div>
           )}
         </div>
       </div>

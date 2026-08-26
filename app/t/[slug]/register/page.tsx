@@ -12,7 +12,7 @@ export default function RegisterPage() {
 
   return (
     <main className="min-h-screen">
-      <header className="border-b border-white/5">
+      <header className="border-b border-black/5">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 py-4">
           <Link href="/">
             <Logo />
@@ -22,7 +22,7 @@ export default function RegisterPage() {
 
       <div className="mx-auto max-w-2xl px-4 sm:px-6 py-10">
         <h1 className="text-2xl font-semibold mb-1">Register your team</h1>
-        <p className="text-white/50 mb-6 text-sm">
+        <p className="text-black/50 mb-6 text-sm">
           Add your roster now — each player gets a digital GolTrack Passport with a QR code for fast check-in on
           match day.
         </p>
@@ -48,7 +48,7 @@ export default function RegisterPage() {
               <label className="label mb-0">Roster</label>
               <button
                 type="button"
-                className="text-xs text-pitch-400 hover:underline"
+                className="text-xs text-pitch-600 hover:underline"
                 onClick={() => setPlayers((p) => [...p, p.length])}
               >
                 + Add player

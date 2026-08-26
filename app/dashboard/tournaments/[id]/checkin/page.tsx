@@ -21,12 +21,12 @@ export default async function CheckInPage({ params }: { params: { id: string } }
               <div key={team.id} className="card p-4 flex items-center justify-between gap-3">
                 <div>
                   <p className="font-medium">{team.name}</p>
-                  <p className="text-xs text-white/40">
+                  <p className="text-xs text-black/40">
                     {checkedCount}/{players.length} players passport-verified
                   </p>
                 </div>
                 <form action={setChecked}>
-                  <button className={`badge ${team.checkedIn ? "bg-pitch-400/15 text-pitch-400" : "bg-white/10 text-white/50"}`}>
+                  <button className={`badge ${team.checkedIn ? "bg-pitch-400/15 text-pitch-600" : "bg-black/10 text-black/50"}`}>
                     {team.checkedIn ? "Checked in ✓" : "Not checked in"}
                   </button>
                 </form>

@@ -28,7 +28,7 @@ export function InviteClaimForm({ token }: { token: string }) {
           <label className="label mb-0">Roster</label>
           <button
             type="button"
-            className="text-xs text-pitch-400 hover:underline"
+            className="text-xs text-pitch-600 hover:underline"
             onClick={() => setPlayers((p) => [...p, p.length])}
           >
             + Add player

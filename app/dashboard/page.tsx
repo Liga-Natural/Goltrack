@@ -4,11 +4,11 @@ import { Tournaments } from "@/lib/models";
 import { getSportTheme } from "@/lib/sportTheme";
 
 const statusColors: Record<string, string> = {
-  DRAFT: "bg-white/10 text-white/60",
-  REGISTRATION_OPEN: "bg-pitch-400/15 text-pitch-400",
-  SCHEDULED: "bg-blue-400/15 text-blue-300",
-  LIVE: "bg-volt-400/20 text-volt-400",
-  COMPLETED: "bg-white/10 text-white/40",
+  DRAFT: "bg-black/10 text-black/60",
+  REGISTRATION_OPEN: "bg-pitch-400/15 text-pitch-600",
+  SCHEDULED: "bg-black/10 text-black/70",
+  LIVE: "bg-volt-400/20 text-volt-500",
+  COMPLETED: "bg-black/10 text-black/40",
 };
 
 export default async function DashboardHome() {
@@ -20,7 +20,7 @@ export default async function DashboardHome() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-semibold">Your tournaments</h1>
-          <p className="text-white/50 text-sm mt-1">Create, schedule, and run your events.</p>
+          <p className="text-black/50 text-sm mt-1">Create, schedule, and run your events.</p>
         </div>
         <Link href="/dashboard/tournaments/new" className="btn-primary shrink-0 self-start sm:self-auto whitespace-nowrap">
           + New tournament
@@ -29,7 +29,7 @@ export default async function DashboardHome() {
 
       {tournaments.length === 0 ? (
         <div className="card p-10 text-center">
-          <p className="text-white/60 mb-4">You haven&apos;t created a tournament yet.</p>
+          <p className="text-black/60 mb-4">You haven&apos;t created a tournament yet.</p>
           <Link href="/dashboard/tournaments/new" className="btn-primary">
             Create your first tournament
           </Link>
@@ -48,12 +48,12 @@ export default async function DashboardHome() {
                   <h2 className="font-semibold">{t.name}</h2>
                   <span className={`badge shrink-0 ${statusColors[t.status]}`}>{t.status.replace("_", " ")}</span>
                 </div>
-                <p className="text-sm text-white/50">
+                <p className="text-sm text-black/50">
                   {theme.emoji} {t.sport} · {t.teamFormat} ·{" "}
                   {t.format === "ROUND_ROBIN" ? "Round robin" : "Groups + knockout"}
                 </p>
-                <p className="text-sm text-white/40 mt-1">{new Date(t.startDate).toLocaleDateString()}</p>
-                {t.location && <p className="text-sm text-white/40">{t.location}</p>}
+                <p className="text-sm text-black/40 mt-1">{new Date(t.startDate).toLocaleDateString()}</p>
+                {t.location && <p className="text-sm text-black/40">{t.location}</p>}
               </Link>
             );
           })}

@@ -14,13 +14,13 @@ export default async function RefereesPage({ params }: { params: { id: string } 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-2">
           <h2 className="font-semibold mb-2">Assign referees to matches</h2>
-          {matches.length === 0 && <p className="text-white/50 text-sm">Generate a schedule first.</p>}
+          {matches.length === 0 && <p className="text-black/50 text-sm">Generate a schedule first.</p>}
           {matches.map((m) => {
             const assign = assignReferee.bind(null, tournament.id, m.id);
             return (
               <div key={m.id} className="card p-4 flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs text-white/40">{m.round} · {m.field}</p>
+                  <p className="text-xs text-black/40">{m.round} · {m.field}</p>
                   <p className="text-sm font-medium">
                     {teamsById.get(m.homeTeamId || "")?.name || m.homeLabel || "TBD"} vs{" "}
                     {teamsById.get(m.awayTeamId || "")?.name || m.awayLabel || "TBD"}
@@ -51,11 +51,11 @@ export default async function RefereesPage({ params }: { params: { id: string } 
             <h3 className="font-semibold mb-3">Referees</h3>
             <div className="space-y-1.5 mb-4">
               {referees.map((r) => (
-                <div key={r.id} className="text-sm text-white/60 border-b border-white/5 pb-1">
-                  {r.name} {r.contact && <span className="text-white/30">· {r.contact}</span>}
+                <div key={r.id} className="text-sm text-black/60 border-b border-black/5 pb-1">
+                  {r.name} {r.contact && <span className="text-black/30">· {r.contact}</span>}
                 </div>
               ))}
-              {referees.length === 0 && <p className="text-xs text-white/30">No referees added yet.</p>}
+              {referees.length === 0 && <p className="text-xs text-black/30">No referees added yet.</p>}
             </div>
             <form action={addRefereeWithId} className="space-y-3">
               <div>

@@ -39,7 +39,7 @@ export function ProductShowcase({
             ["Entry fee", `$${(tournament.feeCents / 100).toFixed(0)}`],
           ].map(([label, value]) => (
             <div key={label as string} className="card p-3.5">
-              <p className="text-[10px] uppercase tracking-wide text-white/40 mb-1">{label}</p>
+              <p className="text-[10px] uppercase tracking-wide text-black/40 mb-1">{label}</p>
               <p className="text-xl font-semibold">{value}</p>
             </div>
           ))}
@@ -56,9 +56,9 @@ export function ProductShowcase({
             <div key={t.id} className="card p-3.5 flex items-center justify-between">
               <div>
                 <p className="font-medium text-sm">{t.name}</p>
-                <p className="text-xs text-white/40">{(playersByTeam[t.id] || []).length} players</p>
+                <p className="text-xs text-black/40">{(playersByTeam[t.id] || []).length} players</p>
               </div>
-              <span className={`badge ${t.paid ? "bg-pitch-400/15 text-pitch-400" : "bg-white/10 text-white/50"}`}>
+              <span className={`badge ${t.paid ? "bg-pitch-400/15 text-pitch-600" : "bg-black/10 text-black/50"}`}>
                 {t.paid ? "Paid ✓" : "Unpaid"}
               </span>
             </div>
@@ -81,7 +81,7 @@ export function ProductShowcase({
           {groupMatches.slice(0, 3).map((m) => (
             <div key={m.id} className="card p-3 flex items-center justify-between gap-2 text-sm">
               <span className="truncate min-w-0">
-                {teamsById.get(m.homeTeamId || "")?.name} <span className="text-white/30">vs</span>{" "}
+                {teamsById.get(m.homeTeamId || "")?.name} <span className="text-black/30">vs</span>{" "}
                 {teamsById.get(m.awayTeamId || "")?.name}
               </span>
               <div className="flex items-center gap-2 shrink-0">
@@ -104,7 +104,7 @@ export function ProductShowcase({
           {referees.slice(0, 3).map((r) => (
             <div key={r.id} className="card p-3 text-sm">
               <span className="font-medium">{r.name}</span>
-              {r.contact && <span className="text-white/40"> · {r.contact}</span>}
+              {r.contact && <span className="text-black/40"> · {r.contact}</span>}
             </div>
           ))}
         </div>
@@ -116,8 +116,8 @@ export function ProductShowcase({
       body: "Scan each player's digital passport on match day — rosters get verified in seconds instead of a clipboard and a Sharpie.",
       preview: (
         <div className="card p-4 text-center">
-          <p className="text-sm text-white/50">Passport scanned</p>
-          <p className="font-semibold text-pitch-400 mt-1">✓ Checked in</p>
+          <p className="text-sm text-black/50">Passport scanned</p>
+          <p className="font-semibold text-pitch-600 mt-1">✓ Checked in</p>
         </div>
       ),
     },
@@ -126,13 +126,13 @@ export function ProductShowcase({
   return (
     <main className="min-h-screen">
       <section className="mx-auto max-w-5xl px-4 sm:px-6 pt-16 pb-8 text-center">
-        <span className="badge bg-pitch-400/10 text-pitch-400 border border-pitch-400/20 mb-5">
+        <span className="badge bg-pitch-400/10 text-pitch-600 border border-pitch-400/20 mb-5">
           A look inside the console
         </span>
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
           What you get when you run a tournament on GolTrack
         </h1>
-        <p className="text-white/60 max-w-xl mx-auto">
+        <p className="text-black/60 max-w-xl mx-auto">
           Every screen below is built from a real tournament (Coastal Cup) — this is exactly what you and your teams
           will see, not a mockup.
         </p>
@@ -142,21 +142,21 @@ export function ProductShowcase({
         {sections.map((s, i) => (
           <div key={s.title} className={`grid lg:grid-cols-2 gap-10 items-center ${i % 2 === 1 ? "lg:[direction:rtl]" : ""}`}>
             <div className="lg:[direction:ltr]">
-              <div className="h-10 w-10 rounded-lg bg-pitch-400/10 text-pitch-400 flex items-center justify-center mb-4">
+              <div className="h-10 w-10 rounded-lg bg-pitch-400/10 text-pitch-600 flex items-center justify-center mb-4">
                 <s.icon className="h-5 w-5" />
               </div>
               <h2 className="text-xl font-semibold mb-2">{s.title}</h2>
-              <p className="text-white/55 leading-relaxed">{s.body}</p>
+              <p className="text-black/55 leading-relaxed">{s.body}</p>
             </div>
             <div className="lg:[direction:ltr]">{s.preview}</div>
           </div>
         ))}
       </section>
 
-      <section className="border-t border-white/5">
+      <section className="border-t border-black/5">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 py-16 text-center">
           <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Ready to run your own tournament?</h2>
-          <p className="text-white/50 mb-8">
+          <p className="text-black/50 mb-8">
             GolTrack is a paid product built for organizers who are done juggling spreadsheets and group chats.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">

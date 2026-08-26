@@ -51,7 +51,7 @@ export function ScoreForm({
         value={home}
         onChange={(e) => setHome(Number(e.target.value))}
       />
-      <span className="text-white/30">-</span>
+      <span className="text-black/30">-</span>
       <input
         type="number"
         min={0}

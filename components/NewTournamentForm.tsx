@@ -6,12 +6,12 @@ import { SPORTS, SPORT_NAMES } from "@/lib/sportTheme";
 
 function Section({ n, title, hint, children }: { n: string; title: string; hint?: string; children: React.ReactNode }) {
   return (
-    <div className="border-t border-white/5 pt-6 first:border-t-0 first:pt-0">
+    <div className="border-t border-black/5 pt-6 first:border-t-0 first:pt-0">
       <div className="flex items-baseline gap-2.5 mb-4">
-        <span className="font-mono text-xs text-pitch-400/70">{n}</span>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-white/70">{title}</h2>
+        <span className="font-mono text-xs text-pitch-600/70">{n}</span>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-black/70">{title}</h2>
       </div>
-      {hint && <p className="text-xs text-white/40 -mt-2.5 mb-4">{hint}</p>}
+      {hint && <p className="text-xs text-black/40 -mt-2.5 mb-4">{hint}</p>}
       {children}
     </div>
   );

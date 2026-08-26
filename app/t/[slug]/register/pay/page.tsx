@@ -21,7 +21,7 @@ export default function PayPage({
 
   return (
     <main className="min-h-screen">
-      <header className="border-b border-white/5">
+      <header className="border-b border-black/5">
         <div className="mx-auto max-w-xl px-4 sm:px-6 py-4">
           <Link href="/">
             <Logo />
@@ -31,22 +31,22 @@ export default function PayPage({
 
       <div className="mx-auto max-w-xl px-4 sm:px-6 py-10">
         <h1 className="text-2xl font-semibold mb-1">Almost there — pay the entry fee</h1>
-        <p className="text-white/50 mb-6 text-sm">
+        <p className="text-black/50 mb-6 text-sm">
           {team.name} · {players.length} players registered
         </p>
 
         <div className="card p-6">
-          <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
-            <span className="text-white/60">Tournament entry fee</span>
+          <div className="flex items-center justify-between border-b border-black/10 pb-4 mb-4">
+            <span className="text-black/60">Tournament entry fee</span>
             <span className="text-2xl font-semibold">${(tournament.feeCents / 100).toFixed(2)}</span>
           </div>
 
           {stripeConfigured ? (
-            <p className="text-sm text-white/50 mb-4">You&apos;ll be redirected to a secure Stripe checkout.</p>
+            <p className="text-sm text-black/50 mb-4">You&apos;ll be redirected to a secure Stripe checkout.</p>
           ) : (
-            <p className="text-sm text-white/40 mb-4">
+            <p className="text-sm text-black/40 mb-4">
               Demo mode: no payment processor is connected yet, so this simulates a successful payment. Add a{" "}
-              <code className="text-white/60">STRIPE_SECRET_KEY</code> to go live with real payments.
+              <code className="text-black/60">STRIPE_SECRET_KEY</code> to go live with real payments.
             </p>
           )}
 

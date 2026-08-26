@@ -41,7 +41,7 @@ export default function LoginPage() {
         </div>
         <div className="card p-6">
           <h1 className="text-lg font-semibold mb-1">Welcome back</h1>
-          <p className="text-sm text-white/50 mb-6">
+          <p className="text-sm text-black/50 mb-6">
             Demo login is pre-filled — just hit log in.
           </p>
           <form onSubmit={onSubmit} className="space-y-4">
@@ -53,14 +53,14 @@ export default function LoginPage() {
               <label className="label">Password</label>
               <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {error && <p className="text-sm text-red-600">{error}</p>}
             <button className="btn-primary w-full" disabled={loading}>
               {loading ? "Logging in..." : "Log in"}
             </button>
           </form>
-          <p className="text-sm text-white/50 mt-6 text-center">
+          <p className="text-sm text-black/50 mt-6 text-center">
             New to GolTrack?{" "}
-            <Link href="/signup" className="text-pitch-400 font-semibold hover:underline">
+            <Link href="/signup" className="text-pitch-600 font-semibold hover:underline">
               Create an account
             </Link>
           </p>

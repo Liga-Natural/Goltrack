@@ -11,7 +11,7 @@ export default function TourPage() {
   const tournament = Tournaments.bySlug("coastal-cup");
   if (!tournament) {
     return (
-      <main className="min-h-screen flex items-center justify-center text-white/50">
+      <main className="min-h-screen flex items-center justify-center text-black/50">
         Demo tournament not seeded yet — refresh in a moment.
       </main>
     );

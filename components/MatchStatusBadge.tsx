@@ -1,8 +1,8 @@
 export function MatchStatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    SCHEDULED: "bg-white/10 text-white/50",
-    LIVE: "bg-volt-400/20 text-volt-400",
-    FINAL: "bg-pitch-400/15 text-pitch-400",
+    SCHEDULED: "bg-black/10 text-black/50",
+    LIVE: "bg-volt-400/20 text-volt-500",
+    FINAL: "bg-pitch-400/15 text-pitch-600",
   };
   if (status === "LIVE") {
     return (

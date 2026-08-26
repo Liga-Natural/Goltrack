@@ -15,7 +15,7 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           {teams.length === 0 && pendingInvites.length === 0 && (
-            <p className="text-white/50">No teams yet — add one, generate an invite link, or share the registration link.</p>
+            <p className="text-black/50">No teams yet — add one, generate an invite link, or share the registration link.</p>
           )}
           {teams.map((team) => {
             const players = Players.listByTeam(team.id);
@@ -28,39 +28,39 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
                     <h3 className="font-semibold">
-                      {team.name} {team.groupName && <span className="text-white/40 font-normal text-sm">· Group {team.groupName}</span>}
+                      {team.name} {team.groupName && <span className="text-black/40 font-normal text-sm">· Group {team.groupName}</span>}
                     </h3>
-                    <p className="text-sm text-white/40">{team.contactName} · {team.contactEmail}</p>
+                    <p className="text-sm text-black/40">{team.contactName} · {team.contactEmail}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <form action={team.paid ? setPaidFalse : setPaidTrue}>
-                      <button className={`badge ${team.paid ? "bg-pitch-400/15 text-pitch-400" : "bg-white/10 text-white/50"}`}>
+                      <button className={`badge ${team.paid ? "bg-pitch-400/15 text-pitch-600" : "bg-black/10 text-black/50"}`}>
                         {team.paid ? "Paid ✓" : "Unpaid"}
                       </button>
                     </form>
                     <form action={removeTeamWithIds}>
-                      <button className="text-xs text-white/30 hover:text-red-400">Remove</button>
+                      <button className="text-xs text-black/30 hover:text-red-600">Remove</button>
                     </form>
                   </div>
                 </div>
 
                 <div className="space-y-1.5 mb-3">
                   {players.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between text-sm text-white/60 border-b border-white/5 pb-1">
+                    <div key={p.id} className="flex items-center justify-between text-sm text-black/60 border-b border-black/5 pb-1">
                       <span>
-                        {p.jerseyNumber && <span className="text-white/30 mr-2">#{p.jerseyNumber}</span>}
+                        {p.jerseyNumber && <span className="text-black/30 mr-2">#{p.jerseyNumber}</span>}
                         {p.name}
                       </span>
                       <a
                         href={`/passport/${p.id}`}
                         target="_blank"
-                        className="text-white/30 hover:text-pitch-400 text-xs underline decoration-dotted"
+                        className="text-black/30 hover:text-pitch-600 text-xs underline decoration-dotted"
                       >
                         passport →
                       </a>
                     </div>
                   ))}
-                  {players.length === 0 && <p className="text-xs text-white/30">No players added yet.</p>}
+                  {players.length === 0 && <p className="text-xs text-black/30">No players added yet.</p>}
                 </div>
 
                 <form action={addPlayerWithIds} className="flex gap-2">
@@ -81,21 +81,21 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
                 <button className="btn-secondary text-xs px-2.5 py-1.5">+ Generate</button>
               </form>
             </div>
-            <p className="text-xs text-white/40 mb-3">
+            <p className="text-xs text-black/40 mb-3">
               Each link is unique to one team and works once — like a gotsport-style invite. Send one per team you
               want to reserve a spot.
             </p>
             {pendingInvites.length === 0 ? (
-              <p className="text-xs text-white/30">No pending invites.</p>
+              <p className="text-xs text-black/30">No pending invites.</p>
             ) : (
               <div className="space-y-2">
                 {pendingInvites.map((invite) => (
-                  <div key={invite.id} className="flex items-center justify-between gap-2 bg-navy-800 rounded-lg px-2.5 py-2">
-                    <code className="text-xs text-pitch-400 truncate">…/invite/{invite.inviteToken}</code>
+                  <div key={invite.id} className="flex items-center justify-between gap-2 bg-gray-100 rounded-lg px-2.5 py-2">
+                    <code className="text-xs text-pitch-600 truncate">…/invite/{invite.inviteToken}</code>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <CopyLinkButton path={`/t/${tournament.slug}/invite/${invite.inviteToken}`} />
                       <form action={removeTeam.bind(null, tournament.id, invite.id)}>
-                        <button className="text-xs text-white/30 hover:text-red-400 px-1">✕</button>
+                        <button className="text-xs text-black/30 hover:text-red-600 px-1">✕</button>
                       </form>
                     </div>
                   </div>

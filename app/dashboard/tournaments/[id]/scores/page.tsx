@@ -14,18 +14,18 @@ export default async function ScoresPage({ params }: { params: { id: string } })
   return (
     <div>
       {matches.length === 0 ? (
-        <div className="card p-8 text-center text-white/50">Generate a schedule first from the Overview tab.</div>
+        <div className="card p-8 text-center text-black/50">Generate a schedule first from the Overview tab.</div>
       ) : (
         <div className="space-y-2">
           {matches.map((m) => (
             <div key={m.id} className="card p-4 flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-xs text-white/40 mb-0.5">
+                <p className="text-xs text-black/40 mb-0.5">
                   {m.round} · {m.field} {m.refereeId && refsById.has(m.refereeId) ? `· Ref: ${refsById.get(m.refereeId)!.name}` : ""}
                 </p>
                 <p className="font-medium">
                   {teamsById.get(m.homeTeamId || "")?.name || m.homeLabel || "TBD"}
-                  <span className="text-white/30 mx-2">vs</span>
+                  <span className="text-black/30 mx-2">vs</span>
                   {teamsById.get(m.awayTeamId || "")?.name || m.awayLabel || "TBD"}
                 </p>
               </div>

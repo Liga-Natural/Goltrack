@@ -42,7 +42,7 @@ export default function SignupPage() {
         </div>
         <div className="card p-6">
           <h1 className="text-lg font-semibold mb-1">Create your organizer account</h1>
-          <p className="text-sm text-white/50 mb-6">Start running tournaments in minutes.</p>
+          <p className="text-sm text-black/50 mb-6">Start running tournaments in minutes.</p>
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
               <label className="label">Full name</label>
@@ -62,16 +62,16 @@ export default function SignupPage() {
                 required
                 minLength={8}
               />
-              <p className="text-xs text-white/30 mt-1">At least 8 characters.</p>
+              <p className="text-xs text-black/30 mt-1">At least 8 characters.</p>
             </div>
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {error && <p className="text-sm text-red-600">{error}</p>}
             <button className="btn-primary w-full" disabled={loading}>
               {loading ? "Creating account..." : "Create account"}
             </button>
           </form>
-          <p className="text-sm text-white/50 mt-6 text-center">
+          <p className="text-sm text-black/50 mt-6 text-center">
             Already have an account?{" "}
-            <Link href="/login" className="text-pitch-400 font-semibold hover:underline">
+            <Link href="/login" className="text-pitch-600 font-semibold hover:underline">
               Log in
             </Link>
           </p>

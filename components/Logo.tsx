@@ -22,7 +22,7 @@ export function Logo({ className = "", markClassName = "h-8 w-8" }: { className?
     <span className={`inline-flex items-center gap-2.5 font-display tracking-tight ${className}`}>
       <LogoMark className={markClassName} />
       <span>
-        Gol<span className="text-pitch-400">Track</span>
+        Gol<span className="text-pitch-600">Track</span>
       </span>
     </span>
   );
