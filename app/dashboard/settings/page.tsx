@@ -20,7 +20,7 @@ export default function SettingsPage() {
 
       <h2 className="text-lg font-semibold mt-10 mb-1">Theme</h2>
       <p className="text-black/50 text-sm mb-6">
-        Choose which color leads the site — white main is the current look; black main inverts it using the same
+        Choose which color leads the site — black main is the current look; white main inverts it using the same
         ink/paper/red identity.
       </p>
 

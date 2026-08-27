@@ -391,7 +391,7 @@ export const Matches = {
 
 const SITE_SETTINGS_ID = "singleton";
 const DEFAULT_ACCENT_COLOR = "#FF4D4D";
-const DEFAULT_THEME: SiteTheme = "light";
+const DEFAULT_THEME: SiteTheme = "dark";
 
 export type SiteTheme = "light" | "dark";
 
@@ -412,26 +412,45 @@ export const SiteSettings = {
       return DEFAULT_ACCENT_COLOR;
     }
   },
+  // theme is included here (defaulted, not just left to the column's own
+  // SQL default) so that on a database where this table already existed
+  // before DEFAULT_THEME last changed, the very first row this ever
+  // creates — e.g. from picking an accent color before ever touching the
+  // theme toggle — still gets today's actual default. SQLite bakes a
+  // column's default into the table at CREATE TIME; it can't be altered
+  // in place, so a stale schema.sql default would otherwise stick around
+  // on any pre-existing database forever, silently undoing a default
+  // that was supposed to change. ON CONFLICT never touches theme, so an
+  // existing explicit choice is untouched either way.
   setAccentColor(hex: string) {
     run(
-      `INSERT INTO site_settings (id, accentColor, updatedAt) VALUES ($id,$accentColor,$updatedAt)
+      `INSERT INTO site_settings (id, accentColor, theme, updatedAt) VALUES ($id,$accentColor,$theme,$updatedAt)
        ON CONFLICT(id) DO UPDATE SET accentColor = excluded.accentColor, updatedAt = excluded.updatedAt`,
-      { $id: SITE_SETTINGS_ID, $accentColor: hex, $updatedAt: nowIso() } as any
+      { $id: SITE_SETTINGS_ID, $accentColor: hex, $theme: DEFAULT_THEME, $updatedAt: nowIso() } as any
     );
   },
   getTheme(): SiteTheme {
     try {
       const row = get<{ theme: string }>(`SELECT theme FROM site_settings WHERE id = $id`, { $id: SITE_SETTINGS_ID } as any);
-      return row?.theme === "dark" ? "dark" : DEFAULT_THEME;
+      // Must check for both explicit values, not just "dark" — with the
+      // fallback now itself "dark", collapsing anything-but-dark to the
+      // fallback would silently override a real, explicit "light" choice
+      // sitting right there in the row.
+      if (row?.theme === "light" || row?.theme === "dark") return row.theme;
+      return DEFAULT_THEME;
     } catch {
       return DEFAULT_THEME;
     }
   },
+  // Mirrors setAccentColor's reasoning: accentColor defaulted explicitly
+  // here too, rather than trusting the column's own (potentially stale,
+  // un-alterable) SQL default on a database where this table predates
+  // the current DEFAULT_ACCENT_COLOR.
   setTheme(theme: SiteTheme) {
     run(
-      `INSERT INTO site_settings (id, theme, updatedAt) VALUES ($id,$theme,$updatedAt)
+      `INSERT INTO site_settings (id, theme, accentColor, updatedAt) VALUES ($id,$theme,$accentColor,$updatedAt)
        ON CONFLICT(id) DO UPDATE SET theme = excluded.theme, updatedAt = excluded.updatedAt`,
-      { $id: SITE_SETTINGS_ID, $theme: theme, $updatedAt: nowIso() } as any
+      { $id: SITE_SETTINGS_ID, $theme: theme, $accentColor: DEFAULT_ACCENT_COLOR, $updatedAt: nowIso() } as any
     );
   },
 };

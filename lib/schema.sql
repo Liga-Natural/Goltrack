@@ -111,6 +111,6 @@ CREATE TABLE IF NOT EXISTS inquiries (
 CREATE TABLE IF NOT EXISTS site_settings (
   id TEXT PRIMARY KEY,
   accentColor TEXT NOT NULL DEFAULT '#FF4D4D',
-  theme TEXT NOT NULL DEFAULT 'light',
+  theme TEXT NOT NULL DEFAULT 'dark',
   updatedAt TEXT NOT NULL
 );

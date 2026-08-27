@@ -5,8 +5,8 @@ import { updateSiteTheme } from "@/lib/actions";
 import type { SiteTheme } from "@/lib/models";
 
 const OPTIONS: { value: SiteTheme; label: string; sub: string }[] = [
-  { value: "light", label: "White main", sub: "Paper background, black text — the current site" },
-  { value: "dark", label: "Black main", sub: "Ink background, white text — same layout, inverted" },
+  { value: "light", label: "White main", sub: "Paper background, black text — same layout, inverted" },
+  { value: "dark", label: "Black main", sub: "Ink background, white text — the current site" },
 ];
 
 export function ThemeToggle({ currentTheme }: { currentTheme: SiteTheme }) {

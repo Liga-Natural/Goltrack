@@ -19,7 +19,12 @@ export function HeroPhoneMockup() {
         className="relative w-[280px] sm:w-[300px] transition-transform duration-500 lg:[transform:rotateY(-8deg)_rotateX(3deg)] lg:hover:[transform:rotateY(-3deg)_rotateX(1deg)]"
         style={{ filter: "drop-shadow(0 30px 35px rgba(0,0,0,0.8)) drop-shadow(0 10px 12px rgba(0,0,0,0.5))" }}
       >
-        <div className="relative rounded-[2.75rem] bg-navy-900 p-2.5 border border-black/10">
+        {/* The bezel is one step lighter than navy-900 (#1F1F1F vs #111111)
+            on purpose — now that the page itself defaults to dark, a bezel
+            in the exact same tone as the page background would merge into
+            it and the device would lose its "floating object" definition
+            that the drop-shadow above is trying to sell. */}
+        <div className="relative rounded-[2.75rem] bg-[#1F1F1F] p-2.5 border border-white/10">
           <div className="relative overflow-hidden rounded-[2.1rem] bg-navy-900 pb-5">
             {/* Status bar + notch */}
             <div className="flex items-center justify-between px-6 pt-3 pb-1 text-[10px] font-medium text-white/70">

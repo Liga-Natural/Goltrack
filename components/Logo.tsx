@@ -17,10 +17,9 @@ export function LogoMark({ className = "h-8 w-8" }: { className?: string }) {
 // this component — the rest of the site reads in Bricolage Grotesque). Each
 // letter sits in its own span with a small hand-tuned negative margin,
 // because Unbounded's default tracking reads too loose at this size/weight
-// to feel like one solid word. Deliberately one accent, not a two-color
-// split: the wordmark itself is solid (inherits the parent's text color, so
-// it reads correctly on both light and dark backgrounds), with exactly one
-// colored element — a small squared red full stop after the word.
+// to feel like one solid word. The whole wordmark — letters and the
+// squared full stop alike — renders in the accent color rather than
+// inheriting the parent's text color.
 export function Logo({
   className = "",
   markClassName = "h-8 w-8",
@@ -37,7 +36,7 @@ export function Logo({
   return (
     <span className={`inline-flex items-center gap-2.5 font-logo font-black tracking-tight ${className}`}>
       {showMark && <LogoMark className={markClassName} />}
-      <span className="inline-flex items-baseline">
+      <span className="inline-flex items-baseline text-pitch-400">
         <span className="inline-block -mr-[0.07em]">J</span>
         <span className="inline-block -mr-[0.05em]">o</span>
         <span className="inline-block -mr-[0.04em]">g</span>

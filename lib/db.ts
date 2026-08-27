@@ -63,7 +63,7 @@ function runMigrations(database: DatabaseSync) {
   ensureColumn(database, "teams", "crestMimeType", "crestMimeType TEXT");
   ensureColumn(database, "teams", "crestUpdatedAt", "crestUpdatedAt TEXT");
   ensureColumn(database, "teams", "logoToken", "logoToken TEXT");
-  ensureColumn(database, "site_settings", "theme", "theme TEXT NOT NULL DEFAULT 'light'");
+  ensureColumn(database, "site_settings", "theme", "theme TEXT NOT NULL DEFAULT 'dark'");
   // logoToken's inline UNIQUE in schema.sql only takes effect on a brand-new
   // CREATE TABLE; a database that already existed before this column was
   // added just got it via ALTER TABLE ADD COLUMN above, and SQLite can't
