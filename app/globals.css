@@ -12,11 +12,23 @@
   h1, h2, h3, h4 {
     @apply font-display;
   }
+  /* Tailwind's preflight strips the default focus ring; without a visible
+     replacement, keyboard users lose track of focus entirely. One rule
+     here covers every interactive element site-wide instead of needing
+     focus classes hand-added per component. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--pitch-400));
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+    /* transition-transform (not just -colors) plus active:scale is what
+       makes a click actually feel like a click instead of a color swap —
+       every button gets real press feedback for free. */
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-[background-color,color,transform] duration-150 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
   }
   .btn-primary {
     @apply btn bg-pitch-400 text-white hover:bg-pitch-500;
@@ -27,8 +39,20 @@
   .btn-ghost {
     @apply btn bg-transparent text-black hover:bg-black/5 border border-black/15;
   }
+  /* Default card: flat list rows, secondary content — no hover behavior of
+     its own, on purpose (see .card-interactive below for anything clickable). */
   .card {
     @apply rounded-2xl bg-white border border-black/10 shadow-card;
+  }
+  /* For clickable cards (links to a tournament/team/etc.) — a real lift on
+     hover rather than the old bare hover:shadow-lg with no other change. */
+  .card-interactive {
+    @apply card transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-0.5 hover:shadow-elevated hover:border-black/15;
+  }
+  /* Higher-hierarchy content: stat panels, the live-score card, anything
+     that should visibly sit above the page rather than blend into the list. */
+  .card-elevated {
+    @apply rounded-2xl bg-white border border-black/10 shadow-elevated;
   }
   .input {
     @apply w-full rounded-lg bg-white border border-black/15 px-3 py-2 text-sm text-black placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-pitch-400;
@@ -38,6 +62,12 @@
   }
   .badge {
     @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+  /* Scores, stat figures, countdowns — tabular figures so digits don't
+     jitter the layout as they update, paired with Archivo Black for the
+     "digital scoreboard" read the skill's number-tabular check calls for. */
+  .font-score {
+    @apply font-display tabular-nums;
   }
 }
 
@@ -77,4 +107,56 @@
 }
 .ticket-perforation::after {
   right: -8px;
+}
+
+/* Full ticket-stub card: same perforation idea as .ticket-perforation
+   above, but as a self-contained wrapper with side punches at a
+   caller-controlled cut line (--ticket-cut, default 25% down — roughly a
+   "header strip / body" split). Meant for score cards, standings headers,
+   and the player passport, so the tear motif reads as one system across
+   the product instead of a single homepage element. */
+.ticket-card {
+  position: relative;
+  overflow: hidden;
+}
+.ticket-card::before,
+.ticket-card::after {
+  content: "";
+  position: absolute;
+  top: var(--ticket-cut, 25%);
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: var(--ticket-punch-bg, #ffffff);
+  z-index: 1;
+}
+.ticket-card::before {
+  left: -8px;
+}
+.ticket-card::after {
+  right: -8px;
+}
+.ticket-card__tear {
+  border-top: 2px dashed rgba(0, 0, 0, 0.15);
+}
+
+/* A pitch halfway-line with a kickoff dot, standing in for a plain <hr> —
+   reuses the same geometry as PitchPattern's centerline instead of being
+   a separate decorative asset, so it reads as the same visual language. */
+.divider-pitch {
+  position: relative;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.12);
+}
+.divider-pitch::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid rgba(0, 0, 0, 0.25);
+  border-radius: 9999px;
+  background: var(--divider-bg, #ffffff);
+  transform: translate(-50%, -50%);
 }

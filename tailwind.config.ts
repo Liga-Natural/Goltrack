@@ -66,6 +66,16 @@ const config: Config = {
           600: "#cc2854",
         },
       },
+      fontSize: {
+        // Named tokens for the oversized display sizes that kept getting
+        // reinvented as one-off arbitrary values (text-[2.75rem] etc.) —
+        // pulling them into the scale means every hero/display headline
+        // shares the same handful of sizes instead of a new size per page.
+        "display-sm": ["2.25rem", { lineHeight: "0.98", letterSpacing: "-0.01em" }],
+        "display-md": ["3rem", { lineHeight: "0.96", letterSpacing: "-0.015em" }],
+        "display-lg": ["4.5rem", { lineHeight: "0.94", letterSpacing: "-0.02em" }],
+        "display-xl": ["6rem", { lineHeight: "0.92", letterSpacing: "-0.025em" }],
+      },
       fontFamily: {
         // Archivo Black carries every piece of lettering site-wide now —
         // headings and body alike — as part of the Sideline Red identity.
@@ -76,7 +86,15 @@ const config: Config = {
         logo: ["'Unbounded'", "system-ui", "sans-serif"],
       },
       boxShadow: {
+        // Three deliberate weights instead of one shadow reused everywhere:
+        // card = default (list rows, secondary content), elevated = for
+        // content that should visibly sit above the page (stat panels,
+        // featured cards), ticket = a hard, confident offset shadow for
+        // the sports-ticket-styled elements — not soft/diffuse, closer to
+        // a printed stub sitting on the page.
         card: "0 1px 2px rgba(10,15,26,0.04), 0 8px 24px -8px rgba(10,15,26,0.12)",
+        elevated: "0 2px 4px rgba(10,15,26,0.06), 0 20px 40px -14px rgba(10,15,26,0.22)",
+        ticket: "3px 3px 0 rgba(18,18,18,0.92)",
         glow: "0 0 60px -10px rgb(var(--pitch-400) / 0.35)",
       },
       keyframes: {
