@@ -35,7 +35,13 @@ export default async function CheckInPage({ params }: { params: { id: string } }
           })}
         </div>
         <div>
-          <div className="sticky top-6">
+          {/* sticky only makes sense once lg:grid-cols-3 actually makes this
+              a side column that scrolls alongside the team list — on mobile
+              the grid collapses to one column and this sits below the list
+              in normal flow, so an unconditional `sticky top-6` was instead
+              pinning it near the top of the viewport mid-scroll, colliding
+              with the page's own sticky header above it. */}
+          <div className="lg:sticky lg:top-6">
             <CheckInScanner tournamentId={tournament.id} />
           </div>
         </div>

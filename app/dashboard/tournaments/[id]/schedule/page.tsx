@@ -25,7 +25,10 @@ export default async function SchedulePage({ params }: { params: { id: string } 
       {groups.length > 0 && groupMatches.length > 0 && (
         <div className="card p-6 mb-6">
           <h2 className="font-semibold mb-4">Group standings</h2>
-          <div className="grid sm:grid-cols-2 gap-8">
+          {/* lg (not sm) — same fix as the public tournament page: two
+              groups sharing a row at tablet widths squeezed each 9-column
+              table into half the card, well before there's actually room. */}
+          <div className="grid lg:grid-cols-2 gap-8">
             {groups.map((g) => (
               <StandingsTable key={g} rows={computeStandings(teams, matches, g)} title={`Group ${g}`} sport={tournament.sport} />
             ))}

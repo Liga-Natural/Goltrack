@@ -105,7 +105,11 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
         </div>
 
         <div className="space-y-6">
-          <div className="card p-5 sticky top-6">
+          {/* lg:sticky, not sticky — this is only a side column once
+              lg:grid-cols-3 kicks in; on mobile it's a normal-flow card
+              below the team list, and an unconditional sticky pinned it
+              mid-scroll on top of the page's own sticky header. */}
+          <div className="card p-5 lg:sticky lg:top-6">
             <div className="flex items-center justify-between mb-1">
               <h3 className="font-semibold">Invite links</h3>
               <form action={createInviteWithId}>

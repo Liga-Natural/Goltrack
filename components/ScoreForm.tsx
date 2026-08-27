@@ -67,7 +67,12 @@ export function ScoreForm({
       </button>
       {status === "FINAL" && eligiblePlayers && eligiblePlayers.length > 0 && (
         <select
-          className="input text-xs py-1.5 w-40"
+          // Fixed w-40 clipped "Man of the match" on mobile, where this
+          // wraps to its own row anyway (flex-wrap on the parent) — full
+          // width there actually has the room, so use it instead of
+          // truncating; back to a compact fixed width once it's sharing a
+          // row with the score inputs and buttons on wider screens.
+          className="input text-xs py-1.5 w-full sm:w-40"
           value={motm}
           onChange={(e) => saveMotm(e.target.value)}
         >
