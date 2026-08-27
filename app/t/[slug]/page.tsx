@@ -94,7 +94,7 @@ export default async function PublicTournamentPage({
                   LIVE NOW
                 </h2>
               </div>
-              <div className="ticket-card__tear mx-2" style={{ ["--ticket-punch-bg" as any]: "#ffffff" }} />
+              <div className="ticket-card__tear mx-2" style={{ ["--ticket-punch-bg" as any]: "rgb(var(--paper))" }} />
               <div className="space-y-2 px-5 pt-4 pb-5">
                 {liveMatches.map((m) => (
                   <div key={m.id} className="flex items-center justify-between text-sm">

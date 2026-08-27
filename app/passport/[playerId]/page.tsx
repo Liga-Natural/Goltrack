@@ -79,7 +79,7 @@ export default async function PassportPage({ params }: { params: { playerId: str
             </div>
           </div>
 
-          <div className="ticket-card__tear mx-2" style={{ ["--ticket-punch-bg" as any]: "#ffffff" }} />
+          <div className="ticket-card__tear mx-2" style={{ ["--ticket-punch-bg" as any]: "rgb(var(--paper))" }} />
 
           <div className="p-5">
             <div className="flex items-center justify-between mb-4">

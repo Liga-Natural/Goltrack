@@ -357,6 +357,15 @@ export async function updateSiteAccentColor(formData: FormData) {
   revalidatePath("/", "layout");
 }
 
+export async function updateSiteTheme(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Not authenticated");
+  const theme = String(formData.get("theme") || "");
+  if (theme !== "light" && theme !== "dark") throw new Error("Invalid theme");
+  SiteSettings.setTheme(theme);
+  revalidatePath("/", "layout");
+}
+
 // ---------- Public actions (registration + demo payment) ----------
 
 export async function registerTeamPublic(slug: string, formData: FormData) {

@@ -391,14 +391,17 @@ export const Matches = {
 
 const SITE_SETTINGS_ID = "singleton";
 const DEFAULT_ACCENT_COLOR = "#F2545C";
+const DEFAULT_THEME: SiteTheme = "light";
+
+export type SiteTheme = "light" | "dark";
 
 export const SiteSettings = {
-  // Called from the root layout, so it runs on every single page render —
-  // unlike every other model method here, it must never throw. A transient
-  // SQLITE_BUSY (e.g. many routes' build-time page-data collection opening
-  // the DB concurrently) would otherwise take down an entire route's build
-  // over what's ultimately just a cosmetic color, so this falls back to the
-  // default instead of propagating the error.
+  // Both getters are called from the root layout, so they run on every
+  // single page render — unlike every other model method here, they must
+  // never throw. A transient SQLITE_BUSY (e.g. many routes' build-time
+  // page-data collection opening the DB concurrently) would otherwise take
+  // down an entire route's build over what's ultimately just cosmetics, so
+  // these fall back to the default instead of propagating the error.
   getAccentColor(): string {
     try {
       const row = get<{ accentColor: string }>(`SELECT accentColor FROM site_settings WHERE id = $id`, {
@@ -414,6 +417,21 @@ export const SiteSettings = {
       `INSERT INTO site_settings (id, accentColor, updatedAt) VALUES ($id,$accentColor,$updatedAt)
        ON CONFLICT(id) DO UPDATE SET accentColor = excluded.accentColor, updatedAt = excluded.updatedAt`,
       { $id: SITE_SETTINGS_ID, $accentColor: hex, $updatedAt: nowIso() } as any
+    );
+  },
+  getTheme(): SiteTheme {
+    try {
+      const row = get<{ theme: string }>(`SELECT theme FROM site_settings WHERE id = $id`, { $id: SITE_SETTINGS_ID } as any);
+      return row?.theme === "dark" ? "dark" : DEFAULT_THEME;
+    } catch {
+      return DEFAULT_THEME;
+    }
+  },
+  setTheme(theme: SiteTheme) {
+    run(
+      `INSERT INTO site_settings (id, theme, updatedAt) VALUES ($id,$theme,$updatedAt)
+       ON CONFLICT(id) DO UPDATE SET theme = excluded.theme, updatedAt = excluded.updatedAt`,
+      { $id: SITE_SETTINGS_ID, $theme: theme, $updatedAt: nowIso() } as any
     );
   },
 };

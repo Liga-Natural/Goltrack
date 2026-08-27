@@ -10,6 +10,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Redefining Tailwind's own "black" and "white" keys (not adding a
+        // new color family) is the whole trick behind the light/dark theme
+        // toggle: every bg-white, text-black, border-black/10 etc. already
+        // used across ~30 files automatically becomes theme-aware with zero
+        // per-file changes, because they're all reading these two CSS
+        // variables rather than fixed hex. app/layout.tsx sets --ink/--paper
+        // per request from SiteSettings.getTheme(). In light mode the
+        // values match Tailwind's real black/white exactly (so light mode
+        // is pixel-identical to before this existed); in dark mode the two
+        // swap roles — "black" (ink: used for text/foreground/borders)
+        // becomes the light color, "white" (paper: used for
+        // backgrounds/surfaces) becomes the dark one. This only holds
+        // together because the app consistently uses black for
+        // ink/foreground purposes and white for paper/surface purposes —
+        // which is exactly what "ink/paper" has meant throughout this
+        // project's own identity language.
+        black: "rgb(var(--ink) / <alpha-value>)",
+        white: "rgb(var(--paper) / <alpha-value>)",
         // "pitch" is the general brand accent, chosen by whoever runs the
         // site from /dashboard/settings (defaults to "Sideline Red",
         // #F2545C). Every shade below reads from a CSS variable — set at
@@ -77,12 +95,15 @@ const config: Config = {
         "display-xl": ["6rem", { lineHeight: "0.92", letterSpacing: "-0.025em" }],
       },
       fontFamily: {
-        // Archivo Black carries every piece of lettering site-wide now —
+        // Bricolage Grotesque carries every piece of lettering site-wide —
         // headings and body alike — as part of the Sideline Red identity.
-        display: ["'Archivo Black'", "system-ui", "sans-serif"],
-        body: ["'Archivo Black'", "system-ui", "sans-serif"],
+        // Unlike Archivo Black it's a real variable family (400-800), so
+        // headings get an explicit heavy weight in globals.css instead of
+        // relying on a font that only ships one weight.
+        display: ["'Bricolage Grotesque'", "system-ui", "sans-serif"],
+        body: ["'Bricolage Grotesque'", "system-ui", "sans-serif"],
         // Scoped to the wordmark only (Logo.tsx) — the rest of the site
-        // stays in Archivo Black above.
+        // stays in Bricolage Grotesque above.
         logo: ["'Unbounded'", "system-ui", "sans-serif"],
       },
       boxShadow: {
@@ -92,9 +113,13 @@ const config: Config = {
         // featured cards), ticket = a hard, confident offset shadow for
         // the sports-ticket-styled elements — not soft/diffuse, closer to
         // a printed stub sitting on the page.
-        card: "0 1px 2px rgba(10,15,26,0.04), 0 8px 24px -8px rgba(10,15,26,0.12)",
-        elevated: "0 2px 4px rgba(10,15,26,0.06), 0 20px 40px -14px rgba(10,15,26,0.22)",
-        ticket: "3px 3px 0 rgba(18,18,18,0.92)",
+        // rgb(var(--ink) / alpha) rather than a fixed dark rgba: in dark
+        // mode --ink is the light color, so these correctly become a soft
+        // light halo / a light hard-edge shadow instead of a literally
+        // invisible dark-on-dark shadow.
+        card: "0 1px 2px rgb(var(--ink) / 0.04), 0 8px 24px -8px rgb(var(--ink) / 0.12)",
+        elevated: "0 2px 4px rgb(var(--ink) / 0.06), 0 20px 40px -14px rgb(var(--ink) / 0.22)",
+        ticket: "3px 3px 0 rgb(var(--ink) / 0.92)",
         glow: "0 0 60px -10px rgb(var(--pitch-400) / 0.35)",
       },
       keyframes: {

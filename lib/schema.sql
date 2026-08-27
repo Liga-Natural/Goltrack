@@ -102,12 +102,15 @@ CREATE TABLE IF NOT EXISTS inquiries (
   createdAt TEXT NOT NULL
 );
 
--- Single-row site-wide settings (the brand accent color chosen from
--- /dashboard/settings). A brand-new table, so plain CREATE TABLE IF NOT
--- EXISTS is safe here even on an already-live database — no ALTER TABLE
--- migration needed the way an added column would require.
+-- Single-row site-wide settings (the brand accent color and light/dark
+-- theme, both chosen from /dashboard/settings). This table already exists
+-- on any database that has the crest/branding features live, so the
+-- "theme" column below is added the same way as any other column on an
+-- existing table — see runMigrations() in lib/db.ts — not by editing this
+-- CREATE TABLE, which only affects brand-new databases.
 CREATE TABLE IF NOT EXISTS site_settings (
   id TEXT PRIMARY KEY,
   accentColor TEXT NOT NULL DEFAULT '#F2545C',
+  theme TEXT NOT NULL DEFAULT 'light',
   updatedAt TEXT NOT NULL
 );

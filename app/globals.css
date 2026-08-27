@@ -10,7 +10,7 @@
     @apply bg-white text-black font-body antialiased;
   }
   h1, h2, h3, h4 {
-    @apply font-display;
+    @apply font-display font-extrabold;
   }
   /* Tailwind's preflight strips the default focus ring; without a visible
      replacement, keyboard users lose track of focus entirely. One rule
@@ -64,10 +64,11 @@
     @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
   }
   /* Scores, stat figures, countdowns — tabular figures so digits don't
-     jitter the layout as they update, paired with Archivo Black for the
-     "digital scoreboard" read the skill's number-tabular check calls for. */
+     jitter the layout as they update, paired with a heavy display weight
+     for the "digital scoreboard" read the skill's number-tabular check
+     calls for. */
   .font-score {
-    @apply font-display tabular-nums;
+    @apply font-display font-extrabold tabular-nums;
   }
   /* Pairs with the score-flip animation (tailwind.config.ts) — the 3D
      transform properties it needs aren't bundled into the animation
@@ -85,9 +86,15 @@
   }
 }
 
-/* Light surface used on the public tournament / passport pages for legibility on print & bright venues */
+/* Light surface used on the passport page for legibility on print & bright
+   venues — pins --ink/--paper to their light values regardless of the
+   site-wide theme setting, since this page gets scanned/printed at a
+   check-in table and shouldn't go dark just because the rest of the site
+   did. */
 .surface-light {
   color-scheme: light;
+  --ink: 0 0 0;
+  --paper: 255 255 255;
 }
 
 /* Subtle top-rule accent so flat white sections don't look like a plain fill */
@@ -104,7 +111,7 @@
    border — the one visual idea this design leans on hardest. */
 .ticket-perforation {
   position: relative;
-  border-top: 2px dashed rgba(0, 0, 0, 0.15);
+  border-top: 2px dashed rgb(var(--ink) / 0.15);
 }
 .ticket-perforation::before,
 .ticket-perforation::after {
@@ -114,7 +121,7 @@
   width: 16px;
   height: 16px;
   border-radius: 9999px;
-  background: var(--ticket-punch-bg, #ffffff);
+  background: var(--ticket-punch-bg, rgb(var(--paper)));
 }
 .ticket-perforation::before {
   left: -8px;
@@ -146,7 +153,7 @@
   width: 16px;
   height: 16px;
   border-radius: 9999px;
-  background: var(--ticket-punch-bg, #ffffff);
+  background: var(--ticket-punch-bg, rgb(var(--paper)));
   z-index: 1;
 }
 .ticket-card::before {
@@ -156,7 +163,7 @@
   right: -8px;
 }
 .ticket-card__tear {
-  border-top: 2px dashed rgba(0, 0, 0, 0.15);
+  border-top: 2px dashed rgb(var(--ink) / 0.15);
 }
 
 /* A pitch halfway-line with a kickoff dot, standing in for a plain <hr> —
@@ -165,7 +172,7 @@
 .divider-pitch {
   position: relative;
   height: 1px;
-  background: rgba(0, 0, 0, 0.12);
+  background: rgb(var(--ink) / 0.12);
 }
 .divider-pitch::after {
   content: "";
@@ -174,8 +181,8 @@
   top: 50%;
   width: 10px;
   height: 10px;
-  border: 1.5px solid rgba(0, 0, 0, 0.25);
+  border: 1.5px solid rgb(var(--ink) / 0.25);
   border-radius: 9999px;
-  background: var(--divider-bg, #ffffff);
+  background: var(--divider-bg, rgb(var(--paper)));
   transform: translate(-50%, -50%);
 }

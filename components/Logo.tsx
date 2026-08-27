@@ -14,7 +14,7 @@ export function LogoMark({ className = "h-8 w-8" }: { className?: string }) {
 }
 
 // The wordmark itself: Unbounded at weight 900 (font-logo, scoped to just
-// this component — the rest of the site reads in Archivo Black). Each
+// this component — the rest of the site reads in Bricolage Grotesque). Each
 // letter sits in its own span with a small hand-tuned negative margin,
 // because Unbounded's default tracking reads too loose at this size/weight
 // to feel like one solid word. Deliberately one accent, not a two-color

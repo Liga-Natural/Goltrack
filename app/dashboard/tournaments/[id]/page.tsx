@@ -39,7 +39,7 @@ export default async function TournamentOverviewPage({ params }: { params: { id:
         <div className="card p-6">
           <h2 className="font-semibold mb-1">Public registration link</h2>
           <p className="text-sm text-black/50 mb-3">Share this with team captains so they can register and pay.</p>
-          <code className="block bg-gray-100 rounded-lg px-3 py-2 text-sm text-pitch-500 break-all">{publicUrl}/register</code>
+          <code className="block bg-black/[0.05] rounded-lg px-3 py-2 text-sm text-pitch-500 break-all">{publicUrl}/register</code>
         </div>
 
         <div className="card p-6">

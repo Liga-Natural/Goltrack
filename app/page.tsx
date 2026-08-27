@@ -135,7 +135,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-y-2 border-black bg-gray-50 relative overflow-hidden">
+      <section className="border-y-2 border-black bg-black/[0.02] relative overflow-hidden">
         <div className="grain-overlay" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
           <div className="flex items-end justify-between gap-6 mb-8 flex-wrap">
@@ -151,7 +151,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="divider-pitch mb-2" style={{ ["--divider-bg" as any]: "#f9fafb" }} />
+          <div className="divider-pitch mb-2" style={{ ["--divider-bg" as any]: "rgb(var(--ink) / 0.03)" }} />
 
           <div className="grid sm:grid-cols-2 gap-x-10">
             {features.map((f, i) => (

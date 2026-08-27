@@ -53,7 +53,7 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 mb-3 bg-gray-50 rounded-lg px-3 py-2">
+                <div className="flex flex-wrap items-center gap-2 mb-3 bg-black/[0.03] rounded-lg px-3 py-2">
                   <form action={uploadCrestWithIds} className="flex items-center gap-2 flex-1 min-w-[220px]">
                     <input
                       className="text-xs flex-1 file:mr-2 file:btn-secondary file:text-xs file:px-2.5 file:py-1 file:border-0 file:cursor-pointer"
@@ -121,7 +121,7 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
             ) : (
               <div className="space-y-2">
                 {pendingInvites.map((invite) => (
-                  <div key={invite.id} className="flex items-center justify-between gap-2 bg-gray-100 rounded-lg px-2.5 py-2">
+                  <div key={invite.id} className="flex items-center justify-between gap-2 bg-black/[0.05] rounded-lg px-2.5 py-2">
                     <code className="text-xs text-pitch-600 truncate">…/invite/{invite.inviteToken}</code>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <CopyLinkButton path={`/t/${tournament.slug}/invite/${invite.inviteToken}`} />
