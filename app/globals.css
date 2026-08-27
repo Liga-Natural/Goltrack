@@ -69,6 +69,20 @@
   .font-score {
     @apply font-display tabular-nums;
   }
+  /* Pairs with the score-flip animation (tailwind.config.ts) — the 3D
+     transform properties it needs aren't bundled into the animation
+     utility itself. */
+  .score-flip {
+    @apply inline-block animate-score-flip;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .score-flip {
+    animation: none;
+  }
 }
 
 /* Light surface used on the public tournament / passport pages for legibility on print & bright venues */

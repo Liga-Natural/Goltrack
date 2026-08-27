@@ -106,11 +106,21 @@ const config: Config = {
           "0%, 100%": { transform: "translate(0, 0) scale(1)" },
           "50%": { transform: "translate(-3%, 4%) scale(1.06)" },
         },
+        // A mechanical scoreboard-digit flip — for a live score reveal,
+        // not a fake "continuous real-time push" (this app updates scores
+        // on page load/revalidation, not a live socket), so this plays
+        // once when the number enters the page rather than looping.
+        "score-flip": {
+          "0%": { transform: "rotateX(90deg)", opacity: "0" },
+          "60%": { transform: "rotateX(-12deg)", opacity: "1" },
+          "100%": { transform: "rotateX(0deg)", opacity: "1" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.7s ease-out both",
         drift: "drift 14s ease-in-out infinite",
         "drift-slow": "drift 22s ease-in-out infinite reverse",
+        "score-flip": "score-flip 0.5s cubic-bezier(0.22,1,0.36,1) both",
       },
     },
   },

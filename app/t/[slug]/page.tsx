@@ -103,7 +103,7 @@ export default async function PublicTournamentPage({
                       <span className="text-black/30">vs</span>
                       <TeamInline team={teamsById.get(m.awayTeamId || "")} sport={tournament.sport} />
                     </span>
-                    <span className="font-score text-base">
+                    <span className="font-score score-flip text-base">
                       {m.homeScore} - {m.awayScore}
                     </span>
                   </div>

@@ -50,14 +50,15 @@ export function TournamentsGrid({ tournaments, teamCounts }: { tournaments: Tour
         <div className="card p-10 text-center text-black/50">No tournaments in this sport yet.</div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {visible.map((t) => {
+          {visible.map((t, i) => {
             const theme = getSportTheme(t.sport);
             const teamCount = teamCounts[t.id] || 0;
             return (
               <Link
                 key={t.id}
                 href={`/t/${t.slug}`}
-                className="card-interactive relative overflow-hidden p-5"
+                className="card-interactive relative overflow-hidden p-5 animate-fade-up"
+                style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
               >
                 <div className={`absolute top-0 left-0 right-0 h-1.5 ${theme.dot}`} />
                 <div className="flex items-center justify-between mb-3 mt-1">

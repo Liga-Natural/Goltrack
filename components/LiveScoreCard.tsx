@@ -19,11 +19,11 @@ export function LiveScoreCard() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Coastal FC</span>
-            <span className="font-score text-lg">2</span>
+            <span className="font-score score-flip text-lg" style={{ animationDelay: "260ms" }}>2</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Riverside SC</span>
-            <span className="font-score text-lg">1</span>
+            <span className="font-score score-flip text-lg" style={{ animationDelay: "340ms" }}>1</span>
           </div>
         </div>
         <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between text-xs text-black/40">

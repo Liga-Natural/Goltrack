@@ -37,13 +37,14 @@ export default async function DashboardHome() {
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tournaments.map((t) => {
+          {tournaments.map((t, i) => {
             const theme = getSportTheme(t.sport);
             return (
               <Link
                 key={t.id}
                 href={`/dashboard/tournaments/${t.id}`}
-                className="card-interactive relative overflow-hidden p-5"
+                className="card-interactive relative overflow-hidden p-5 animate-fade-up"
+                style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
               >
                 <div className={`absolute top-0 left-0 right-0 h-1.5 ${theme.dot}`} />
                 <div className="flex items-start justify-between mb-3 gap-2 mt-1">
