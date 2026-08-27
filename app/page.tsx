@@ -13,42 +13,18 @@ const NAV_LINKS = [
 ];
 
 const features = [
-  {
-    title: "Registration & payments",
-    body: "Teams sign up online, submit rosters, and pay fees before they ever set foot on your field.",
-    icon: IconClipboard,
-  },
-  {
-    title: "Auto-balanced scheduling",
-    body: "Generate group-stage fixtures across every field and time slot in seconds — no spreadsheets.",
-    icon: IconCalendar,
-  },
-  {
-    title: "Brackets that build themselves",
-    body: "Knockout brackets seed automatically from live standings once group play wraps.",
-    icon: IconBracket,
-  },
-  {
-    title: "Live scoring, public standings",
-    body: "Enter results from the sideline; parents and coaches watch tables update in real time.",
-    icon: IconPulse,
-  },
-  {
-    title: "Referee management",
-    body: "Assign officials to matches and keep contact info and match reports in one place.",
-    icon: IconWhistle,
-  },
-  {
-    title: "Digital player passports",
-    body: "Every player gets a QR-verified digital ID with a career timeline across every tournament.",
-    icon: IconQr,
-  },
+  { title: "Registration & payments", body: "Teams sign up and pay online.", icon: IconClipboard },
+  { title: "Auto-balanced scheduling", body: "Fixtures generated in seconds.", icon: IconCalendar },
+  { title: "Brackets that build themselves", body: "Seeded automatically from standings.", icon: IconBracket },
+  { title: "Live scoring, public standings", body: "Scores update in real time.", icon: IconPulse },
+  { title: "Referee management", body: "Assign officials, track contacts.", icon: IconWhistle },
+  { title: "Digital player passports", body: "QR-verified ID for every player.", icon: IconQr },
 ];
 
 const steps = [
-  { n: "01", title: "Set up your tournament", body: "Sport, format, fields, fees, and your director's contact — a few minutes." },
-  { n: "02", title: "Teams register & pay", body: "Send unique invite links or open registration — rosters and fees roll in." },
-  { n: "03", title: "Run match day", body: "Score from the sideline while standings and brackets update live." },
+  { n: "01", title: "Set up your tournament", body: "Sport, format, fields, and fees — a few minutes." },
+  { n: "02", title: "Teams register & pay", body: "Send invite links or open registration." },
+  { n: "03", title: "Run match day", body: "Score live from the sideline." },
 ];
 
 export default function Home() {
@@ -93,8 +69,7 @@ export default function Home() {
               </span>
             </h1>
             <p className="mt-7 text-lg text-black/60 max-w-lg">
-              Jogo is the all-in-one platform to organize, run, and grow tournaments — registration, scheduling,
-              brackets, live scores, and digital player passports in one place.
+              Registration, scheduling, brackets, live scores, and player passports — all in one place.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-3">
               <Link href="/signup" className="btn-primary text-base px-6 py-3">
@@ -139,8 +114,7 @@ export default function Home() {
               </h2>
             </div>
             <p className="text-black/50 max-w-sm text-sm">
-              Registration feeds scheduling, scheduling feeds live scores, and live scores populate every player&apos;s
-              passport — one system instead of five spreadsheets and a group chat.
+              One connected system — not five spreadsheets and a group chat.
             </p>
           </div>
 
@@ -200,7 +174,7 @@ export default function Home() {
           <Logo showMark={false} className="justify-center text-3xl sm:text-4xl mb-7 text-white" />
           <h2 className="text-display-sm mb-4">Ready to run your next event on Jogo?</h2>
           <p className="text-white/50 mb-9 max-w-xl mx-auto text-base">
-            Set up a tournament, open registration, and have a full bracket ready before your first team even checks in.
+            Open registration and have a full bracket ready before kickoff.
           </p>
           <Link href="/signup" className="btn-primary text-base px-6 py-3">
             Get started free

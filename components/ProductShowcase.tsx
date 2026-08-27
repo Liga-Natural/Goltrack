@@ -37,7 +37,7 @@ export function ProductShowcase({
     {
       icon: IconGrid,
       title: "Overview, at a glance",
-      body: "Teams registered, matches scheduled, entry fees collected, and your shareable registration link — the moment you open a tournament.",
+      body: "Teams, matches, and fees — the moment you open a tournament.",
       preview: (
         <div className="grid grid-cols-3 gap-2.5">
           {[
@@ -56,7 +56,7 @@ export function ProductShowcase({
     {
       icon: IconUsers,
       title: "Teams & rosters, organized",
-      body: "Every team's contact info, payment status, and full player roster in one place — with digital QR passports generated automatically for every player.",
+      body: "Contact info, payment status, and rosters — all in one place.",
       preview: (
         <div className="space-y-2">
           {sampleTeams.map((t) => (
@@ -76,13 +76,13 @@ export function ProductShowcase({
     {
       icon: IconCalendar,
       title: "Schedules & standings that build themselves",
-      body: "Generate a balanced round-robin or groups-and-knockout schedule across every field in seconds, then watch standings recalculate live as results come in.",
+      body: "A full schedule in seconds. Standings update as results come in.",
       preview: groups[0] ? <StandingsTable rows={standingsByGroup[groups[0]].slice(0, 4)} title={`Group ${groups[0]}`} sport={tournament.sport} /> : null,
     },
     {
       icon: IconPulse,
       title: "Live scoring from the sideline",
-      body: "Enter results on a phone at the field — public standings and brackets update instantly for parents and coaches watching from home.",
+      body: "Enter results on your phone. Everyone watching sees it instantly.",
       preview: (
         <div className="space-y-2">
           {groupMatches.slice(0, 3).map((m) => (
@@ -105,7 +105,7 @@ export function ProductShowcase({
     {
       icon: IconWhistle,
       title: "Referee assignments",
-      body: "Keep a roster of officials and assign them to matches — contact info and match history stay attached to every game.",
+      body: "Assign officials to matches. Contact info stays attached to every game.",
       preview: (
         <div className="space-y-2">
           {referees.slice(0, 3).map((r) => (
@@ -120,7 +120,7 @@ export function ProductShowcase({
     {
       icon: IconQr,
       title: "Check-in, verified by QR",
-      body: "Scan each player's digital passport on match day — rosters get verified in seconds instead of a clipboard and a Sharpie.",
+      body: "Scan each passport on match day. No clipboard, no Sharpie.",
       preview: (
         <div className="card p-4 text-center">
           <p className="text-sm text-black/50">Passport scanned</p>
@@ -142,8 +142,7 @@ export function ProductShowcase({
           What you get when you run a tournament on Jogo
         </h1>
         <p className="text-black/60 max-w-xl mx-auto">
-          Every screen below is built from a real tournament (Coastal Cup) — this is exactly what you and your teams
-          will see, not a mockup.
+          Real screens from a real tournament — not a mockup.
         </p>
       </section>
 
@@ -166,7 +165,7 @@ export function ProductShowcase({
         <div className="mx-auto max-w-3xl px-4 sm:px-6 py-16 text-center">
           <h2 className="text-display-sm mb-4">Ready to run your own tournament?</h2>
           <p className="text-black/50 mb-8">
-            Jogo is a paid product built for organizers who are done juggling spreadsheets and group chats.
+            A paid tool for organizers done juggling spreadsheets and group chats.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link href="/signup" className="btn-primary text-base px-6 py-3">

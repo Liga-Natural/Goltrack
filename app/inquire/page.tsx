@@ -7,26 +7,10 @@ import { IconCalendar, IconBracket, IconGrid, IconWhistle } from "@/components/i
 const NAV_LINKS = [{ href: "/tour", label: "See how it works" }];
 
 const formats = [
-  {
-    title: "Round robin",
-    icon: IconCalendar,
-    body: "Every team plays every other team once. Simple, fair, and great for smaller fields or regular-season play.",
-  },
-  {
-    title: "Groups + knockout",
-    icon: IconGrid,
-    body: "Teams split into groups for round-robin play, then top finishers advance into a seeded single-elimination bracket.",
-  },
-  {
-    title: "Single elimination",
-    icon: IconBracket,
-    body: "Straight knockout from the first whistle — lose once and you're out. Fastest way to crown a champion.",
-  },
-  {
-    title: "Futsal / indoor",
-    icon: IconWhistle,
-    body: "Shorter rosters, tighter schedules, indoor courts — Jogo's scheduling adapts field counts and slot lengths to fit.",
-  },
+  { title: "Round robin", icon: IconCalendar, body: "Every team plays every other, once." },
+  { title: "Groups + knockout", icon: IconGrid, body: "Group play, then a seeded bracket." },
+  { title: "Single elimination", icon: IconBracket, body: "Lose once and you're out." },
+  { title: "Futsal / indoor", icon: IconWhistle, body: "Shorter rosters, tighter schedules." },
 ];
 
 export default function InquirePage() {
@@ -38,8 +22,7 @@ export default function InquirePage() {
         <span className="badge bg-pitch-400/10 text-pitch-600 border border-pitch-400/20 mb-5">No account needed</span>
         <h1 className="text-display-sm">Not sure Jogo fits your event?</h1>
         <p className="text-black/60 mt-4 max-w-xl mx-auto">
-          Browse the formats we support below, or just send us a note about what you&apos;re planning — no sign-up required
-          either way.
+          Browse the formats below, or just send us a note.
         </p>
       </section>
 
@@ -71,8 +54,7 @@ export default function InquirePage() {
           <div className="reveal">
             <h2 className="text-xl font-semibold mb-2">Ask us anything</h2>
             <p className="text-black/50 text-sm leading-relaxed mb-4">
-              Team counts, field availability, a format that doesn&apos;t quite match the list above — send it over and we&apos;ll
-              reply by email. Want to poke at the product first instead?
+              Team counts, field availability, anything else — send it over and we&apos;ll reply by email.
             </p>
             <Link href="/tour" className="text-pitch-600 font-semibold text-sm hover:underline">
               Explore the live interface preview →
