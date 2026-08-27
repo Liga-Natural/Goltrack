@@ -1,7 +1,10 @@
 export function LiveScoreCard() {
   return (
+    // shadow-glow (a 60px red halo) was one more thing pulling the eye on
+    // an already-busy hero, right next to a headline, four badges, and two
+    // buttons — .card's own shadow-card is enough definition without it.
     <div
-      className="ticket-card card w-full max-w-sm shadow-glow animate-fade-up"
+      className="ticket-card card w-full max-w-sm animate-fade-up"
       style={{ animationDelay: "180ms", ["--ticket-cut" as any]: "56px" }}
     >
       <div className="px-5 pt-5 pb-4 flex items-center justify-between">

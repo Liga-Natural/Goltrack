@@ -61,9 +61,16 @@ export default function Home() {
 
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-20 sm:pt-20 sm:pb-28 grid lg:grid-cols-[1.15fr_1fr] gap-12 items-center">
           <div className="max-w-2xl animate-fade-up">
+            {/* Four different saturated sport colors right above the fold —
+                before the headline even loads in the eye — is the first
+                thing a first-time visitor's attention has to sort through.
+                Those colors earn their keep on a tournament/dashboard page,
+                where they help someone scan live data at a glance; here
+                they're just "what sports we support" marketing copy, so one
+                calm, uniform style says the same thing without the noise. */}
             <div className="flex flex-wrap items-center gap-1.5 mb-6">
               {SPORT_NAMES.map((s) => (
-                <span key={s} className={`badge ${SPORTS[s].soft} text-[11px]`}>
+                <span key={s} className="badge bg-black/5 text-black/60 text-[11px]">
                   {SPORTS[s].emoji} {SPORTS[s].label}
                 </span>
               ))}

@@ -66,7 +66,10 @@ export default async function PassportPage({ params }: { params: { playerId: str
                     sport={tournament.sport}
                     size="sm"
                   />
-                  <h1 className="text-xl font-semibold truncate">{player.name}</h1>
+                  {/* No truncate — a longer name has room to wrap to a
+                      second line instead of ending in "…", since this
+                      header's height isn't fixed. */}
+                  <h1 className="text-xl font-semibold leading-tight">{player.name}</h1>
                 </div>
                 <p className="text-sm text-white/50 truncate">
                   {team.name} {player.jerseyNumber && `· #${player.jerseyNumber}`}
