@@ -3,10 +3,10 @@ import { generateSchedule, generateKnockout } from "@/lib/actions";
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="card p-5 relative overflow-hidden">
+    <div className="card-elevated p-5 relative overflow-hidden">
       <div className="absolute top-0 left-0 h-[2px] w-8 bg-pitch-400" />
       <p className="text-xs uppercase tracking-wide text-black/40 mb-1.5">{label}</p>
-      <p className="text-3xl font-semibold font-mono tabular-nums">{value}</p>
+      <p className="font-score text-3xl">{value}</p>
       {sub && <p className="text-xs text-black/30 mt-1">{sub}</p>}
     </div>
   );

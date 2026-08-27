@@ -29,7 +29,8 @@ export default async function DashboardHome() {
 
       {tournaments.length === 0 ? (
         <div className="card p-10 text-center">
-          <p className="text-black/60 mb-4">You haven&apos;t created a tournament yet.</p>
+          <p className="text-black/60 mb-1">No tournaments on the board yet.</p>
+          <p className="text-black/40 text-sm mb-5">Set up sport, format, and fees — you can open registration whenever you're ready.</p>
           <Link href="/dashboard/tournaments/new" className="btn-primary">
             Create your first tournament
           </Link>
@@ -42,7 +43,7 @@ export default async function DashboardHome() {
               <Link
                 key={t.id}
                 href={`/dashboard/tournaments/${t.id}`}
-                className="card relative overflow-hidden p-5 hover:-translate-y-0.5 hover:shadow-lg transition-all"
+                className="card-interactive relative overflow-hidden p-5"
               >
                 <div className={`absolute top-0 left-0 right-0 h-1.5 ${theme.dot}`} />
                 <div className="flex items-start justify-between mb-3 gap-2 mt-1">

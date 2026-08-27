@@ -18,15 +18,10 @@ import {
   IconX,
   IconPalette,
 } from "./icons";
+import { tournamentNav as tournamentNavBase } from "@/lib/dashboardNav";
 
-const tournamentNav = [
-  { href: "", label: "Overview", icon: IconGrid },
-  { href: "/teams", label: "Teams", icon: IconUsers },
-  { href: "/schedule", label: "Schedule & bracket", icon: IconCalendar },
-  { href: "/scores", label: "Live scores", icon: IconPulse },
-  { href: "/referees", label: "Referees", icon: IconWhistle },
-  { href: "/checkin", label: "Check-in", icon: IconQr },
-];
+const navIcons = [IconGrid, IconUsers, IconCalendar, IconPulse, IconWhistle, IconQr];
+const tournamentNav = tournamentNavBase.map((item, i) => ({ ...item, icon: navIcons[i] }));
 
 function NavItem({
   href,
