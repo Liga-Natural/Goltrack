@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { MarketingNav } from "@/components/MarketingNav";
 import { PitchPattern } from "@/components/PitchPattern";
-import { LiveScoreCard } from "@/components/LiveScoreCard";
+import { HeroPhoneMockup } from "@/components/HeroPhoneMockup";
 import { IconClipboard, IconCalendar, IconBracket, IconPulse, IconWhistle, IconQr } from "@/components/icons";
 import { SPORTS, SPORT_NAMES } from "@/lib/sportTheme";
 
@@ -92,11 +92,16 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="relative flex justify-center lg:justify-end lg:pr-6">
-            <div className="w-full max-w-sm">
-              <LiveScoreCard />
-              <p className="text-center text-[11px] uppercase tracking-[0.2em] text-black/25 pt-4">
-                Real screen, real tournament — coastalcup/live
+          <div className="relative flex justify-center lg:justify-end lg:pr-6 py-4">
+            <div>
+              <HeroPhoneMockup />
+              {/* This mockup is a stylized composite, not a literal
+                  screenshot (unlike the /t/[slug] ticket-card it's inspired
+                  by, it has no exact match anywhere in the real product) —
+                  so the caption underneath makes a claim it can back up
+                  instead of "real screen, real tournament" like before. */}
+              <p className="text-center text-[11px] uppercase tracking-[0.2em] text-black/25 pt-6">
+                Live scores &amp; schedules, from any phone
               </p>
             </div>
           </div>
