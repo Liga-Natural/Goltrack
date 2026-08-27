@@ -124,8 +124,8 @@
    did. */
 .surface-light {
   color-scheme: light;
-  --ink: 0 0 0;
-  --paper: 255 255 255;
+  --ink: 18 18 18;
+  --paper: 250 250 248;
 }
 
 /* Subtle top-rule accent so flat white sections don't look like a plain fill */

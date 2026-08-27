@@ -20,13 +20,14 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 // Tailwind's "black" and "white" read from these (see tailwind.config.ts).
-// Light values are Tailwind's real black/white exactly, so light mode is
-// pixel-identical to before the theme toggle existed. Dark mode swaps their
+// Light mode is a soft off-black on warm off-white (#121212 / #FAFAF8) —
+// the brand's actual ink/paper pairing — not pure #000/#FFF, which reads
+// harsher and flatter than the rest of the identity. Dark mode swaps their
 // roles: "ink" (foreground/text/border usage) becomes light, "paper"
-// (background/surface usage) becomes the established #121212 "ink" dark
-// tone already used elsewhere in this app's identity.
+// (background/surface usage) becomes that same #121212 ink tone used as
+// the dark surface.
 const THEME_VARS = {
-  light: { ink: "0 0 0", paper: "255 255 255" },
+  light: { ink: "18 18 18", paper: "250 250 248" },
   dark: { ink: "250 250 249", paper: "18 18 18" },
 } as const;
 
