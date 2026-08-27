@@ -15,12 +15,11 @@ const matches = [
 export function HeroPhoneMockup() {
   return (
     <div className="[perspective:1400px]">
-      <div className="relative w-[280px] sm:w-[300px] transition-transform duration-500 lg:[transform:rotateY(-8deg)_rotateX(3deg)] lg:hover:[transform:rotateY(-3deg)_rotateX(1deg)]">
-        {/* Soft ground shadow under the device, separate from the card's own
-            shadow, so it reads as "floating" rather than flat-on-the-page. */}
-        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 h-8 w-[85%] rounded-full bg-black/20 blur-xl" />
-
-        <div className="relative rounded-[2.75rem] bg-navy-900 p-2.5 shadow-elevated border border-black/10">
+      <div
+        className="relative w-[280px] sm:w-[300px] transition-transform duration-500 lg:[transform:rotateY(-8deg)_rotateX(3deg)] lg:hover:[transform:rotateY(-3deg)_rotateX(1deg)]"
+        style={{ filter: "drop-shadow(0 30px 35px rgba(0,0,0,0.8)) drop-shadow(0 10px 12px rgba(0,0,0,0.5))" }}
+      >
+        <div className="relative rounded-[2.75rem] bg-navy-900 p-2.5 border border-black/10">
           <div className="relative overflow-hidden rounded-[2.1rem] bg-navy-900 pb-5">
             {/* Status bar + notch */}
             <div className="flex items-center justify-between px-6 pt-3 pb-1 text-[10px] font-medium text-white/70">
@@ -56,7 +55,7 @@ export function HeroPhoneMockup() {
                   live card below, not a 3-part "home vs away" row. That
                   squeezed team names into mid-word wraps ("Coastal" / "FC")
                   at this card's fixed width. */}
-              <div className="rounded-xl bg-white/[0.05] border border-white/10 p-3 mb-3 text-xs">
+              <div className="rounded-xl bg-[#1A1A1A] border border-white/10 p-3 mb-3 text-xs">
                 <p className="text-[10px] text-white/35 mb-2">{matches[0].time} · {matches[0].field}</p>
                 <div className="flex items-center gap-1.5 text-white/85 mb-1.5">
                   <span className="h-5 w-5 shrink-0 rounded-full bg-pitch-400/20 text-pitch-400 text-[9px] font-bold flex items-center justify-center">
@@ -64,11 +63,19 @@ export function HeroPhoneMockup() {
                   </span>
                   {matches[0].home}
                 </div>
-                <div className="flex items-center gap-1.5 text-white/85">
+                <div className="flex items-center gap-1.5 text-white/85 mb-3">
                   <span className="h-5 w-5 shrink-0 rounded-full bg-white/10 text-white/60 text-[9px] font-bold flex items-center justify-center">
                     {matches[0].awayInit}
                   </span>
                   {matches[0].away}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="flex-1 text-center rounded-full bg-pitch-400 text-white text-[10px] font-bold py-1.5">
+                    View Details
+                  </span>
+                  <span className="flex-1 text-center rounded-full border border-white/25 text-white/80 text-[10px] font-bold py-1.5">
+                    Match Center
+                  </span>
                 </div>
               </div>
 
@@ -82,12 +89,28 @@ export function HeroPhoneMockup() {
                   </span>
                   <span className="text-[10px] font-bold text-pitch-400 tracking-wide">LIVE · 62&apos;</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-white">Miami United</span>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="flex items-center gap-1.5 text-sm font-medium text-white">
+                    <span className="h-5 w-5 shrink-0 rounded-full bg-white/10 text-white/70 text-[9px] font-bold flex items-center justify-center">
+                      MU
+                    </span>
+                    Miami United
+                  </span>
                   <span className="font-score text-base text-white">2 - 1</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-white">Broward SC</span>
+                <div className="flex items-center gap-1.5 text-sm font-medium text-white mb-3">
+                  <span className="h-5 w-5 shrink-0 rounded-full bg-white/10 text-white/70 text-[9px] font-bold flex items-center justify-center">
+                    BS
+                  </span>
+                  Broward SC
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="flex-1 text-center rounded-full bg-pitch-400 text-white text-[10px] font-bold py-1.5">
+                    View Details
+                  </span>
+                  <span className="flex-1 text-center rounded-full border border-white/25 text-white/80 text-[10px] font-bold py-1.5">
+                    Match Center
+                  </span>
                 </div>
               </div>
 
