@@ -100,7 +100,7 @@ export default function Home() {
                   by, it has no exact match anywhere in the real product) —
                   so the caption underneath makes a claim it can back up
                   instead of "real screen, real tournament" like before. */}
-              <p className="text-center text-[11px] uppercase tracking-[0.2em] text-black/25 pt-6">
+              <p className="text-center text-[11px] uppercase tracking-[0.2em] text-black/40 pt-6">
                 Live scores &amp; schedules, from any phone
               </p>
             </div>
@@ -135,7 +135,7 @@ export default function Home() {
                     Positioning it behind a fixed-width padded column means
                     the heading/body can never run into it, at any width. */}
                 <span
-                  className="font-display text-6xl text-black/[0.06] leading-none select-none absolute -top-1 left-0 z-0"
+                  className="font-display text-6xl text-black/10 leading-none select-none absolute -top-1 left-0 z-0"
                   aria-hidden="true"
                 >
                   {String(i + 1).padStart(2, "0")}

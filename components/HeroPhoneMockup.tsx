@@ -14,11 +14,20 @@ const matches = [
 // site, not a pixel copy of any real page's layout.
 export function HeroPhoneMockup() {
   return (
-    <div className="[perspective:1400px]">
-      <div
-        className="relative w-[280px] sm:w-[300px] transition-transform duration-500 lg:[transform:rotateY(-8deg)_rotateX(3deg)] lg:hover:[transform:rotateY(-3deg)_rotateX(1deg)]"
-        style={{ filter: "drop-shadow(0 30px 35px rgba(0,0,0,0.8)) drop-shadow(0 10px 12px rgba(0,0,0,0.5))" }}
-      >
+    // surface-light pins --ink/--paper to fixed light values regardless of
+    // the site's theme. Necessary here, not just cosmetic: text-white,
+    // bg-black, and border-white/X below are meant as literal phone-screen
+    // colors, but Tailwind's black/white keys are redefined sitewide to
+    // read --ink/--paper (see tailwind.config.ts) so the theme toggle can
+    // recolor bg-white/text-black everywhere. Left unpinned, dark mode
+    // flips --paper to a dark value and --ink to a light one, so
+    // "text-white" silently turns dark-on-dark and "bg-black" turns
+    // light-on-dark inside this component's own always-dark UI — nearly
+    // invisible. Same fix as the passport page's .surface-light, applied
+    // for the opposite reason (a self-contained dark screenshot rather
+    // than print legibility).
+    <div className="[perspective:1400px] surface-light">
+      <div className="hero-phone-card relative w-[280px] sm:w-[300px]">
         {/* The bezel is one step lighter than navy-900 (#1F1F1F vs #111111)
             on purpose — now that the page itself defaults to dark, a bezel
             in the exact same tone as the page background would merge into

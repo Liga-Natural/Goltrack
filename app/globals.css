@@ -56,11 +56,16 @@
   }
   /* A pure white fill on a white card/page gives a field zero visual
      separation from its container — the only thing marking it as a box was
-     a 1px 15%-black border. A faint ink tint gives it a real, findable edge
-     without reading as "disabled grey", and it brightens to true white on
-     focus so the active field still pops. */
+     a 1px 15%-black border. An ink tint gives it a real, findable edge
+     without reading as "disabled grey", and it brightens to the page's base
+     surface on focus so the active field still pops. 0.025/15% was tuned
+     against a white card on a white page; against a dark card on a dark
+     page (now the site default) that same tint was nearly imperceptible —
+     eyes are less sensitive to a faint lightening on dark than an
+     equally-faint darkening on light — so both are bumped for a contrast
+     level that reads clearly in either mode. */
   .input {
-    @apply w-full rounded-lg bg-black/[0.025] border border-black/15 px-3 py-2 text-sm text-black placeholder:text-black/30 transition-colors focus:outline-none focus:bg-white focus:ring-2 focus:ring-pitch-400;
+    @apply w-full rounded-lg bg-black/[0.06] border border-black/25 px-3 py-2 text-sm text-black placeholder:text-black/30 transition-colors focus:outline-none focus:bg-white focus:ring-2 focus:ring-pitch-400;
   }
   .label {
     @apply block text-xs font-semibold uppercase tracking-wide text-black/50 mb-1.5;
@@ -216,4 +221,34 @@
   border-radius: 9999px;
   background: var(--divider-bg, rgb(var(--paper)));
   transform: translate(-50%, -50%);
+}
+
+/* Hero phone mockup's 3D tilt + floating shadow. A plain CSS class rather
+   than Tailwind arbitrary-value classes because the hover state changes
+   both transform AND filter together with a shared transition — doable in
+   Tailwind but far less readable than just writing the CSS. Everything
+   lives in this class (nothing set inline on the element) since an inline
+   style attribute would out-specificity these rules even inside the media
+   query below and silently never apply.
+   Flat (no tilt) below 1024px on purpose: a tilted card fights a narrow
+   viewport instead of reading as "floating" — still gets the drop-shadow,
+   just no rotation. */
+.hero-phone-card {
+  filter: drop-shadow(0 30px 35px rgba(0, 0, 0, 0.8)) drop-shadow(0 10px 12px rgba(0, 0, 0, 0.5));
+}
+@media (min-width: 1024px) {
+  .hero-phone-card {
+    transform: rotateX(10deg) rotateY(-12deg) rotateZ(2deg);
+    transition: transform 0.5s ease, filter 0.5s ease;
+    filter: drop-shadow(-20px 30px 35px rgba(0, 0, 0, 0.85)) drop-shadow(0 10px 15px rgba(0, 0, 0, 0.5));
+  }
+  .hero-phone-card:hover {
+    transform: rotateX(0deg) rotateY(0deg) scale(1.03);
+    filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.9));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-phone-card {
+    transition: none;
+  }
 }
