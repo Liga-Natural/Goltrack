@@ -34,7 +34,7 @@ export default async function PassportPage({ params }: { params: { playerId: str
       <header className="border-b border-black/5">
         <div className="mx-auto max-w-md px-4 py-4">
           <Link href="/">
-            <Logo className="text-navy-900" />
+            <Logo />
           </Link>
         </div>
       </header>

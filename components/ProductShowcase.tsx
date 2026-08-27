@@ -180,7 +180,7 @@ export function ProductShowcase({
 
       <footer className="border-t border-black/5">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-black/30">
-          <Logo className="text-sm" markClassName="h-5 w-5" />
+          <Logo markClassName="h-5 w-5" wordmarkClassName="h-4" />
           <p>© {new Date().getFullYear()} Jogo. Built for organizers, players, and families.</p>
         </div>
       </footer>

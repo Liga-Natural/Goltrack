@@ -13,20 +13,26 @@ export function LogoMark({ className = "h-8 w-8" }: { className?: string }) {
   );
 }
 
-// The wordmark itself: Unbounded at weight 900 (font-logo, scoped to just
-// this component — the rest of the site reads in Bricolage Grotesque). Each
-// letter sits in its own span with a small hand-tuned negative margin,
-// because Unbounded's default tracking reads too loose at this size/weight
-// to feel like one solid word. The whole wordmark — letters and the
-// squared full stop alike — renders in the accent color rather than
-// inheriting the parent's text color.
+// The wordmark: the actual brand logo file (public/jogo-wordmark.png),
+// not a font-based reconstruction — a custom-drawn logotype isn't
+// something a font pairing + CSS letter-spacing hacks can faithfully
+// reproduce. Its red is fixed at the file's own brand red (#E4162A),
+// independent of the site's configurable accent color: the logo is a
+// constant piece of brand identity, not something that should shift
+// if an organizer picks a different accent from Settings.
 export function Logo({
   className = "",
   markClassName = "h-8 w-8",
+  wordmarkClassName = "h-6",
   showMark = true,
 }: {
   className?: string;
   markClassName?: string;
+  // Raster image, so it scales by explicit height rather than inheriting
+  // font-size the way the old letter-span wordmark did — callers that
+  // want a bigger/smaller wordmark pass a height class here instead of a
+  // text-size class on the wrapper.
+  wordmarkClassName?: string;
   // The mark is a black tile with a white "J" — always ink-on-paper, not
   // color-inherited like the wordmark text is. On a dark section it would
   // disappear into the background, so callers on dark surfaces (see the
@@ -34,15 +40,10 @@ export function Logo({
   showMark?: boolean;
 }) {
   return (
-    <span className={`inline-flex items-center gap-2.5 font-logo font-black tracking-tight ${className}`}>
+    <span className={`inline-flex items-center gap-2.5 ${className}`}>
       {showMark && <LogoMark className={markClassName} />}
-      <span className="inline-flex items-baseline text-pitch-400">
-        <span className="inline-block -mr-[0.07em]">J</span>
-        <span className="inline-block -mr-[0.05em]">o</span>
-        <span className="inline-block -mr-[0.04em]">g</span>
-        <span className="inline-block">o</span>
-        <span className="inline-block w-[0.16em] h-[0.16em] rounded-[1px] bg-pitch-400 ml-[0.08em] mb-[0.01em]" />
-      </span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/jogo-wordmark.png" alt="Jogo" className={`${wordmarkClassName} w-auto`} />
     </span>
   );
 }

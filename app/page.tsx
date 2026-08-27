@@ -176,7 +176,7 @@ export default function Home() {
       <section className="reveal relative bg-black text-white py-24 text-center overflow-hidden">
         <PitchPattern className="pointer-events-none absolute -z-0 h-[480px] w-[480px] text-white/[0.04] -left-32 -bottom-32" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-          <Logo showMark={false} className="justify-center text-3xl sm:text-4xl mb-7 text-white" />
+          <Logo showMark={false} className="justify-center mb-7" wordmarkClassName="h-9 sm:h-11" />
           <h2 className="text-display-sm mb-4">Ready to run your next event on Jogo?</h2>
           <p className="text-white/50 mb-9 max-w-xl mx-auto text-base">
             Open registration and have a full bracket ready before kickoff.
@@ -189,7 +189,7 @@ export default function Home() {
 
       <footer className="border-t border-black/5">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
-          <Logo className="text-sm" markClassName="h-5 w-5" />
+          <Logo markClassName="h-5 w-5" wordmarkClassName="h-4" />
           <nav className="flex items-center gap-5 text-black/40">
             <Link href="/tournaments" className="hover:text-black/70">
               Tournaments
