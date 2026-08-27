@@ -71,7 +71,7 @@ export default async function PublicTournamentPage({
 
           <div className="mb-8">
             <div className="flex items-center gap-2.5 mb-1.5">
-              <h1 className="text-3xl font-semibold">{tournament.name}</h1>
+              <h1 className="text-display-sm">{tournament.name}</h1>
               <span className={`badge ${theme.soft}`}>
                 {theme.emoji} {theme.label}
               </span>
@@ -84,15 +84,18 @@ export default async function PublicTournamentPage({
           </div>
 
           {liveMatches.length > 0 && (
-            <div className="card p-5 mb-8 border-volt-400/30">
-              <h2 className="font-semibold mb-3 flex items-center gap-2 text-volt-500">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-volt-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-volt-400" />
-                </span>
-                LIVE NOW
-              </h2>
-              <div className="space-y-2">
+            <div className="ticket-card rounded-2xl border border-volt-400/30 shadow-elevated mb-8" style={{ ["--ticket-cut" as any]: "52px" }}>
+              <div className="rounded-t-2xl px-5 pt-5 pb-4">
+                <h2 className="font-semibold flex items-center gap-2 text-volt-500">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-volt-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-volt-400" />
+                  </span>
+                  LIVE NOW
+                </h2>
+              </div>
+              <div className="ticket-card__tear mx-2" style={{ ["--ticket-punch-bg" as any]: "#ffffff" }} />
+              <div className="space-y-2 px-5 pt-4 pb-5">
                 {liveMatches.map((m) => (
                   <div key={m.id} className="flex items-center justify-between text-sm">
                     <span className="flex items-center gap-2">
@@ -100,7 +103,7 @@ export default async function PublicTournamentPage({
                       <span className="text-black/30">vs</span>
                       <TeamInline team={teamsById.get(m.awayTeamId || "")} sport={tournament.sport} />
                     </span>
-                    <span className="font-mono font-semibold">
+                    <span className="font-score text-base">
                       {m.homeScore} - {m.awayScore}
                     </span>
                   </div>
@@ -154,7 +157,7 @@ export default async function PublicTournamentPage({
                         </div>
                         <div className="flex items-center gap-3">
                           <span className="text-black/40 text-xs hidden sm:inline">{m.field}</span>
-                          <span className="font-mono">
+                          <span className="font-score text-sm">
                             {m.homeScore ?? "-"} : {m.awayScore ?? "-"}
                           </span>
                           <MatchStatusBadge status={m.status} />

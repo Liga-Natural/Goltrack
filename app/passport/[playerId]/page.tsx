@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Players, Teams, Tournaments, Matches, CheckIns } from "@/lib/models";
 import { qrDataUrl } from "@/lib/qr";
 import { Logo } from "@/components/Logo";
+import { TeamBadge } from "@/components/TeamBadge";
 
 export const revalidate = 5;
 
@@ -39,25 +40,51 @@ export default async function PassportPage({ params }: { params: { playerId: str
       </header>
 
       <div className="mx-auto max-w-md px-4 py-8">
-        <div className="rounded-2xl border border-black/10 shadow-card overflow-hidden">
-          <div className="bg-navy-900 text-white p-5 flex items-center justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-white/40">Jogo Passport</p>
-              <h1 className="text-xl font-semibold mt-0.5">{player.name}</h1>
-              <p className="text-sm text-white/50">
-                {team.name} {player.jerseyNumber && `· #${player.jerseyNumber}`}
-              </p>
-            </div>
-            <div className="bg-white rounded-lg p-1.5">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={qr} alt="Passport QR code" className="h-20 w-20" />
+        {/* Trading-card treatment: crest + jersey number up front, the tear
+            line separating "the card" from "the stats on the back," QR kept
+            exactly as large/high-contrast as before since this is scanned
+            on match day — only its surroundings changed. */}
+        <div className="ticket-card rounded-2xl border border-black/10 shadow-elevated" style={{ ["--ticket-cut" as any]: "108px" }}>
+          <div className="relative overflow-hidden rounded-t-2xl bg-navy-900 text-white p-5">
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-pitch-400" />
+            <span
+              className="absolute -right-3 -top-3 font-display text-8xl text-white/[0.06] leading-none select-none"
+              aria-hidden="true"
+            >
+              {player.jerseyNumber || "•"}
+            </span>
+            <div className="relative flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-wide text-white/40">Jogo Passport</p>
+                <div className="flex items-center gap-2.5 mt-2 mb-1">
+                  <TeamBadge
+                    id={team.id}
+                    name={team.name}
+                    hasCrest={team.hasCrest}
+                    crestUpdatedAt={team.crestUpdatedAt}
+                    logoUrl={team.logoUrl}
+                    sport={tournament.sport}
+                    size="sm"
+                  />
+                  <h1 className="text-xl font-semibold truncate">{player.name}</h1>
+                </div>
+                <p className="text-sm text-white/50 truncate">
+                  {team.name} {player.jerseyNumber && `· #${player.jerseyNumber}`}
+                </p>
+              </div>
+              <div className="bg-white rounded-lg p-1.5 shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={qr} alt="Passport QR code" className="h-20 w-20" />
+              </div>
             </div>
           </div>
+
+          <div className="ticket-card__tear mx-2" style={{ ["--ticket-punch-bg" as any]: "#ffffff" }} />
 
           <div className="p-5">
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs text-black/40">Passport ID</span>
-              <code className="text-xs text-navy-700">{player.passportId}</code>
+              <code className="font-score text-xs text-navy-700">{player.passportId}</code>
             </div>
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs text-black/40">Status</span>
@@ -68,15 +95,15 @@ export default async function PassportPage({ params }: { params: { playerId: str
 
             <div className="grid grid-cols-3 gap-3 my-5 text-center">
               <div>
-                <p className="text-2xl font-semibold">{played.length}</p>
+                <p className="font-score text-2xl">{played.length}</p>
                 <p className="text-xs text-black/40">Matches</p>
               </div>
               <div>
-                <p className="text-2xl font-semibold">{wins}</p>
+                <p className="font-score text-2xl">{wins}</p>
                 <p className="text-xs text-black/40">Wins</p>
               </div>
               <div>
-                <p className="text-2xl font-semibold">1</p>
+                <p className="font-score text-2xl">1</p>
                 <p className="text-xs text-black/40">Tournaments</p>
               </div>
             </div>

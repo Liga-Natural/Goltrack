@@ -41,7 +41,7 @@ export default async function PublicTeamPage({ params }: { params: { slug: strin
           <TeamBadge id={team.id} name={team.name} hasCrest={team.hasCrest} crestUpdatedAt={team.crestUpdatedAt} logoUrl={team.logoUrl} sport={tournament.sport} size="lg" />
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-3xl font-semibold">{team.name}</h1>
+              <h1 className="text-display-sm">{team.name}</h1>
               <span className={`badge ${getSportTheme(tournament.sport).soft}`}>{getSportTheme(tournament.sport).emoji}</span>
             </div>
             <p className="text-black/50 mt-1">
@@ -60,9 +60,9 @@ export default async function PublicTeamPage({ params }: { params: { slug: strin
               ["Points", standingsRow.points],
               ["MOTM awards", motmCount],
             ].map(([label, value]) => (
-              <div key={label as string} className="card p-4 text-center">
+              <div key={label as string} className="card-elevated p-4 text-center">
                 <p className="text-xs uppercase tracking-wide text-black/40 mb-1">{label}</p>
-                <p className="text-2xl font-semibold">{value}</p>
+                <p className="font-score text-2xl">{value}</p>
               </div>
             ))}
           </div>
@@ -109,7 +109,7 @@ export default async function PublicTeamPage({ params }: { params: { slug: strin
                       {isHome ? "vs" : "@"} {opponent || "TBD"}
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="font-mono">
+                      <span className="font-score text-sm">
                         {m.homeScore ?? "-"} : {m.awayScore ?? "-"}
                       </span>
                       <MatchStatusBadge status={m.status} />

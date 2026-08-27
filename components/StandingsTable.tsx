@@ -37,14 +37,18 @@ export function StandingsTable({ rows, title, sport }: { rows: StandingRow[]; ti
                   <span>{r.team.name}</span>
                 </div>
               </td>
-              <td className="py-2 px-2 text-center text-black/60">{r.played}</td>
-              <td className="py-2 px-2 text-center text-black/60">{r.won}</td>
-              <td className="py-2 px-2 text-center text-black/60">{r.drawn}</td>
-              <td className="py-2 px-2 text-center text-black/60">{r.lost}</td>
-              <td className="py-2 px-2 text-center text-black/60">{r.goalsFor}</td>
-              <td className="py-2 px-2 text-center text-black/60">{r.goalsAgainst}</td>
-              <td className="py-2 px-2 text-center text-black/60">{r.goalDiff > 0 ? `+${r.goalDiff}` : r.goalDiff}</td>
-              <td className="py-2 pl-2 text-center font-semibold">{r.points}</td>
+              {/* tabular-nums alone here (not the full .font-score/Archivo
+                  Black treatment) — at single-digit table-cell size, every
+                  column in the display face would read as uniformly heavy
+                  and erase the emphasis Pts is supposed to have. */}
+              <td className="tabular-nums py-2 px-2 text-center text-black/60">{r.played}</td>
+              <td className="tabular-nums py-2 px-2 text-center text-black/60">{r.won}</td>
+              <td className="tabular-nums py-2 px-2 text-center text-black/60">{r.drawn}</td>
+              <td className="tabular-nums py-2 px-2 text-center text-black/60">{r.lost}</td>
+              <td className="tabular-nums py-2 px-2 text-center text-black/60">{r.goalsFor}</td>
+              <td className="tabular-nums py-2 px-2 text-center text-black/60">{r.goalsAgainst}</td>
+              <td className="tabular-nums py-2 px-2 text-center text-black/60">{r.goalDiff > 0 ? `+${r.goalDiff}` : r.goalDiff}</td>
+              <td className="font-score py-2 pl-2 text-center">{r.points}</td>
             </tr>
           ))}
         </tbody>

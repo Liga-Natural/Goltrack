@@ -47,7 +47,7 @@ export default async function SchedulePage({ params }: { params: { id: string } 
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-black/40 text-xs">{m.field}</span>
-                  <span className="font-mono">{m.homeScore ?? "-"} : {m.awayScore ?? "-"}</span>
+                  <span className="font-score text-sm">{m.homeScore ?? "-"} : {m.awayScore ?? "-"}</span>
                   <MatchStatusBadge status={m.status} />
                 </div>
               </div>

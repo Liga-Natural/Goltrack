@@ -86,7 +86,7 @@ export function ProductShowcase({
                 {teamsById.get(m.awayTeamId || "")?.name}
               </span>
               <div className="flex items-center gap-2 shrink-0">
-                <span className="font-mono">
+                <span className="font-score text-sm">
                   {m.homeScore ?? "-"}:{m.awayScore ?? "-"}
                 </span>
                 <MatchStatusBadge status={m.status} />

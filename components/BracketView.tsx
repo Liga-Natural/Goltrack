@@ -29,11 +29,11 @@ export function BracketView({ matches, teams, sport }: { matches: Match[]; teams
             <div key={m.id} className="card p-3">
               <div className={`flex items-center justify-between text-sm py-1 ${m.status === "FINAL" && (m.homeScore ?? 0) > (m.awayScore ?? 0) ? "font-semibold text-pitch-600" : ""}`}>
                 <TeamInline team={teamOrLabel(m, "home", teamsById).team} sport={sport} fallback={teamOrLabel(m, "home", teamsById).label} />
-                <span>{m.homeScore ?? "-"}</span>
+                <span className="font-score">{m.homeScore ?? "-"}</span>
               </div>
               <div className={`flex items-center justify-between text-sm py-1 border-t border-black/5 ${m.status === "FINAL" && (m.awayScore ?? 0) > (m.homeScore ?? 0) ? "font-semibold text-pitch-600" : ""}`}>
                 <TeamInline team={teamOrLabel(m, "away", teamsById).team} sport={sport} fallback={teamOrLabel(m, "away", teamsById).label} />
-                <span>{m.awayScore ?? "-"}</span>
+                <span className="font-score">{m.awayScore ?? "-"}</span>
               </div>
             </div>
           ))}

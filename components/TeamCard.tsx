@@ -17,7 +17,7 @@ export function TeamCard({
   return (
     <Link
       href={href}
-      className="card p-4 flex items-center gap-3 hover:-translate-y-0.5 hover:shadow-lg transition-all"
+      className="card-interactive p-4 flex items-center gap-3"
     >
       <TeamBadge id={team.id} name={team.name} hasCrest={team.hasCrest} crestUpdatedAt={team.crestUpdatedAt} logoUrl={team.logoUrl} sport={sport} />
       <div className="min-w-0 flex-1">

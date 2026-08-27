@@ -114,10 +114,15 @@
    caller-controlled cut line (--ticket-cut, default 25% down — roughly a
    "header strip / body" split). Meant for score cards, standings headers,
    and the player passport, so the tear motif reads as one system across
-   the product instead of a single homepage element. */
+   the product instead of a single homepage element.
+   Deliberately NOT overflow:hidden — the punch circles sit 8px outside
+   the card's own edges (left:-8px / right:-8px) to look like actual bites
+   taken out of the stub; clipping would hide the entire point of the
+   class. If a caller needs a colored header block clipped to the card's
+   corner radius, round that specific child (rounded-t-*) instead of
+   reaching for overflow-hidden on the wrapper. */
 .ticket-card {
   position: relative;
-  overflow: hidden;
 }
 .ticket-card::before,
 .ticket-card::after {
