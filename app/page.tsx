@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Logo, LogoMark } from "@/components/Logo";
+import { Logo } from "@/components/Logo";
 import { PitchPattern } from "@/components/PitchPattern";
 import { LiveScoreCard } from "@/components/LiveScoreCard";
 import { IconClipboard, IconCalendar, IconBracket, IconPulse, IconWhistle, IconQr } from "@/components/icons";
@@ -82,7 +82,7 @@ export default function Home() {
                 </span>
               ))}
             </div>
-            <h1 className="font-display text-[2.75rem] leading-[0.98] sm:text-6xl lg:text-[4.5rem] tracking-tight text-black">
+            <h1 className="font-display text-display-sm sm:text-display-md lg:text-display-lg tracking-tight text-black">
               RUN YOUR
               <br />
               LEAGUE.
@@ -127,8 +127,7 @@ export default function Home() {
           <div className="relative flex justify-center lg:justify-end lg:pr-6">
             <div className="w-full max-w-sm">
               <LiveScoreCard />
-              <div className="ticket-perforation mx-2" style={{ ["--ticket-punch-bg" as any]: "#ffffff" }} />
-              <p className="text-center text-[11px] uppercase tracking-[0.2em] text-black/25 pt-3">
+              <p className="text-center text-[11px] uppercase tracking-[0.2em] text-black/25 pt-4">
                 Real screen, real tournament — coastalcup/live
               </p>
             </div>
@@ -139,10 +138,10 @@ export default function Home() {
       <section className="border-y-2 border-black bg-gray-50 relative overflow-hidden">
         <div className="grain-overlay" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
-          <div className="flex items-end justify-between gap-6 mb-12 flex-wrap">
+          <div className="flex items-end justify-between gap-6 mb-8 flex-wrap">
             <div>
               <span className="text-xs font-semibold uppercase tracking-[0.2em] text-pitch-600">The system</span>
-              <h2 className="text-2xl sm:text-3xl font-semibold mt-2 max-w-lg">
+              <h2 className="text-display-sm mt-2 max-w-lg leading-[0.95]">
                 Everything organizers need, connected end to end
               </h2>
             </div>
@@ -152,15 +151,19 @@ export default function Home() {
             </p>
           </div>
 
+          <div className="divider-pitch mb-2" style={{ ["--divider-bg" as any]: "#f9fafb" }} />
+
           <div className="grid sm:grid-cols-2 gap-x-10">
             {features.map((f, i) => (
               <div
                 key={f.title}
-                className="group flex items-start gap-5 py-6 border-t border-black/10 animate-fade-up"
+                className="group relative flex items-start gap-1 py-7 border-t border-black/10 animate-fade-up overflow-hidden"
                 style={{ animationDelay: `${i * 60}ms` }}
               >
-                <span className="font-mono text-sm text-black/25 pt-0.5 shrink-0 w-6">{String(i + 1).padStart(2, "0")}</span>
-                <div className="flex-1">
+                <span className="font-display text-5xl text-black/[0.06] leading-none shrink-0 -ml-1 select-none" aria-hidden="true">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div className="flex-1 -ml-3">
                   <div className="flex items-center gap-2.5 mb-1.5">
                     <f.icon className="h-4 w-4 text-pitch-600 shrink-0" />
                     <h3 className="font-semibold text-black">{f.title}</h3>
@@ -174,29 +177,31 @@ export default function Home() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6 py-20">
-        <h2 className="text-2xl sm:text-3xl font-semibold text-center mb-14">From kickoff to trophy in three steps</h2>
-        <div className="grid sm:grid-cols-3 gap-8 relative">
-          <div className="hidden sm:block absolute top-6 left-[16.5%] right-[16.5%] h-px bg-gradient-to-r from-transparent via-pitch-400/30 to-transparent" />
+        <h2 className="text-display-sm text-center mb-16">From kickoff to trophy in three steps</h2>
+        <div className="grid sm:grid-cols-3 gap-10 relative">
+          <div className="hidden sm:block absolute top-8 left-[16.5%] right-[16.5%] h-px bg-gradient-to-r from-transparent via-pitch-400/30 to-transparent" />
           {steps.map((s) => (
             <div key={s.n} className="relative text-center sm:text-left">
-              <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-black text-white font-display text-sm relative z-10">
+              <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-black text-white font-display text-base relative z-10 shadow-ticket">
                 {s.n}
               </span>
-              <h3 className="font-semibold text-black mt-4 mb-1.5">{s.title}</h3>
+              <h3 className="font-semibold text-black mt-5 mb-1.5 text-lg">{s.title}</h3>
               <p className="text-sm text-black/50 leading-relaxed">{s.body}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="relative mx-auto max-w-6xl px-4 sm:px-6 py-20 text-center overflow-hidden">
-        <div className="relative">
-          <div className="relative mx-auto mb-5 h-16 w-16">
-            <span className="absolute inset-0 rounded-2xl bg-pitch-400/20 blur-lg" />
-            <LogoMark className="relative h-16 w-16" />
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Ready to run your next event on Jogo?</h2>
-          <p className="text-black/50 mb-8 max-w-xl mx-auto">
+      {/* The one deliberate dark moment on the page — everything else here is
+          white/gray, so this band is the closing punctuation mark rather than
+          another identical section in the same rhythm. Stays inside the
+          locked ink/paper/red palette: black bg, white text, one red button. */}
+      <section className="relative bg-black text-white py-24 text-center overflow-hidden">
+        <PitchPattern className="pointer-events-none absolute -z-0 h-[480px] w-[480px] text-white/[0.04] -left-32 -bottom-32" />
+        <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
+          <Logo showMark={false} className="justify-center text-3xl sm:text-4xl mb-7 text-white" />
+          <h2 className="text-display-sm mb-4">Ready to run your next event on Jogo?</h2>
+          <p className="text-white/50 mb-9 max-w-xl mx-auto text-base">
             Set up a tournament, open registration, and have a full bracket ready before your first team even checks in.
           </p>
           <Link href="/signup" className="btn-primary text-base px-6 py-3">

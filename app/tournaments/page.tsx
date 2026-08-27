@@ -23,9 +23,10 @@ export default function TournamentsHubPage() {
         </div>
       </header>
 
-      <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-8">
-        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-2">Tournaments</h1>
-        <p className="text-black/50">Live standings, schedules, rosters, and results — updated as matches happen.</p>
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-10">
+        <h1 className="text-display-sm mb-3">Tournaments</h1>
+        <p className="text-black/50 max-w-md">Live standings, schedules, rosters, and results — updated as matches happen.</p>
+        <div className="divider-pitch mt-8" style={{ ["--divider-bg" as any]: "#ffffff" }} />
       </section>
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-20">

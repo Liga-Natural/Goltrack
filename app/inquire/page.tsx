@@ -47,22 +47,27 @@ export default function InquirePage() {
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-8 text-center">
         <span className="badge bg-pitch-400/10 text-pitch-600 border border-pitch-400/20 mb-5">No account needed</span>
-        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">Not sure Jogo fits your event?</h1>
-        <p className="text-black/60 mt-3 max-w-xl mx-auto">
+        <h1 className="text-display-sm">Not sure Jogo fits your event?</h1>
+        <p className="text-black/60 mt-4 max-w-xl mx-auto">
           Browse the formats we support below, or just send us a note about what you&apos;re planning — no sign-up required
           either way.
         </p>
       </section>
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-16">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-16">
-          {formats.map((f) => (
-            <div key={f.title} className="card p-5">
-              <div className="h-9 w-9 rounded-lg bg-pitch-400/10 text-pitch-600 flex items-center justify-center mb-3">
-                <f.icon className="h-5 w-5" />
+        <div className="grid sm:grid-cols-2 gap-x-10 mb-16">
+          {formats.map((f, i) => (
+            <div key={f.title} className="group relative flex items-start gap-1 py-7 border-t border-black/10 overflow-hidden">
+              <span className="font-display text-5xl text-black/[0.06] leading-none shrink-0 -ml-1 select-none" aria-hidden="true">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div className="flex-1 -ml-3">
+                <div className="flex items-center gap-2.5 mb-1.5">
+                  <f.icon className="h-4 w-4 text-pitch-600 shrink-0" />
+                  <h3 className="font-semibold text-black">{f.title}</h3>
+                </div>
+                <p className="text-sm text-black/50 leading-relaxed">{f.body}</p>
               </div>
-              <h3 className="font-semibold text-black mb-1.5">{f.title}</h3>
-              <p className="text-sm text-black/50 leading-relaxed">{f.body}</p>
             </div>
           ))}
         </div>

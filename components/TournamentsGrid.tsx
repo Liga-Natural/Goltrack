@@ -57,7 +57,7 @@ export function TournamentsGrid({ tournaments, teamCounts }: { tournaments: Tour
               <Link
                 key={t.id}
                 href={`/t/${t.slug}`}
-                className="card relative overflow-hidden p-5 hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
+                className="card-interactive relative overflow-hidden p-5"
               >
                 <div className={`absolute top-0 left-0 right-0 h-1.5 ${theme.dot}`} />
                 <div className="flex items-center justify-between mb-3 mt-1">

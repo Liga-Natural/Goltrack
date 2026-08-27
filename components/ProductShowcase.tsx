@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Logo } from "./Logo";
 import { StandingsTable } from "./StandingsTable";
 import { MatchStatusBadge } from "./MatchStatusBadge";
 import { IconGrid, IconUsers, IconCalendar, IconPulse, IconWhistle, IconQr } from "./icons";
@@ -125,11 +126,30 @@ export function ProductShowcase({
 
   return (
     <main className="min-h-screen">
+      <header className="border-b border-black/5 sticky top-0 z-20 bg-white/85 backdrop-blur">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 py-4 flex items-center justify-between">
+          <Link href="/">
+            <Logo />
+          </Link>
+          <nav className="flex items-center gap-2">
+            <Link href="/tournaments" className="btn-ghost hidden sm:inline-flex">
+              Tournaments
+            </Link>
+            <Link href="/inquire" className="btn-ghost">
+              Get in touch
+            </Link>
+            <Link href="/signup" className="btn-primary">
+              Get started
+            </Link>
+          </nav>
+        </div>
+      </header>
+
       <section className="mx-auto max-w-5xl px-4 sm:px-6 pt-16 pb-8 text-center">
         <span className="badge bg-pitch-400/10 text-pitch-600 border border-pitch-400/20 mb-5">
           A look inside the console
         </span>
-        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight mb-3">
+        <h1 className="text-display-sm mb-4">
           What you get when you run a tournament on Jogo
         </h1>
         <p className="text-black/60 max-w-xl mx-auto">
@@ -155,7 +175,7 @@ export function ProductShowcase({
 
       <section className="border-t border-black/5">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 py-16 text-center">
-          <h2 className="text-2xl sm:text-3xl font-semibold mb-3">Ready to run your own tournament?</h2>
+          <h2 className="text-display-sm mb-4">Ready to run your own tournament?</h2>
           <p className="text-black/50 mb-8">
             Jogo is a paid product built for organizers who are done juggling spreadsheets and group chats.
           </p>
@@ -169,6 +189,13 @@ export function ProductShowcase({
           </div>
         </div>
       </section>
+
+      <footer className="border-t border-black/5">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-black/30">
+          <Logo className="text-sm" markClassName="h-5 w-5" />
+          <p>© {new Date().getFullYear()} Jogo. Built for organizers, players, and families.</p>
+        </div>
+      </footer>
     </main>
   );
 }
