@@ -54,14 +54,19 @@
   .card-elevated {
     @apply rounded-2xl bg-white border border-black/10 shadow-elevated;
   }
+  /* A pure white fill on a white card/page gives a field zero visual
+     separation from its container — the only thing marking it as a box was
+     a 1px 15%-black border. A faint ink tint gives it a real, findable edge
+     without reading as "disabled grey", and it brightens to true white on
+     focus so the active field still pops. */
   .input {
-    @apply w-full rounded-lg bg-white border border-black/15 px-3 py-2 text-sm text-black placeholder:text-black/30 focus:outline-none focus:ring-2 focus:ring-pitch-400;
+    @apply w-full rounded-lg bg-black/[0.025] border border-black/15 px-3 py-2 text-sm text-black placeholder:text-black/30 transition-colors focus:outline-none focus:bg-white focus:ring-2 focus:ring-pitch-400;
   }
   .label {
     @apply block text-xs font-semibold uppercase tracking-wide text-black/50 mb-1.5;
   }
   .badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold leading-none;
   }
   /* Scores, stat figures, countdowns — tabular figures so digits don't
      jitter the layout as they update, paired with a heavy display weight
@@ -83,6 +88,32 @@
 @media (prefers-reduced-motion: reduce) {
   .score-flip {
     animation: none;
+  }
+}
+
+/* Scroll-driven entrance: visible by default (no-JS / pre-hydration always
+   shows real content), and only hidden-then-revealed once ScrollReveal.tsx
+   confirms JS + IntersectionObserver are actually running by stamping
+   data-reveal-armed on <html>. transition-delay is set inline per element
+   (data-reveal-delay, read by ScrollReveal.tsx) for staggered grids. */
+.reveal {
+  opacity: 1;
+  transform: none;
+}
+[data-reveal-armed] .reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1), transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-reveal-armed] .reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal-armed] .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
 

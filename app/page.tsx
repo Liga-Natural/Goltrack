@@ -1,9 +1,16 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
+import { MarketingNav } from "@/components/MarketingNav";
 import { PitchPattern } from "@/components/PitchPattern";
 import { LiveScoreCard } from "@/components/LiveScoreCard";
 import { IconClipboard, IconCalendar, IconBracket, IconPulse, IconWhistle, IconQr } from "@/components/icons";
 import { SPORTS, SPORT_NAMES } from "@/lib/sportTheme";
+
+const NAV_LINKS = [
+  { href: "/tournaments", label: "Tournaments" },
+  { href: "/tour", label: "See how it works" },
+  { href: "/inquire", label: "Get in touch" },
+];
 
 const features = [
   {
@@ -47,28 +54,7 @@ const steps = [
 export default function Home() {
   return (
     <main className="min-h-screen overflow-x-clip">
-      <header className="border-b border-black/10 sticky top-0 z-20 bg-white/85 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4 flex items-center justify-between">
-          <Logo />
-          <nav className="flex items-center gap-1 sm:gap-2">
-            <Link href="/tournaments" className="btn-ghost hidden sm:inline-flex">
-              Tournaments
-            </Link>
-            <Link href="/tour" className="btn-ghost hidden sm:inline-flex">
-              See how it works
-            </Link>
-            <Link href="/inquire" className="btn-ghost hidden sm:inline-flex">
-              Get in touch
-            </Link>
-            <Link href="/login" className="btn-ghost">
-              Log in
-            </Link>
-            <Link href="/signup" className="btn-primary">
-              Get started
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <MarketingNav links={NAV_LINKS} />
 
       <section className="relative">
         <PitchPattern className="pointer-events-none absolute -z-10 h-[560px] w-[560px] text-black/[0.04] -right-40 -top-24" />
@@ -138,7 +124,7 @@ export default function Home() {
       <section className="border-y-2 border-black bg-black/[0.02] relative overflow-hidden">
         <div className="grain-overlay" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
-          <div className="flex items-end justify-between gap-6 mb-8 flex-wrap">
+          <div className="reveal flex items-end justify-between gap-6 mb-8 flex-wrap">
             <div>
               <span className="text-xs font-semibold uppercase tracking-[0.2em] text-pitch-600">The system</span>
               <h2 className="text-display-sm mt-2 max-w-lg leading-[0.95]">
@@ -155,15 +141,20 @@ export default function Home() {
 
           <div className="grid sm:grid-cols-2 gap-x-10">
             {features.map((f, i) => (
-              <div
-                key={f.title}
-                className="group relative flex items-start gap-1 py-7 border-t border-black/10 animate-fade-up overflow-hidden"
-                style={{ animationDelay: `${i * 60}ms` }}
-              >
-                <span className="font-display text-5xl text-black/[0.06] leading-none shrink-0 -ml-1 select-none" aria-hidden="true">
+              <div key={f.title} className="reveal group relative py-7 border-t border-black/10" data-reveal-delay={i * 80}>
+                {/* Ghost numeral is absolutely positioned and out of the text
+                    flow on purpose — as an inline flex sibling it used to
+                    collide with any heading that wrapped to two lines
+                    (headings this short wrap on ~half of phone widths).
+                    Positioning it behind a fixed-width padded column means
+                    the heading/body can never run into it, at any width. */}
+                <span
+                  className="font-display text-6xl text-black/[0.06] leading-none select-none absolute -top-1 left-0 z-0"
+                  aria-hidden="true"
+                >
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <div className="flex-1 -ml-3">
+                <div className="relative z-10 pl-12 sm:pl-16">
                   <div className="flex items-center gap-2.5 mb-1.5">
                     <f.icon className="h-4 w-4 text-pitch-600 shrink-0" />
                     <h3 className="font-semibold text-black">{f.title}</h3>
@@ -177,11 +168,11 @@ export default function Home() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6 py-20">
-        <h2 className="text-display-sm text-center mb-16">From kickoff to trophy in three steps</h2>
+        <h2 className="reveal text-display-sm text-center mb-16">From kickoff to trophy in three steps</h2>
         <div className="grid sm:grid-cols-3 gap-10 relative">
           <div className="hidden sm:block absolute top-8 left-[16.5%] right-[16.5%] h-px bg-gradient-to-r from-transparent via-pitch-400/30 to-transparent" />
-          {steps.map((s) => (
-            <div key={s.n} className="relative text-center sm:text-left">
+          {steps.map((s, i) => (
+            <div key={s.n} className="reveal relative text-center sm:text-left" data-reveal-delay={i * 100}>
               <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-black text-white font-display text-base relative z-10 shadow-ticket">
                 {s.n}
               </span>
@@ -196,7 +187,7 @@ export default function Home() {
           white/gray, so this band is the closing punctuation mark rather than
           another identical section in the same rhythm. Stays inside the
           locked ink/paper/red palette: black bg, white text, one red button. */}
-      <section className="relative bg-black text-white py-24 text-center overflow-hidden">
+      <section className="reveal relative bg-black text-white py-24 text-center overflow-hidden">
         <PitchPattern className="pointer-events-none absolute -z-0 h-[480px] w-[480px] text-white/[0.04] -left-32 -bottom-32" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
           <Logo showMark={false} className="justify-center text-3xl sm:text-4xl mb-7 text-white" />

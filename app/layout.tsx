@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteSettings } from "@/lib/models";
 import { generateRamp } from "@/lib/colorRamp";
+import { ScrollReveal } from "@/components/ScrollReveal";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -51,7 +52,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <style>{`:root { ${cssVars} }`}</style>
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        <ScrollReveal />
+      </body>
     </html>
   );
 }

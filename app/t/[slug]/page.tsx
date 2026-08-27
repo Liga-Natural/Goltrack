@@ -84,7 +84,7 @@ export default async function PublicTournamentPage({
           </div>
 
           {liveMatches.length > 0 && (
-            <div className="ticket-card rounded-2xl border border-volt-400/30 shadow-elevated mb-8" style={{ ["--ticket-cut" as any]: "52px" }}>
+            <div className="reveal ticket-card rounded-2xl border border-volt-400/30 shadow-elevated mb-8" style={{ ["--ticket-cut" as any]: "52px" }}>
               <div className="rounded-t-2xl px-5 pt-5 pb-4">
                 <h2 className="font-semibold flex items-center gap-2 text-volt-500">
                   <span className="relative flex h-2 w-2">
@@ -116,23 +116,29 @@ export default async function PublicTournamentPage({
             <section className="mb-8">
               <h2 className="font-semibold mb-4">Teams</h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {teams.map((t) => (
-                  <TeamCard
-                    key={t.id}
-                    team={t}
-                    sport={tournament.sport}
-                    href={`/t/${tournament.slug}/teams/${t.id}`}
-                    standing={standingByTeamId.get(t.id)}
-                  />
+                {teams.map((t, i) => (
+                  <div key={t.id} className="reveal" data-reveal-delay={Math.min(i % 6, 5) * 70}>
+                    <TeamCard
+                      team={t}
+                      sport={tournament.sport}
+                      href={`/t/${tournament.slug}/teams/${t.id}`}
+                      standing={standingByTeamId.get(t.id)}
+                    />
+                  </div>
                 ))}
               </div>
             </section>
           )}
 
           {groups.length > 0 && groupMatches.length > 0 && (
-            <section className="card p-6 mb-8">
+            <section className="reveal card p-6 mb-8">
               <h2 className="font-semibold mb-4">Standings</h2>
-              <div className="grid sm:grid-cols-2 gap-8">
+              {/* lg (not sm): two groups sharing a row at tablet widths left
+                  each table squeezed to ~half the card width — nowhere near
+                  enough for 9 columns, so GD/PTS ran off the visible edge.
+                  Now each group gets the full card width until there's
+                  actually room (1024px+) to split them side by side. */}
+              <div className="grid lg:grid-cols-2 gap-8">
                 {groups.map((g) => (
                   <StandingsTable key={g} rows={computeStandings(teams, matches, g)} title={`Group ${g}`} sport={tournament.sport} />
                 ))}
@@ -141,7 +147,7 @@ export default async function PublicTournamentPage({
           )}
 
           {groupMatches.length > 0 && (
-            <section className="card p-6 mb-8">
+            <section className="reveal card p-6 mb-8">
               <h2 className="font-semibold mb-4">Schedule & results</h2>
               <div className="space-y-2">
                 {groupMatches.map((m) => {
@@ -176,7 +182,7 @@ export default async function PublicTournamentPage({
           )}
 
           {knockoutMatches.length > 0 && (
-            <section className="card p-6">
+            <section className="reveal card p-6">
               <h2 className="font-semibold mb-4">Knockout bracket</h2>
               <BracketView matches={knockoutMatches} teams={teams} sport={tournament.sport} />
             </section>

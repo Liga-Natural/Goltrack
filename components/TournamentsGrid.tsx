@@ -57,8 +57,8 @@ export function TournamentsGrid({ tournaments, teamCounts }: { tournaments: Tour
               <Link
                 key={t.id}
                 href={`/t/${t.slug}`}
-                className="card-interactive relative overflow-hidden p-5 animate-fade-up"
-                style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
+                className="reveal card-interactive relative overflow-hidden p-5"
+                data-reveal-delay={Math.min(i % 6, 5) * 70}
               >
                 <div className={`absolute top-0 left-0 right-0 h-1.5 ${theme.dot}`} />
                 <div className="flex items-center justify-between mb-3 mt-1">

@@ -1,10 +1,16 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
+import { MarketingNav } from "./MarketingNav";
 import { StandingsTable } from "./StandingsTable";
 import { MatchStatusBadge } from "./MatchStatusBadge";
 import { IconGrid, IconUsers, IconCalendar, IconPulse, IconWhistle, IconQr } from "./icons";
 import type { Tournament, Team, Match, Referee, Player } from "@/lib/models";
 import type { StandingRow } from "@/lib/standings";
+
+const NAV_LINKS = [
+  { href: "/tournaments", label: "Tournaments" },
+  { href: "/inquire", label: "Get in touch" },
+];
 
 export function ProductShowcase({
   tournament,
@@ -126,24 +132,7 @@ export function ProductShowcase({
 
   return (
     <main className="min-h-screen">
-      <header className="border-b border-black/5 sticky top-0 z-20 bg-white/85 backdrop-blur">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 py-4 flex items-center justify-between">
-          <Link href="/">
-            <Logo />
-          </Link>
-          <nav className="flex items-center gap-2">
-            <Link href="/tournaments" className="btn-ghost hidden sm:inline-flex">
-              Tournaments
-            </Link>
-            <Link href="/inquire" className="btn-ghost">
-              Get in touch
-            </Link>
-            <Link href="/signup" className="btn-primary">
-              Get started
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <MarketingNav links={NAV_LINKS} maxWidthClass="max-w-5xl" />
 
       <section className="mx-auto max-w-5xl px-4 sm:px-6 pt-16 pb-8 text-center">
         <span className="badge bg-pitch-400/10 text-pitch-600 border border-pitch-400/20 mb-5">

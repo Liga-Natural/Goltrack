@@ -35,7 +35,7 @@ export function InquiryForm() {
 
   if (status === "sent") {
     return (
-      <div className="card p-8 text-center">
+      <div className="card p-6 text-center">
         <p className="text-pitch-600 font-semibold mb-1.5">Message sent — thanks!</p>
         <p className="text-black/50 text-sm">We&apos;ll get back to you shortly. No account needed on your end.</p>
       </div>

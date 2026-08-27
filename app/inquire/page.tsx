@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
+import { MarketingNav } from "@/components/MarketingNav";
 import { InquiryForm } from "@/components/InquiryForm";
 import { IconCalendar, IconBracket, IconGrid, IconWhistle } from "@/components/icons";
+
+const NAV_LINKS = [{ href: "/tour", label: "See how it works" }];
 
 const formats = [
   {
@@ -29,21 +32,7 @@ const formats = [
 export default function InquirePage() {
   return (
     <main className="min-h-screen">
-      <header className="border-b border-black/5 sticky top-0 z-20 bg-white/85 backdrop-blur">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4 flex items-center justify-between">
-          <Link href="/">
-            <Logo />
-          </Link>
-          <nav className="flex items-center gap-2">
-            <Link href="/tour" className="btn-ghost">
-              See how it works
-            </Link>
-            <Link href="/signup" className="btn-primary">
-              Get started
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <MarketingNav links={NAV_LINKS} />
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-8 text-center">
         <span className="badge bg-pitch-400/10 text-pitch-600 border border-pitch-400/20 mb-5">No account needed</span>
@@ -57,11 +46,17 @@ export default function InquirePage() {
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-16">
         <div className="grid sm:grid-cols-2 gap-x-10 mb-16">
           {formats.map((f, i) => (
-            <div key={f.title} className="group relative flex items-start gap-1 py-7 border-t border-black/10 overflow-hidden">
-              <span className="font-display text-5xl text-black/[0.06] leading-none shrink-0 -ml-1 select-none" aria-hidden="true">
+            <div key={f.title} className="reveal group relative py-7 border-t border-black/10" data-reveal-delay={i * 80}>
+              {/* Absolutely positioned + a padded content column, same as
+                  the homepage feature list — a heading that wraps to two
+                  lines can never run into the numeral, at any width. */}
+              <span
+                className="font-display text-6xl text-black/[0.06] leading-none select-none absolute -top-1 left-0 z-0"
+                aria-hidden="true"
+              >
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <div className="flex-1 -ml-3">
+              <div className="relative z-10 pl-12 sm:pl-16">
                 <div className="flex items-center gap-2.5 mb-1.5">
                   <f.icon className="h-4 w-4 text-pitch-600 shrink-0" />
                   <h3 className="font-semibold text-black">{f.title}</h3>
@@ -73,7 +68,7 @@ export default function InquirePage() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-10 items-start max-w-4xl mx-auto">
-          <div>
+          <div className="reveal">
             <h2 className="text-xl font-semibold mb-2">Ask us anything</h2>
             <p className="text-black/50 text-sm leading-relaxed mb-4">
               Team counts, field availability, a format that doesn&apos;t quite match the list above — send it over and we&apos;ll
@@ -83,7 +78,9 @@ export default function InquirePage() {
               Explore the live interface preview →
             </Link>
           </div>
-          <InquiryForm />
+          <div className="reveal" data-reveal-delay={120}>
+            <InquiryForm />
+          </div>
         </div>
       </section>
 

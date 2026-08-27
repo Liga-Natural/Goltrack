@@ -57,7 +57,7 @@ export default function PayPage({
           </form>
         </div>
 
-        <div className="card p-5 mt-4">
+        <div className="card p-6 mt-4">
           <h2 className="font-semibold text-sm mb-1">Add your team crest</h2>
           <p className="text-xs text-black/40 mb-3">
             This link is yours to keep — no login needed. Use it now or send it to whoever manages your team&apos;s logo; it also lets you replace the crest later.
