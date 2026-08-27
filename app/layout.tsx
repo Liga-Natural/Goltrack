@@ -20,15 +20,15 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 // Tailwind's "black" and "white" read from these (see tailwind.config.ts).
-// Light mode is a soft off-black on warm off-white (#121212 / #FAFAF8) —
+// Light mode is a soft off-black on warm off-white (#111111 / #FAF9F6) —
 // the brand's actual ink/paper pairing — not pure #000/#FFF, which reads
 // harsher and flatter than the rest of the identity. Dark mode swaps their
 // roles: "ink" (foreground/text/border usage) becomes light, "paper"
-// (background/surface usage) becomes that same #121212 ink tone used as
+// (background/surface usage) becomes that same #111111 ink tone used as
 // the dark surface.
 const THEME_VARS = {
-  light: { ink: "18 18 18", paper: "250 250 248" },
-  dark: { ink: "250 250 249", paper: "18 18 18" },
+  light: { ink: "17 17 17", paper: "250 249 246" },
+  dark: { ink: "250 249 246", paper: "17 17 17" },
 } as const;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

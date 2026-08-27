@@ -390,7 +390,7 @@ export const Matches = {
 // only ever one row.
 
 const SITE_SETTINGS_ID = "singleton";
-const DEFAULT_ACCENT_COLOR = "#F2545C";
+const DEFAULT_ACCENT_COLOR = "#FF4D4D";
 const DEFAULT_THEME: SiteTheme = "light";
 
 export type SiteTheme = "light" | "dark";
