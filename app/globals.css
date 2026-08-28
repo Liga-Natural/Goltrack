@@ -233,18 +233,21 @@
    Flat (no tilt) below 1024px on purpose: a tilted card fights a narrow
    viewport instead of reading as "floating" — still gets the drop-shadow,
    just no rotation. */
+.hero-phone-container {
+  perspective: 1000px;
+}
 .hero-phone-card {
   filter: drop-shadow(0 30px 35px rgba(0, 0, 0, 0.8)) drop-shadow(0 10px 12px rgba(0, 0, 0, 0.5));
 }
 @media (min-width: 1024px) {
   .hero-phone-card {
-    transform: rotateX(10deg) rotateY(-12deg) rotateZ(2deg);
-    transition: transform 0.5s ease, filter 0.5s ease;
+    transform: rotateX(8deg) rotateY(-10deg) rotateZ(2deg);
+    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.5s ease;
     filter: drop-shadow(-20px 30px 35px rgba(0, 0, 0, 0.85)) drop-shadow(0 10px 15px rgba(0, 0, 0, 0.5));
   }
   .hero-phone-card:hover {
-    transform: rotateX(0deg) rotateY(0deg) scale(1.03);
-    filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.9));
+    transform: rotateX(0deg) rotateY(0deg) scale(1.02);
+    filter: drop-shadow(0 30px 45px rgba(0, 0, 0, 0.95));
   }
 }
 @media (prefers-reduced-motion: reduce) {

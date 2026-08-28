@@ -3,22 +3,13 @@ import { Logo } from "@/components/Logo";
 import { MarketingNav } from "@/components/MarketingNav";
 import { PitchPattern } from "@/components/PitchPattern";
 import { HeroPhoneMockup } from "@/components/HeroPhoneMockup";
-import { IconClipboard, IconCalendar, IconBracket, IconPulse, IconWhistle, IconQr } from "@/components/icons";
+import { RoleTabs } from "@/components/RoleTabs";
 import { SPORTS, SPORT_NAMES } from "@/lib/sportTheme";
 
 const NAV_LINKS = [
   { href: "/tournaments", label: "Tournaments" },
   { href: "/tour", label: "See how it works" },
   { href: "/inquire", label: "Get in touch" },
-];
-
-const features = [
-  { title: "Registration & payments", body: "Teams sign up and pay online.", icon: IconClipboard },
-  { title: "Auto-balanced scheduling", body: "Fixtures generated in seconds.", icon: IconCalendar },
-  { title: "Brackets that build themselves", body: "Seeded automatically from standings.", icon: IconBracket },
-  { title: "Live scoring, public standings", body: "Scores update in real time.", icon: IconPulse },
-  { title: "Referee management", body: "Assign officials, track contacts.", icon: IconWhistle },
-  { title: "Digital player passports", body: "QR-verified ID for every player.", icon: IconQr },
 ];
 
 const steps = [
@@ -69,7 +60,8 @@ export default function Home() {
               </span>
             </h1>
             <p className="mt-7 text-lg text-black/60 max-w-lg">
-              Registration, scheduling, brackets, live scores, and player passports — all in one place.
+              One app connecting tournament organizers, team captains, and players — from registration and live
+              match scoring to digital player passports.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-3">
               <Link href="/signup" className="btn-primary text-base px-6 py-3">
@@ -113,43 +105,19 @@ export default function Home() {
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
           <div className="reveal flex items-end justify-between gap-6 mb-8 flex-wrap">
             <div>
-              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-pitch-600">The system</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-pitch-600">One system, every role</span>
               <h2 className="text-display-sm mt-2 max-w-lg leading-[0.95]">
-                Everything organizers need, connected end to end
+                Built for whoever's looking
               </h2>
             </div>
             <p className="text-black/50 max-w-sm text-sm">
-              One connected system — not five spreadsheets and a group chat.
+              Same live data, a different view for directors, coaches, and families.
             </p>
           </div>
 
-          <div className="divider-pitch mb-2" style={{ ["--divider-bg" as any]: "rgb(var(--ink) / 0.03)" }} />
+          <div className="divider-pitch mb-8" style={{ ["--divider-bg" as any]: "rgb(var(--ink) / 0.03)" }} />
 
-          <div className="grid sm:grid-cols-2 gap-x-10">
-            {features.map((f, i) => (
-              <div key={f.title} className="reveal group relative py-7 border-t border-black/10" data-reveal-delay={i * 80}>
-                {/* Ghost numeral is absolutely positioned and out of the text
-                    flow on purpose — as an inline flex sibling it used to
-                    collide with any heading that wrapped to two lines
-                    (headings this short wrap on ~half of phone widths).
-                    Positioning it behind a fixed-width padded column means
-                    the heading/body can never run into it, at any width. */}
-                <span
-                  className="font-display text-6xl text-black/10 leading-none select-none absolute -top-1 left-0 z-0"
-                  aria-hidden="true"
-                >
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <div className="relative z-10 pl-12 sm:pl-16">
-                  <div className="flex items-center gap-2.5 mb-1.5">
-                    <f.icon className="h-4 w-4 text-pitch-600 shrink-0" />
-                    <h3 className="font-semibold text-black">{f.title}</h3>
-                  </div>
-                  <p className="text-sm text-black/50 leading-relaxed">{f.body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <RoleTabs />
         </div>
       </section>
 

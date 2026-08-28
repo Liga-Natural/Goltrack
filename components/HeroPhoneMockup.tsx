@@ -26,7 +26,7 @@ export function HeroPhoneMockup() {
     // invisible. Same fix as the passport page's .surface-light, applied
     // for the opposite reason (a self-contained dark screenshot rather
     // than print legibility).
-    <div className="[perspective:1400px] surface-light">
+    <div className="hero-phone-container surface-light">
       <div className="hero-phone-card relative w-[280px] sm:w-[300px]">
         {/* The bezel is one step lighter than navy-900 (#1F1F1F vs #111111)
             on purpose — now that the page itself defaults to dark, a bezel
