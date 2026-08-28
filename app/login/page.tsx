@@ -7,8 +7,8 @@ import { Logo } from "@/components/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("demo@jogo.app");
-  const [password, setPassword] = useState("demo1234");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -58,17 +58,29 @@ export default function LoginPage() {
         </div>
         <div className="card p-6">
           <h1 className="text-lg font-semibold mb-1">Welcome back</h1>
-          <p className="text-sm text-black/50 mb-6">
-            Demo login is pre-filled — just hit log in.
-          </p>
+          <p className="text-sm text-black/50 mb-6">Log in to your Jogo account.</p>
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
               <label className="label">Email</label>
-              <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <input
+                className="input"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
             <div>
               <label className="label">Password</label>
-              <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <input
+                className="input"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
             </div>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <button className="btn-primary w-full" disabled={loading}>
