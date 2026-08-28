@@ -1,14 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useFormState } from "react-dom";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
-import { registerTeamPublic } from "@/lib/actions";
+import { registerTeamPublic, type FormActionState } from "@/lib/actions";
+
+const initialState: FormActionState = {};
 
 export default function RegisterPage() {
   const params = useParams<{ slug: string }>();
   const [players, setPlayers] = useState([0, 1, 2, 3]);
+  const [state, formAction] = useFormState(registerTeamPublic.bind(null, params.slug), initialState);
 
   return (
     <main className="min-h-screen">
@@ -27,7 +31,7 @@ export default function RegisterPage() {
           match day.
         </p>
 
-        <form action={registerTeamPublic.bind(null, params.slug)} className="card p-6 space-y-5">
+        <form action={formAction} className="card p-6 space-y-5">
           <div>
             <label className="label">Team name</label>
             <input className="input" name="name" required />
@@ -72,6 +76,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
+          {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
           <button className="btn-primary w-full">Continue to payment</button>
         </form>
       </div>

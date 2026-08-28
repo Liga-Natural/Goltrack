@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { claimPlayerPassport } from "@/lib/actions";
+import { useFormState } from "react-dom";
+import { claimPlayerPassport, type FormActionState } from "@/lib/actions";
+
+const initialState: FormActionState = {};
 
 // Collapsed behind a toggle rather than shown inline by default — most
 // people scanning a passport on match day just want the QR code, not a
@@ -9,6 +12,7 @@ import { claimPlayerPassport } from "@/lib/actions";
 // as scannable as before this existed.
 export function ClaimPassportForm({ playerId, defaultName }: { playerId: string; defaultName: string }) {
   const [open, setOpen] = useState(false);
+  const [state, formAction] = useFormState(claimPlayerPassport.bind(null, playerId), initialState);
 
   if (!open) {
     return (
@@ -19,7 +23,7 @@ export function ClaimPassportForm({ playerId, defaultName }: { playerId: string;
   }
 
   return (
-    <form action={claimPlayerPassport.bind(null, playerId)} className="mt-4 rounded-xl border border-black/10 p-4 space-y-3">
+    <form action={formAction} className="mt-4 rounded-xl border border-black/10 p-4 space-y-3">
       <p className="text-xs text-black/40">
         Create a login for this passport to see it any time from your own dashboard.
       </p>
@@ -35,6 +39,7 @@ export function ClaimPassportForm({ playerId, defaultName }: { playerId: string;
         <label className="label">Password</label>
         <input className="input" type="password" name="password" minLength={8} required />
       </div>
+      {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
       <button className="btn-primary w-full text-sm">Claim passport</button>
     </form>
   );

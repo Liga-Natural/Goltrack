@@ -370,20 +370,40 @@ export async function updateSiteTheme(formData: FormData) {
 
 // ---------- Public actions (registration + demo payment) ----------
 
+// A thrown Error from a Server Action never reaches the person filling out
+// the form — Next.js redacts server error messages in production (for good
+// reason: an uncaught exception can carry internal detail) and shows a bare
+// "Application error" page instead, with the real message only in server
+// logs. That's correct for actual bugs, but every check below is a normal,
+// expected validation outcome a real person will hit (a typo'd password, an
+// email already in use) — those need to render inline on the form, which
+// only works by returning state for useFormState to pick up, never by
+// throwing. Genuinely exceptional cases (a tampered/nonexistent slug or
+// token — not reachable through the UI in normal use) still throw.
+export type FormActionState = { error?: string };
+
 // Shared by both team-registration flows below. Creates a real
 // TEAM_MANAGER account tied to this specific team and logs them straight
 // in — team registration already collects a contact email, so a password
 // alongside it is the whole signup, no separate flow needed. If that email
 // already has an account, we verify the given password against it rather
-// than silently overwrite or hijack whatever's there; on a mismatch the
-// team still registers fine, it just isn't linked to a login this time
-// (the organizer/legacy token flows keep working regardless).
-async function attachTeamManagerAccount(contactName: string, contactEmail: string, password: string): Promise<string | null> {
-  if (!password || password.length < 8) return null;
+// than silently overwrite or hijack whatever's there — a silent no-op here
+// would leave someone thinking they now have a working account when they
+// don't, discovered only much later at their next login attempt.
+async function attachTeamManagerAccount(
+  contactName: string,
+  contactEmail: string,
+  password: string
+): Promise<{ userId: string } | { error: string }> {
   const email = contactEmail.toLowerCase();
   let user = Users.byEmail(email);
   if (user) {
-    if (user.role !== "TEAM_MANAGER" || !(await verifyPassword(password, user.passwordHash))) return null;
+    if (user.role !== "TEAM_MANAGER") {
+      return { error: `${contactEmail} is already used for a different kind of account. Use a different email for the team contact.` };
+    }
+    if (!(await verifyPassword(password, user.passwordHash))) {
+      return { error: `${contactEmail} already has a team account — enter its existing password, or use a different email.` };
+    }
   } else {
     user = Users.create(email, await hashPassword(password), contactName, "TEAM_MANAGER");
   }
@@ -395,10 +415,10 @@ async function attachTeamManagerAccount(contactName: string, contactEmail: strin
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
   });
-  return user.id;
+  return { userId: user.id };
 }
 
-export async function registerTeamPublic(slug: string, formData: FormData) {
+export async function registerTeamPublic(slug: string, _prevState: FormActionState, formData: FormData): Promise<FormActionState> {
   const tournament = Tournaments.bySlug(slug);
   if (!tournament) throw new Error("Tournament not found");
 
@@ -407,11 +427,12 @@ export async function registerTeamPublic(slug: string, formData: FormData) {
   const contactEmail = String(formData.get("contactEmail") || "").trim();
   const password = String(formData.get("password") || "");
   const logoUrl = String(formData.get("logoUrl") || "").trim() || null;
-  if (!name || !contactName || !contactEmail) throw new Error("All team fields are required");
-  if (!password || password.length < 8) throw new Error("Password must be at least 8 characters");
+  if (!name || !contactName || !contactEmail) return { error: "All team fields are required" };
+  if (!password || password.length < 8) return { error: "Password must be at least 8 characters" };
 
-  const userId = await attachTeamManagerAccount(contactName, contactEmail, password);
-  const team = Teams.create({ tournamentId: tournament.id, name, contactName, contactEmail, logoUrl, userId });
+  const account = await attachTeamManagerAccount(contactName, contactEmail, password);
+  if ("error" in account) return account;
+  const team = Teams.create({ tournamentId: tournament.id, name, contactName, contactEmail, logoUrl, userId: account.userId });
 
   const playerNames = formData.getAll("playerName") as string[];
   const playerJerseys = formData.getAll("playerJersey") as string[];
@@ -424,7 +445,7 @@ export async function registerTeamPublic(slug: string, formData: FormData) {
   redirect(`/t/${slug}/register/pay?team=${team.id}`);
 }
 
-export async function claimTeamInvite(token: string, formData: FormData) {
+export async function claimTeamInvite(token: string, _prevState: FormActionState, formData: FormData): Promise<FormActionState> {
   const team = Teams.byInviteToken(token);
   if (!team) throw new Error("This invite link is invalid or has already been used.");
   const tournament = Tournaments.byId(team.tournamentId);
@@ -435,12 +456,13 @@ export async function claimTeamInvite(token: string, formData: FormData) {
   const contactEmail = String(formData.get("contactEmail") || "").trim();
   const password = String(formData.get("password") || "");
   const logoUrl = String(formData.get("logoUrl") || "").trim() || null;
-  if (!name || !contactName || !contactEmail) throw new Error("All team fields are required");
-  if (!password || password.length < 8) throw new Error("Password must be at least 8 characters");
+  if (!name || !contactName || !contactEmail) return { error: "All team fields are required" };
+  if (!password || password.length < 8) return { error: "Password must be at least 8 characters" };
 
-  const userId = await attachTeamManagerAccount(contactName, contactEmail, password);
-  const claimed = Teams.claimInvite(team.id, { name, contactName, contactEmail, logoUrl, userId });
-  if (!claimed) throw new Error("Could not claim this invite");
+  const account = await attachTeamManagerAccount(contactName, contactEmail, password);
+  if ("error" in account) return account;
+  const claimed = Teams.claimInvite(team.id, { name, contactName, contactEmail, logoUrl, userId: account.userId });
+  if (!claimed) return { error: "Could not claim this invite — it may have just been used." };
 
   const playerNames = formData.getAll("playerName") as string[];
   const playerJerseys = formData.getAll("playerJersey") as string[];
@@ -459,21 +481,21 @@ export async function claimTeamInvite(token: string, formData: FormData) {
 // a passport is a one-to-one identity, so claiming always creates a fresh
 // account, and Players.claim's `userId IS NULL` guard is what stops the
 // same link being used twice.
-export async function claimPlayerPassport(playerId: string, formData: FormData) {
+export async function claimPlayerPassport(playerId: string, _prevState: FormActionState, formData: FormData): Promise<FormActionState> {
   const player = Players.byId(playerId);
   if (!player) throw new Error("Passport not found");
-  if (player.userId) throw new Error("This passport has already been claimed");
+  if (player.userId) return { error: "This passport has already been claimed." };
 
   const name = String(formData.get("name") || "").trim() || player.name;
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
-  if (!email) throw new Error("Email is required");
-  if (!password || password.length < 8) throw new Error("Password must be at least 8 characters");
-  if (Users.byEmail(email)) throw new Error("An account with that email already exists");
+  if (!email) return { error: "Email is required" };
+  if (!password || password.length < 8) return { error: "Password must be at least 8 characters" };
+  if (Users.byEmail(email)) return { error: "An account with that email already exists." };
 
   const user = Users.create(email, await hashPassword(password), name, "PLAYER");
   const claimed = Players.claim(player.id, user.id);
-  if (!claimed) throw new Error("This passport has already been claimed");
+  if (!claimed) return { error: "This passport has already been claimed." };
 
   const token = await createSessionToken(user.id);
   cookies().set(sessionCookieName(), token, {
