@@ -10,22 +10,21 @@ import { getCurrentUser } from "@/lib/auth";
 export const revalidate = 5;
 
 export default async function PassportPage({ params }: { params: { playerId: string } }) {
-  const player = Players.byId(params.playerId);
+  const player = await Players.byId(params.playerId);
   if (!player) notFound();
-  const team = Teams.byId(player.teamId);
+  const team = await Teams.byId(player.teamId);
   if (!team) notFound();
-  const tournament = Tournaments.byId(team.tournamentId);
+  const tournament = await Tournaments.byId(team.tournamentId);
   if (!tournament) notFound();
 
-  const matches = Matches.listByTournament(tournament.id).filter(
-    (m) => m.homeTeamId === team.id || m.awayTeamId === team.id
-  );
+  const allTournamentMatches = await Matches.listByTournament(tournament.id);
+  const matches = allTournamentMatches.filter((m) => m.homeTeamId === team.id || m.awayTeamId === team.id);
   const played = matches.filter((m) => m.status === "FINAL");
   const wins = played.filter(
     (m) => (m.homeTeamId === team.id && (m.homeScore ?? 0) > (m.awayScore ?? 0)) || (m.awayTeamId === team.id && (m.awayScore ?? 0) > (m.homeScore ?? 0))
   ).length;
 
-  const checkIns = CheckIns.listByPlayer(player.id);
+  const checkIns = await CheckIns.listByPlayer(player.id);
   const isCheckedIn = checkIns.some((c) => c.tournamentId === tournament.id);
   const currentUser = await getCurrentUser();
   const isOwnPassport = currentUser?.role === "PLAYER" && player.userId === currentUser.id;

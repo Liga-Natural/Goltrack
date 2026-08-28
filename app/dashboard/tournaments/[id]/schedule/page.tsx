@@ -6,9 +6,9 @@ import { TeamInline } from "@/components/TeamInline";
 import { computeStandings, groupNames } from "@/lib/standings";
 
 export default async function SchedulePage({ params }: { params: { id: string } }) {
-  const tournament = Tournaments.byId(params.id)!;
-  const teams = Teams.listByTournament(tournament.id);
-  const matches = Matches.listByTournament(tournament.id);
+  const tournament = (await Tournaments.byId(params.id))!;
+  const teams = await Teams.listByTournament(tournament.id);
+  const matches = await Matches.listByTournament(tournament.id);
   const teamsById = new Map(teams.map((t) => [t.id, t]));
   const groupMatches = matches.filter((m) => m.stage === "GROUP");
   const knockoutMatches = matches.filter((m) => m.stage === "KNOCKOUT");

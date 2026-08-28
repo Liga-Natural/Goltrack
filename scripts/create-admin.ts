@@ -25,7 +25,7 @@ async function main() {
     process.exit(1);
   }
 
-  const existing = Users.byEmail(email.toLowerCase());
+  const existing = await Users.byEmail(email.toLowerCase());
   if (existing) {
     console.log(`An account for ${email} already exists (id: ${existing.id}).`);
     console.log("Use the normal login form — this script doesn't reset passwords.");
@@ -33,7 +33,7 @@ async function main() {
   }
 
   const password = genPassword();
-  const user = Users.create(email.toLowerCase(), await bcrypt.hash(password, 10), name, "ADMIN");
+  const user = await Users.create(email.toLowerCase(), await bcrypt.hash(password, 10), name, "ADMIN");
 
   console.log("Admin account created:");
   console.log(`  email:    ${user.email}`);
@@ -41,4 +41,12 @@ async function main() {
   console.log("Save this password now — it will not be shown again.");
 }
 
-main();
+// The Postgres pool keeps a connection open, which would otherwise leave
+// this one-off script hanging instead of exiting after main() finishes.
+main().then(
+  () => process.exit(0),
+  (err) => {
+    console.error(err);
+    process.exit(1);
+  }
+);

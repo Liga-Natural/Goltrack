@@ -13,7 +13,7 @@ const statusColors: Record<string, string> = {
 
 export default async function DashboardHome() {
   const user = await getCurrentUser();
-  const tournaments = user ? Tournaments.listByOwner(user.id) : [];
+  const tournaments = user ? await Tournaments.listByOwner(user.id) : [];
 
   return (
     <div>

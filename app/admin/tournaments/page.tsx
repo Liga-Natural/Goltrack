@@ -11,7 +11,9 @@ const statusColors: Record<string, string> = {
 };
 
 export default async function AdminTournamentsPage() {
-  const tournaments = Tournaments.listAll();
+  const tournaments = await Tournaments.listAll();
+  const owners = await Promise.all(tournaments.map((t) => Users.byId(t.ownerId)));
+  const ownerById = new Map(tournaments.map((t, i) => [t.id, owners[i]]));
 
   return (
     <div>
@@ -24,7 +26,7 @@ export default async function AdminTournamentsPage() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {tournaments.map((t) => {
             const theme = getSportTheme(t.sport);
-            const owner = Users.byId(t.ownerId);
+            const owner = ownerById.get(t.id);
             return (
               <Link key={t.id} href={`/dashboard/tournaments/${t.id}`} className="card-interactive relative overflow-hidden p-5">
                 <div className={`absolute top-0 left-0 right-0 h-1.5 ${theme.dot}`} />

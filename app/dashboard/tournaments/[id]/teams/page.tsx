@@ -4,12 +4,23 @@ import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { TeamBadge } from "@/components/TeamBadge";
 
 export default async function TeamsPage({ params }: { params: { id: string } }) {
-  const tournament = Tournaments.byId(params.id)!;
-  const allTeams = Teams.listByTournament(tournament.id);
+  const tournament = (await Tournaments.byId(params.id))!;
+  const allTeams = await Teams.listByTournament(tournament.id);
   const teams = allTeams.filter((t) => t.name);
   const pendingInvites = allTeams.filter((t) => !t.name && t.inviteToken);
   const addTeamWithId = addTeam.bind(null, tournament.id);
   const createInviteWithId = createTeamInvite.bind(null, tournament.id);
+  // Pre-fetched per team before rendering — a render callback can't await,
+  // and ensureLogoToken backfills a token for teams created before the
+  // crest feature shipped, so it has to run once here rather than lazily
+  // inside JSX.
+  const teamsWithDetails = await Promise.all(
+    teams.map(async (team) => ({
+      team,
+      players: await Players.listByTeam(team.id),
+      logoToken: team.logoToken || (await Teams.ensureLogoToken(team.id)),
+    }))
+  );
 
   return (
     <div>
@@ -18,17 +29,12 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
           {teams.length === 0 && pendingInvites.length === 0 && (
             <p className="text-black/50">No teams yet — add one, generate an invite link, or share the registration link.</p>
           )}
-          {teams.map((team) => {
-            const players = Players.listByTeam(team.id);
+          {teamsWithDetails.map(({ team, players, logoToken }) => {
             const addPlayerWithIds = addPlayer.bind(null, tournament.id, team.id);
             const removeTeamWithIds = removeTeam.bind(null, tournament.id, team.id);
             const setPaidTrue = setTeamPaid.bind(null, tournament.id, team.id, true);
             const setPaidFalse = setTeamPaid.bind(null, tournament.id, team.id, false);
             const uploadCrestWithIds = uploadTeamCrest.bind(null, tournament.id, team.id);
-            // Teams created before the crest feature shipped won't have a
-            // logoToken yet — this backfills one the first time this page
-            // renders them, so the self-service link is always available.
-            const logoToken = team.logoToken || Teams.ensureLogoToken(team.id);
             return (
               <div key={team.id} className="card p-5">
                 <div className="flex items-start justify-between gap-3 mb-3">

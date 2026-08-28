@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
   const { email, password } = parsed.data;
-  const user = Users.byEmail(email.toLowerCase());
+  const user = await Users.byEmail(email.toLowerCase());
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
     return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
   }

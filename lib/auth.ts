@@ -42,7 +42,7 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!token) return null;
   const payload = await verifySessionToken(token);
   if (!payload) return null;
-  const user = Users.byId(payload.userId);
+  const user = await Users.byId(payload.userId);
   return user ?? null;
 }
 

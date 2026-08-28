@@ -2,9 +2,9 @@ import { SiteSettings } from "@/lib/models";
 import { AccentColorPicker } from "@/components/AccentColorPicker";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-export default function SettingsPage() {
-  const currentColor = SiteSettings.getAccentColor();
-  const currentTheme = SiteSettings.getTheme();
+export default async function SettingsPage() {
+  const currentColor = await SiteSettings.getAccentColor();
+  const currentTheme = await SiteSettings.getTheme();
 
   return (
     <div>

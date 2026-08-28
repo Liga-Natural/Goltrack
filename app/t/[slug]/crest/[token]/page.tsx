@@ -5,11 +5,11 @@ import { Logo } from "@/components/Logo";
 import { TeamBadge } from "@/components/TeamBadge";
 import { uploadTeamCrestPublic } from "@/lib/actions";
 
-export default function TeamCrestPage({ params }: { params: { slug: string; token: string } }) {
-  const tournament = Tournaments.bySlug(params.slug);
+export default async function TeamCrestPage({ params }: { params: { slug: string; token: string } }) {
+  const tournament = await Tournaments.bySlug(params.slug);
   if (!tournament) notFound();
 
-  const team = Teams.byLogoToken(params.token);
+  const team = await Teams.byLogoToken(params.token);
   const valid = !!team && team.tournamentId === tournament.id && !!team.name;
 
   return (

@@ -3,18 +3,19 @@ import { CheckInScanner } from "@/components/CheckInScanner";
 import { setTeamCheckedIn } from "@/lib/actions";
 
 export default async function CheckInPage({ params }: { params: { id: string } }) {
-  const tournament = Tournaments.byId(params.id)!;
-  const teams = Teams.listByTournament(tournament.id).filter((t) => t.name);
-  const checkIns = CheckIns.listByTournament(tournament.id);
+  const tournament = (await Tournaments.byId(params.id))!;
+  const allTeams = await Teams.listByTournament(tournament.id);
+  const teams = allTeams.filter((t) => t.name);
+  const checkIns = await CheckIns.listByTournament(tournament.id);
   const checkedInPlayerIds = new Set(checkIns.map((c) => c.playerId));
+  const teamsWithPlayers = await Promise.all(teams.map(async (team) => ({ team, players: await Players.listByTeam(team.id) })));
 
   return (
     <div>
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-3">
           <h2 className="font-semibold mb-1">Team roster check-in</h2>
-          {teams.map((team) => {
-            const players = Players.listByTeam(team.id);
+          {teamsWithPlayers.map(({ team, players }) => {
             const checkedCount = players.filter((p) => checkedInPlayerIds.has(p.id)).length;
             const setChecked = setTeamCheckedIn.bind(null, tournament.id, team.id, !team.checkedIn);
             return (

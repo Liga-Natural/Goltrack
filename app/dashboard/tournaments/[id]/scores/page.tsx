@@ -4,13 +4,14 @@ import { ScoreForm } from "@/components/ScoreForm";
 import { TeamInline } from "@/components/TeamInline";
 
 export default async function ScoresPage({ params }: { params: { id: string } }) {
-  const tournament = Tournaments.byId(params.id)!;
-  const teams = Teams.listByTournament(tournament.id);
-  const matches = Matches.listByTournament(tournament.id);
-  const referees = Referees.listByTournament(tournament.id);
+  const tournament = (await Tournaments.byId(params.id))!;
+  const teams = await Teams.listByTournament(tournament.id);
+  const matches = await Matches.listByTournament(tournament.id);
+  const referees = await Referees.listByTournament(tournament.id);
   const teamsById = new Map(teams.map((t) => [t.id, t]));
   const refsById = new Map(referees.map((r) => [r.id, r]));
-  const playersByTeam = new Map(teams.map((t) => [t.id, Players.listByTeam(t.id)]));
+  const playersByTeamEntries = await Promise.all(teams.map(async (t) => [t.id, await Players.listByTeam(t.id)] as const));
+  const playersByTeam = new Map(playersByTeamEntries);
 
   return (
     <div>

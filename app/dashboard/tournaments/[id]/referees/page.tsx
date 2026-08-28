@@ -2,11 +2,11 @@ import { Tournaments, Teams, Matches, Referees } from "@/lib/models";
 import { addReferee, assignReferee } from "@/lib/actions";
 
 export default async function RefereesPage({ params }: { params: { id: string } }) {
-  const tournament = Tournaments.byId(params.id)!;
-  const teams = Teams.listByTournament(tournament.id);
+  const tournament = (await Tournaments.byId(params.id))!;
+  const teams = await Teams.listByTournament(tournament.id);
   const teamsById = new Map(teams.map((t) => [t.id, t]));
-  const matches = Matches.listByTournament(tournament.id);
-  const referees = Referees.listByTournament(tournament.id);
+  const matches = await Matches.listByTournament(tournament.id);
+  const referees = await Referees.listByTournament(tournament.id);
   const addRefereeWithId = addReferee.bind(null, tournament.id);
 
   return (

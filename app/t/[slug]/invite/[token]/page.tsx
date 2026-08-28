@@ -4,11 +4,11 @@ import { Teams, Tournaments } from "@/lib/models";
 import { Logo } from "@/components/Logo";
 import { InviteClaimForm } from "@/components/InviteClaimForm";
 
-export default function InviteClaimPage({ params }: { params: { slug: string; token: string } }) {
-  const tournament = Tournaments.bySlug(params.slug);
+export default async function InviteClaimPage({ params }: { params: { slug: string; token: string } }) {
+  const tournament = await Tournaments.bySlug(params.slug);
   if (!tournament) notFound();
 
-  const team = Teams.byInviteToken(params.token);
+  const team = await Teams.byInviteToken(params.token);
   const alreadyClaimed = !team && !!params.token;
 
   return (

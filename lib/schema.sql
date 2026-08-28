@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS teams (
   contactEmail TEXT NOT NULL,
   groupName TEXT,
   logoUrl TEXT,
-  crestBlob BLOB,
+  crestBlob BYTEA,
   crestMimeType TEXT,
   crestUpdatedAt TEXT,
   logoToken TEXT UNIQUE,

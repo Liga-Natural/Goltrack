@@ -9,7 +9,7 @@ import { Teams } from "@/lib/models";
 //   for an SVG payload, so a crafted <script> inside one can't execute if
 //   someone opens this URL directly instead of going through an <img> tag.
 export async function GET(_req: NextRequest, { params }: { params: { teamId: string } }) {
-  const crest = Teams.crestBytes(params.teamId);
+  const crest = await Teams.crestBytes(params.teamId);
   if (!crest) {
     return NextResponse.json({ error: "No crest uploaded for this team" }, { status: 404 });
   }

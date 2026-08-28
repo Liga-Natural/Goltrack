@@ -6,7 +6,7 @@ import { MatchStatusBadge } from "@/components/MatchStatusBadge";
 
 export default async function TeamDashboardPage() {
   const user = await getCurrentUser();
-  const team = user ? Teams.byUserId(user.id) : undefined;
+  const team = user ? await Teams.byUserId(user.id) : undefined;
 
   if (!team) {
     return (
@@ -17,11 +17,15 @@ export default async function TeamDashboardPage() {
     );
   }
 
-  const tournament = Tournaments.byId(team.tournamentId);
-  const players = Players.listByTeam(team.id);
-  const matches = tournament
-    ? Matches.listByTournament(tournament.id).filter((m) => m.homeTeamId === team.id || m.awayTeamId === team.id)
-    : [];
+  const tournament = await Tournaments.byId(team.tournamentId);
+  const players = await Players.listByTeam(team.id);
+  const allTournamentMatches = tournament ? await Matches.listByTournament(tournament.id) : [];
+  const matches = allTournamentMatches.filter((m) => m.homeTeamId === team.id || m.awayTeamId === team.id);
+  const opponentIds = Array.from(
+    new Set(matches.map((m) => (m.homeTeamId === team.id ? m.awayTeamId : m.homeTeamId)).filter((id): id is string => !!id))
+  );
+  const opponents = await Promise.all(opponentIds.map((id) => Teams.byId(id)));
+  const opponentById = new Map(opponentIds.map((id, i) => [id, opponents[i]]));
 
   return (
     <div>
@@ -77,7 +81,7 @@ export default async function TeamDashboardPage() {
         ) : (
           matches.map((m) => {
             const opponentId = m.homeTeamId === team.id ? m.awayTeamId : m.homeTeamId;
-            const opponent = opponentId ? Teams.byId(opponentId) : null;
+            const opponent = opponentId ? opponentById.get(opponentId) : null;
             return (
               <div key={m.id} className="flex items-center justify-between px-5 py-3 text-sm gap-2">
                 <div className="min-w-0">

@@ -5,19 +5,19 @@ import { Logo } from "@/components/Logo";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { markTeamPaidDemo } from "@/lib/actions";
 
-export default function PayPage({
+export default async function PayPage({
   params,
   searchParams,
 }: {
   params: { slug: string };
   searchParams: { team?: string };
 }) {
-  const tournament = Tournaments.bySlug(params.slug);
+  const tournament = await Tournaments.bySlug(params.slug);
   if (!tournament || !searchParams.team) notFound();
-  const team = Teams.byId(searchParams.team);
+  const team = await Teams.byId(searchParams.team);
   if (!team || team.tournamentId !== tournament.id) notFound();
-  const players = Players.listByTeam(team.id);
-  const logoToken = team.logoToken || Teams.ensureLogoToken(team.id);
+  const players = await Players.listByTeam(team.id);
+  const logoToken = team.logoToken || (await Teams.ensureLogoToken(team.id));
 
   const stripeConfigured = !!process.env.STRIPE_SECRET_KEY;
 

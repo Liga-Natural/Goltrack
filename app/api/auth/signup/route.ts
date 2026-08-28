@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message || "Invalid input" }, { status: 400 });
   }
   const { name, email, password } = parsed.data;
-  if (Users.byEmail(email.toLowerCase())) {
+  if (await Users.byEmail(email.toLowerCase())) {
     return NextResponse.json({ error: "An account with that email already exists." }, { status: 409 });
   }
   const passwordHash = await hashPassword(password);
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   // always creates an organizer account. Team managers and players get
   // their accounts through team registration and passport claim instead
   // (see lib/actions.ts), not through this form.
-  const user = Users.create(email.toLowerCase(), passwordHash, name, "ORGANIZER");
+  const user = await Users.create(email.toLowerCase(), passwordHash, name, "ORGANIZER");
   const token = await createSessionToken(user.id);
   const res = NextResponse.json({ ok: true });
   res.cookies.set(sessionCookieName(), token, {

@@ -13,11 +13,11 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
 }
 
 export default async function TournamentOverviewPage({ params }: { params: { id: string } }) {
-  const tournament = Tournaments.byId(params.id)!;
-  const allTeams = Teams.listByTournament(tournament.id);
+  const tournament = (await Tournaments.byId(params.id))!;
+  const allTeams = await Teams.listByTournament(tournament.id);
   const teams = allTeams.filter((t) => t.name);
   const pendingInvites = allTeams.length - teams.length;
-  const matches = Matches.listByTournament(tournament.id);
+  const matches = await Matches.listByTournament(tournament.id);
   const publicUrl = `/t/${tournament.slug}`;
 
   const generateScheduleWithId = generateSchedule.bind(null, tournament.id);

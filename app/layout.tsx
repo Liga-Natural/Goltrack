@@ -31,9 +31,9 @@ const THEME_VARS = {
   dark: { ink: "250 249 246", paper: "17 17 17" },
 } as const;
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const ramp = generateRamp(SiteSettings.getAccentColor());
-  const theme = SiteSettings.getTheme();
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const ramp = generateRamp(await SiteSettings.getAccentColor());
+  const theme = await SiteSettings.getTheme();
   const { ink, paper } = THEME_VARS[theme];
 
   const cssVars = [

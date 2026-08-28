@@ -12,8 +12,12 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 }
 
 export default async function AdminOverviewPage() {
-  const tournaments = Tournaments.listAll();
-  const roleCounts = Users.countsByRole();
+  const [tournaments, roleCounts, teamCount, playerCount] = await Promise.all([
+    Tournaments.listAll(),
+    Users.countsByRole(),
+    Teams.countAll(),
+    Players.countAll(),
+  ]);
   const recentTournaments = tournaments.slice(0, 5);
 
   return (
@@ -23,8 +27,8 @@ export default async function AdminOverviewPage() {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard label="Tournaments" value={tournaments.length} />
-        <StatCard label="Teams" value={Teams.countAll()} />
-        <StatCard label="Players" value={Players.countAll()} />
+        <StatCard label="Teams" value={teamCount} />
+        <StatCard label="Players" value={playerCount} />
         <StatCard label="Organizers" value={roleCounts.ORGANIZER} />
       </div>
 

@@ -5,7 +5,7 @@ import { TeamBadge } from "@/components/TeamBadge";
 
 export default async function PlayerDashboardPage() {
   const user = await getCurrentUser();
-  const player = user ? Players.byUserId(user.id) : undefined;
+  const player = user ? await Players.byUserId(user.id) : undefined;
 
   if (!player) {
     return (
@@ -16,11 +16,10 @@ export default async function PlayerDashboardPage() {
     );
   }
 
-  const team = Teams.byId(player.teamId);
-  const tournament = team ? Tournaments.byId(team.tournamentId) : undefined;
-  const matches = tournament
-    ? Matches.listByTournament(tournament.id).filter((m) => m.homeTeamId === team?.id || m.awayTeamId === team?.id)
-    : [];
+  const team = await Teams.byId(player.teamId);
+  const tournament = team ? await Tournaments.byId(team.tournamentId) : undefined;
+  const allTournamentMatches = tournament ? await Matches.listByTournament(tournament.id) : [];
+  const matches = allTournamentMatches.filter((m) => m.homeTeamId === team?.id || m.awayTeamId === team?.id);
   const played = matches.filter((m) => m.status === "FINAL");
   const wins = team
     ? played.filter(

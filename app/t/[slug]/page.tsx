@@ -21,12 +21,13 @@ export default async function PublicTournamentPage({
   params: { slug: string };
   searchParams: { paid?: string };
 }) {
-  const tournament = Tournaments.bySlug(params.slug);
+  const tournament = await Tournaments.bySlug(params.slug);
   if (!tournament) notFound();
 
-  const teams = Teams.listByTournament(tournament.id).filter((t) => t.name);
+  const allTeams = await Teams.listByTournament(tournament.id);
+  const teams = allTeams.filter((t) => t.name);
   const teamsById = new Map(teams.map((t) => [t.id, t]));
-  const matches = Matches.listByTournament(tournament.id);
+  const matches = await Matches.listByTournament(tournament.id);
   const groupMatches = matches.filter((m) => m.stage === "GROUP");
   const knockoutMatches = matches.filter((m) => m.stage === "KNOCKOUT");
   const groups = groupNames(teams);
@@ -35,7 +36,8 @@ export default async function PublicTournamentPage({
   const Pattern = tournament.sport === "Futsal" || tournament.sport === "Basketball" ? CourtPattern : PitchPattern;
 
   const motmPlayerIds = Array.from(new Set(matches.map((m) => m.motmPlayerId).filter(Boolean))) as string[];
-  const motmPlayers = new Map(motmPlayerIds.map((id) => [id, Players.byId(id)]));
+  const motmPlayerRows = await Promise.all(motmPlayerIds.map((id) => Players.byId(id)));
+  const motmPlayers = new Map(motmPlayerIds.map((id, i) => [id, motmPlayerRows[i]]));
   const overallStandings = computeStandings(teams, matches);
   const standingByTeamId = new Map(overallStandings.map((r) => [r.team.id, r]));
 

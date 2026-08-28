@@ -5,10 +5,13 @@ import { TournamentsGrid } from "@/components/TournamentsGrid";
 
 export const revalidate = 30;
 
-export default function TournamentsHubPage() {
-  const tournaments = Tournaments.listPublic();
+export default async function TournamentsHubPage() {
+  const tournaments = await Tournaments.listPublic();
   const teamCounts: Record<string, number> = {};
-  for (const t of tournaments) teamCounts[t.id] = Teams.listByTournament(t.id).filter((tm) => tm.name).length;
+  for (const t of tournaments) {
+    const teams = await Teams.listByTournament(t.id);
+    teamCounts[t.id] = teams.filter((tm) => tm.name).length;
+  }
 
   return (
     <main className="min-h-screen">

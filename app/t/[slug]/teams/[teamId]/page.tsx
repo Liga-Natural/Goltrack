@@ -10,16 +10,17 @@ import { getSportTheme } from "@/lib/sportTheme";
 export const revalidate = 5;
 
 export default async function PublicTeamPage({ params }: { params: { slug: string; teamId: string } }) {
-  const tournament = Tournaments.bySlug(params.slug);
+  const tournament = await Tournaments.bySlug(params.slug);
   if (!tournament) notFound();
-  const team = Teams.byId(params.teamId);
+  const team = await Teams.byId(params.teamId);
   if (!team || team.tournamentId !== tournament.id || !team.name) notFound();
 
-  const players = Players.listByTeam(team.id);
-  const teamMatches = Matches.listByTeam(team.id);
-  const allTeams = Teams.listByTournament(tournament.id).filter((t) => t.name);
+  const players = await Players.listByTeam(team.id);
+  const teamMatches = await Matches.listByTeam(team.id);
+  const allTeamsRaw = await Teams.listByTournament(tournament.id);
+  const allTeams = allTeamsRaw.filter((t) => t.name);
   const teamsById = new Map(allTeams.map((t) => [t.id, t]));
-  const allMatches = Matches.listByTournament(tournament.id);
+  const allMatches = await Matches.listByTournament(tournament.id);
   const standingsRow = computeStandings(allTeams, allMatches, team.groupName).find((r) => r.team.id === team.id);
   const motmCount = allMatches.filter((m) => m.motmPlayerId && players.some((p) => p.id === m.motmPlayerId)).length;
 
