@@ -64,6 +64,19 @@ export function seedDemoData(database: DatabaseSync): void {
 // The password hash below is bcrypt (one-way) — the plaintext was
 // generated once and handed to the account owner directly, never
 // committed anywhere.
+//
+// The id is a fixed constant, not uid() — this matters specifically
+// because Vercel gives each cold-started serverless instance its own
+// independent /tmp database (see db.ts). A login's session cookie only
+// carries a userId; if that id were freshly randomized by whichever
+// instance happened to seed it, a session created on one instance would
+// point to a row that a *different* instance's independently-seeded
+// database never created with that id, and getCurrentUser() would
+// silently fail to find the user — bouncing straight back to /login with
+// no error, on every request that lands on a different instance than the
+// one that handled the login. A fixed id sidesteps that: every instance
+// seeds the exact same row.
+const OWNER_ADMIN_ID = "c0de12cb-b24e-44b1-bb8f-d22f0e7c62f9";
 const OWNER_ADMIN_EMAIL = "liganatural12@gmail.com";
 const OWNER_ADMIN_PASSWORD_HASH = "$2a$10$eQnUpbU3N/5A8o9T95Mwj.Fi8xCUj/ofMnCvB2UbmD/.77.lwvvAi";
 
@@ -72,7 +85,7 @@ function ensureOwnerAdminAccount(database: DatabaseSync): void {
   if (existing) return;
   database
     .prepare(`INSERT INTO users (id, email, passwordHash, name, role, createdAt) VALUES (?,?,?,?,?,?)`)
-    .run(uid(), OWNER_ADMIN_EMAIL, OWNER_ADMIN_PASSWORD_HASH, "Liga Natural", "ADMIN", nowIso());
+    .run(OWNER_ADMIN_ID, OWNER_ADMIN_EMAIL, OWNER_ADMIN_PASSWORD_HASH, "Liga Natural", "ADMIN", nowIso());
 }
 
 function seedDemoDataUnsafe(database: DatabaseSync): void {
@@ -81,6 +94,12 @@ function seedDemoDataUnsafe(database: DatabaseSync): void {
   const already = database.prepare(`SELECT id FROM tournaments WHERE slug = ?`).get("coastal-cup");
   if (already) return;
 
+  // Fixed id, same reasoning as OWNER_ADMIN_ID above: this account is
+  // deterministically re-seeded on every cold-started serverless instance,
+  // and a session's cookie only carries a userId, so every instance has to
+  // land on the exact same row or logins randomly stop resolving depending
+  // on which instance a later request happens to hit.
+  const DEMO_ADMIN_ID = "e3eb8d89-81ca-4bd4-9288-d19ae68faa42";
   let ownerId: string;
   const existingUser = database.prepare(`SELECT id FROM users WHERE email = ?`).get("demo@jogo.app") as
     | { id: string }
@@ -88,7 +107,7 @@ function seedDemoDataUnsafe(database: DatabaseSync): void {
   if (existingUser) {
     ownerId = existingUser.id;
   } else {
-    ownerId = uid();
+    ownerId = DEMO_ADMIN_ID;
     // ADMIN, not ORGANIZER: this is the one account the app creates for you
     // with zero setup, so it doubles as the platform superadmin login —
     // "Alex Rivera" both owns the demo tournament (as any organizer would)
