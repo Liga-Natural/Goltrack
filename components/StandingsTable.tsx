@@ -43,7 +43,7 @@ export function StandingsTable({ rows, title, sport }: { rows: StandingRow[]; ti
           </thead>
           <tbody>
             {rows.map((r, i) => (
-              <tr key={r.team.id} className="border-t border-black/5">
+              <tr key={r.team.id} className={`border-t border-black/5 ${i % 2 === 1 ? "bg-black/[0.02]" : ""}`}>
                 <td className="py-2 pr-2 font-medium">
                   <div className="flex items-center gap-2">
                     <span className="text-black/30">{i + 1}</span>

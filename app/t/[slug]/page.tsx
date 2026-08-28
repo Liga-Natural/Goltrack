@@ -99,7 +99,7 @@ export default async function PublicTournamentPage({
               <div className="ticket-card__tear mx-2" style={{ ["--ticket-punch-bg" as any]: "rgb(var(--paper))" }} />
               <div className="space-y-2 px-5 pt-4 pb-5">
                 {liveMatches.map((m) => (
-                  <div key={m.id} className="flex items-center justify-between text-sm">
+                  <div key={m.id} className="flex items-center justify-between text-sm border-l-4 border-pitch-400 pl-3">
                     <span className="flex items-center gap-2">
                       <TeamInline team={teamsById.get(m.homeTeamId || "")} sport={tournament.sport} />
                       <span className="text-black/30">vs</span>
@@ -155,7 +155,10 @@ export default async function PublicTournamentPage({
                 {groupMatches.map((m) => {
                   const motm = m.motmPlayerId ? motmPlayers.get(m.motmPlayerId) : null;
                   return (
-                    <div key={m.id} className="border-b border-black/5 pb-2">
+                    <div
+                      key={m.id}
+                      className={`border-b border-black/5 pb-2 ${m.status === "LIVE" ? "border-l-4 border-l-pitch-400 pl-3" : ""}`}
+                    >
                       <div className="flex items-center justify-between text-sm">
                         <div>
                           <span className="text-black/40 text-xs mr-2">{m.round}</span>

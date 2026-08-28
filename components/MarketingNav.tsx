@@ -37,53 +37,59 @@ export function MarketingNav({
   useEffect(() => setOpen(false), [pathname]);
 
   return (
-    <header className="border-b border-black/10 sticky top-0 z-20 bg-white/85 backdrop-blur">
-      <div className={`mx-auto ${maxWidthClass} px-4 sm:px-6 py-4 flex items-center justify-between`}>
-        <Link href="/">
-          <Logo />
-        </Link>
+    // Floating, not full-bleed: padding on the header itself (not the pill)
+    // is what detaches the bar from the viewport edges — the pill inside
+    // sits centered with breathing room on every side instead of gluing to
+    // the top and stretching corner to corner like a conventional navbar.
+    <header className="sticky top-3 sm:top-4 z-20 px-3 sm:px-4">
+      <div className={`mx-auto ${maxWidthClass}`}>
+        <div className="flex items-center justify-between gap-4 rounded-full border border-black/10 bg-white/75 backdrop-blur-xl shadow-elevated px-3 sm:px-5 py-2 sm:py-2.5">
+          <Link href="/" className="pl-1">
+            <Logo />
+          </Link>
 
-        <nav className="hidden lg:flex items-center gap-1">
-          {links.map((l) => (
-            <Link key={l.href} href={l.href} className="btn-ghost">
-              {l.label}
+          <nav className="hidden lg:flex items-center gap-1">
+            {links.map((l) => (
+              <Link key={l.href} href={l.href} className="btn-ghost">
+                {l.label}
+              </Link>
+            ))}
+            <Link href="/login" className="btn-ghost">
+              Log in
             </Link>
-          ))}
-          <Link href="/login" className="btn-ghost">
-            Log in
-          </Link>
-          <Link href={ctaHref} className="btn-primary">
-            {ctaLabel}
-          </Link>
-        </nav>
+            <Link href={ctaHref} className="btn-primary">
+              {ctaLabel}
+            </Link>
+          </nav>
 
-        <div className="flex items-center gap-2 lg:hidden">
-          <Link href={ctaHref} className="btn-primary">
-            {ctaLabel}
-          </Link>
-          <button
-            onClick={() => setOpen((v) => !v)}
-            aria-label={open ? "Close menu" : "Open menu"}
-            aria-expanded={open}
-            className="h-10 w-10 shrink-0 flex items-center justify-center rounded-lg border border-black/15 text-black/70 hover:text-black hover:bg-black/5"
-          >
-            {open ? <IconX className="h-5 w-5" /> : <IconMenu className="h-5 w-5" />}
-          </button>
+          <div className="flex items-center gap-2 lg:hidden">
+            <Link href={ctaHref} className="btn-primary">
+              {ctaLabel}
+            </Link>
+            <button
+              onClick={() => setOpen((v) => !v)}
+              aria-label={open ? "Close menu" : "Open menu"}
+              aria-expanded={open}
+              className="h-10 w-10 shrink-0 flex items-center justify-center rounded-full border border-black/15 text-black/70 hover:text-black hover:bg-black/5"
+            >
+              {open ? <IconX className="h-5 w-5" /> : <IconMenu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
-      </div>
 
-      {open && (
-        <nav className="lg:hidden border-t border-black/10 bg-white px-4 sm:px-6 py-2">
-          {links.map((l) => (
-            <Link key={l.href} href={l.href} className="block w-full rounded-lg px-3 py-2.5 text-sm font-medium text-black/70 hover:bg-black/5 hover:text-black">
-              {l.label}
+        {open && (
+          <nav className="lg:hidden mt-2 rounded-2xl border border-black/10 bg-white/90 backdrop-blur-xl shadow-elevated px-3 py-2">
+            {links.map((l) => (
+              <Link key={l.href} href={l.href} className="block w-full rounded-lg px-3 py-2.5 text-sm font-medium text-black/70 hover:bg-black/5 hover:text-black">
+                {l.label}
+              </Link>
+            ))}
+            <Link href="/login" className="block w-full rounded-lg px-3 py-2.5 text-sm font-medium text-black/70 hover:bg-black/5 hover:text-black">
+              Log in
             </Link>
-          ))}
-          <Link href="/login" className="block w-full rounded-lg px-3 py-2.5 text-sm font-medium text-black/70 hover:bg-black/5 hover:text-black">
-            Log in
-          </Link>
-        </nav>
-      )}
+          </nav>
+        )}
+      </div>
     </header>
   );
 }

@@ -23,7 +23,7 @@ export default function Home() {
     <main className="min-h-screen overflow-x-clip">
       <MarketingNav links={NAV_LINKS} />
 
-      <section className="relative">
+      <section className="relative stadium-glow tactical-grid">
         <PitchPattern className="pointer-events-none absolute -z-10 h-[560px] w-[560px] text-black/[0.04] -right-40 -top-24" />
 
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-20 sm:pt-20 sm:pb-28 grid lg:grid-cols-[1.15fr_1fr] gap-12 items-center">
@@ -140,8 +140,13 @@ export default function Home() {
       {/* The one deliberate dark moment on the page — everything else here is
           white/gray, so this band is the closing punctuation mark rather than
           another identical section in the same rhythm. Stays inside the
-          locked ink/paper/red palette: black bg, white text, one red button. */}
-      <section className="reveal relative bg-black text-white py-24 text-center overflow-hidden">
+          locked ink/paper/red palette: black bg, white text, one red button.
+          surface-light pins --ink/--paper to fixed light values so bg-black/
+          text-white below always render as literal black/white regardless of
+          the site's theme toggle — same fix and reasoning as
+          HeroPhoneMockup's always-dark phone screen; left unpinned, dark mode
+          flips the tokens and this band inverts to a light band instead. */}
+      <section className="reveal relative surface-light bg-black text-white py-24 text-center overflow-hidden stadium-glow tactical-grid">
         <PitchPattern className="pointer-events-none absolute -z-0 h-[480px] w-[480px] text-white/[0.04] -left-32 -bottom-32" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
           <Logo showMark={false} className="justify-center mb-7" wordmarkClassName="h-9 sm:h-11" />

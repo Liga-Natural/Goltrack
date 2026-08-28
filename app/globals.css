@@ -40,19 +40,25 @@
     @apply btn bg-transparent text-black hover:bg-black/5 border border-black/15;
   }
   /* Default card: flat list rows, secondary content — no hover behavior of
-     its own, on purpose (see .card-interactive below for anything clickable). */
+     its own, on purpose (see .card-interactive below for anything clickable).
+     backdrop-blur is the "glass" half of a glassmorphic surface — harmless
+     in light mode (nothing behind a card blurs into visible mush there),
+     but in dark mode it gives a card real depth against whatever's behind
+     it (the ambient glow, the tactical grid) instead of reading as a flat
+     opaque rectangle. Border reads a touch crisper (15% not 10%) for the
+     same reason — depth needs a findable edge. */
   .card {
-    @apply rounded-2xl bg-white border border-black/10 shadow-card;
+    @apply rounded-2xl bg-white/95 backdrop-blur-sm border border-black/15 shadow-card;
   }
   /* For clickable cards (links to a tournament/team/etc.) — a real lift on
      hover rather than the old bare hover:shadow-lg with no other change. */
   .card-interactive {
-    @apply card transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-0.5 hover:shadow-elevated hover:border-black/15;
+    @apply card transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-0.5 hover:shadow-elevated hover:border-black/25;
   }
   /* Higher-hierarchy content: stat panels, the live-score card, anything
      that should visibly sit above the page rather than blend into the list. */
   .card-elevated {
-    @apply rounded-2xl bg-white border border-black/10 shadow-elevated;
+    @apply rounded-2xl bg-white/95 backdrop-blur-sm border border-black/15 shadow-elevated;
   }
   /* A pure white fill on a white card/page gives a field zero visual
      separation from its container — the only thing marking it as a box was
@@ -232,26 +238,72 @@
    query below and silently never apply.
    Flat (no tilt) below 1024px on purpose: a tilted card fights a narrow
    viewport instead of reading as "floating" — still gets the drop-shadow,
-   just no rotation. */
+   just no rotation. The container's own max-width (set where it's used)
+   gives the tilted-and-scaled object room so its rotated bounding box
+   doesn't clip against the layout edge. */
 .hero-phone-container {
-  perspective: 1000px;
+  perspective: 1200px;
 }
 .hero-phone-card {
   filter: drop-shadow(0 30px 35px rgba(0, 0, 0, 0.8)) drop-shadow(0 10px 12px rgba(0, 0, 0, 0.5));
 }
 @media (min-width: 1024px) {
   .hero-phone-card {
-    transform: rotateX(8deg) rotateY(-10deg) rotateZ(2deg);
-    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.5s ease;
-    filter: drop-shadow(-20px 30px 35px rgba(0, 0, 0, 0.85)) drop-shadow(0 10px 15px rgba(0, 0, 0, 0.5));
+    transform: rotateX(12deg) rotateY(-15deg) rotateZ(2deg);
+    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), filter 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    /* The second, tinted shadow layer is a brand-red glow (via the
+       accent-color variable, not a hardcoded hex) rather than a second
+       pure-black shadow — reads as the device catching stadium light
+       instead of just sitting in a darker room. */
+    filter: drop-shadow(-20px 40px 45px rgba(0, 0, 0, 0.95)) drop-shadow(0 15px 20px rgb(var(--pitch-400) / 0.15));
   }
   .hero-phone-card:hover {
-    transform: rotateX(0deg) rotateY(0deg) scale(1.02);
-    filter: drop-shadow(0 30px 45px rgba(0, 0, 0, 0.95));
+    transform: rotateX(0deg) rotateY(0deg) scale(1.04);
+    filter: drop-shadow(0 40px 60px rgba(0, 0, 0, 0.99));
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-phone-card {
     transition: none;
   }
+}
+
+/* Ambient "stadium lighting": a large, softly blurred wash of brand-red
+   light in one corner of a dark hero/CTA section, standing in for the
+   glow of floodlights instead of a flat single-tone background. Applied
+   as a positioned pseudo-element on a `relative overflow-hidden` section
+   so it never affects layout or intercepts clicks. Reads as intended only
+   against a dark surface — deliberately not applied site-wide, just the
+   handful of dark marketing bands that are meant to feel like standing
+   pitchside at night. */
+.stadium-glow {
+  position: relative;
+  isolation: isolate;
+}
+.stadium-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(circle at 85% -10%, rgb(var(--pitch-400) / 0.16), transparent 55%),
+    radial-gradient(circle at -10% 110%, rgb(var(--pitch-400) / 0.1), transparent 50%);
+}
+
+/* A faint tactical-board grid — the kind of 1px line grid a coach sketches
+   plays on — laid over a dark section as texture. Pure decoration: fixed
+   pointer-events:none, opacity low enough that it reads as "texture" and
+   never competes with real content. Built as a tiny tiled SVG rather than
+   a background-image gradient grid so the lines stay crisp at any zoom. */
+.tactical-grid {
+  position: relative;
+}
+.tactical-grid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><path d='M40 0H0V40' fill='none' stroke='white' stroke-width='1'/></svg>");
 }
