@@ -54,7 +54,30 @@ export function seedDemoData(database: DatabaseSync): void {
   }
 }
 
+// Platform admin for the actual business owner, distinct from the public
+// demo@jogo.app login above. Runs before the tournament-seed early-return
+// below (and is idempotent on its own via the email check) so it's
+// guaranteed on every cold start regardless of whether the demo tournament
+// already exists — Vercel wipes /tmp on every cold start (see db.ts), so a
+// one-off script like scripts/create-admin.ts run against a local dev.db
+// would never reach the live site; seeding here is what actually does.
+// The password hash below is bcrypt (one-way) — the plaintext was
+// generated once and handed to the account owner directly, never
+// committed anywhere.
+const OWNER_ADMIN_EMAIL = "liganatural12@gmail.com";
+const OWNER_ADMIN_PASSWORD_HASH = "$2a$10$eQnUpbU3N/5A8o9T95Mwj.Fi8xCUj/ofMnCvB2UbmD/.77.lwvvAi";
+
+function ensureOwnerAdminAccount(database: DatabaseSync): void {
+  const existing = database.prepare(`SELECT id FROM users WHERE email = ?`).get(OWNER_ADMIN_EMAIL);
+  if (existing) return;
+  database
+    .prepare(`INSERT INTO users (id, email, passwordHash, name, role, createdAt) VALUES (?,?,?,?,?,?)`)
+    .run(uid(), OWNER_ADMIN_EMAIL, OWNER_ADMIN_PASSWORD_HASH, "Liga Natural", "ADMIN", nowIso());
+}
+
 function seedDemoDataUnsafe(database: DatabaseSync): void {
+  ensureOwnerAdminAccount(database);
+
   const already = database.prepare(`SELECT id FROM tournaments WHERE slug = ?`).get("coastal-cup");
   if (already) return;
 
