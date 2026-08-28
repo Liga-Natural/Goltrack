@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
-import { Users, User } from "./models";
+import { Users, User, Role } from "./models";
 
 const SESSION_COOKIE = "jogo_session";
 const secretKey = new TextEncoder().encode(process.env.SESSION_SECRET || "dev-only-secret-change-me-32chars");
@@ -44,4 +44,20 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!payload) return null;
   const user = Users.byId(payload.userId);
   return user ?? null;
+}
+
+// The one place that decides where each account type lands — used by the
+// login form's post-submit redirect and by every role-gated layout's
+// wrong-role redirect, so the mapping can't drift between the two.
+export function roleHome(role: Role): string {
+  switch (role) {
+    case "ADMIN":
+      return "/admin";
+    case "TEAM_MANAGER":
+      return "/team";
+    case "PLAYER":
+      return "/me";
+    default:
+      return "/dashboard";
+  }
 }

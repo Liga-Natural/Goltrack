@@ -13,7 +13,9 @@ export default async function TournamentLayout({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   const tournament = Tournaments.byId(params.id);
-  if (!tournament || tournament.ownerId !== user.id) notFound();
+  // ADMIN can open any tournament, same as any organizer's own — everyone
+  // else only theirs.
+  if (!tournament || (tournament.ownerId !== user.id && user.role !== "ADMIN")) notFound();
 
   return (
     <div>

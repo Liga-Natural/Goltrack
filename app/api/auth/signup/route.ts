@@ -20,7 +20,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "An account with that email already exists." }, { status: 409 });
   }
   const passwordHash = await hashPassword(password);
-  const user = Users.create(email.toLowerCase(), passwordHash, name);
+  // This is the public /signup page — the paying-customer flow — so it
+  // always creates an organizer account. Team managers and players get
+  // their accounts through team registration and passport claim instead
+  // (see lib/actions.ts), not through this form.
+  const user = Users.create(email.toLowerCase(), passwordHash, name, "ORGANIZER");
   const token = await createSessionToken(user.id);
   const res = NextResponse.json({ ok: true });
   res.cookies.set(sessionCookieName(), token, {

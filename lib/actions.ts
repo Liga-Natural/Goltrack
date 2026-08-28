@@ -11,10 +11,12 @@ import {
   Referees,
   CheckIns,
   SiteSettings,
+  Users,
   slugify,
   Format,
 } from "@/lib/models";
-import { getCurrentUser } from "@/lib/auth";
+import { cookies } from "next/headers";
+import { getCurrentUser, hashPassword, verifyPassword, createSessionToken, sessionCookieName } from "@/lib/auth";
 import { generateGroupStage, generateRoundRobinOnly, generateKnockoutBracket } from "@/lib/bracket";
 import { computeStandings, groupNames } from "@/lib/standings";
 import { getSportTheme } from "@/lib/sportTheme";
@@ -368,6 +370,34 @@ export async function updateSiteTheme(formData: FormData) {
 
 // ---------- Public actions (registration + demo payment) ----------
 
+// Shared by both team-registration flows below. Creates a real
+// TEAM_MANAGER account tied to this specific team and logs them straight
+// in — team registration already collects a contact email, so a password
+// alongside it is the whole signup, no separate flow needed. If that email
+// already has an account, we verify the given password against it rather
+// than silently overwrite or hijack whatever's there; on a mismatch the
+// team still registers fine, it just isn't linked to a login this time
+// (the organizer/legacy token flows keep working regardless).
+async function attachTeamManagerAccount(contactName: string, contactEmail: string, password: string): Promise<string | null> {
+  if (!password || password.length < 8) return null;
+  const email = contactEmail.toLowerCase();
+  let user = Users.byEmail(email);
+  if (user) {
+    if (user.role !== "TEAM_MANAGER" || !(await verifyPassword(password, user.passwordHash))) return null;
+  } else {
+    user = Users.create(email, await hashPassword(password), contactName, "TEAM_MANAGER");
+  }
+  const token = await createSessionToken(user.id);
+  cookies().set(sessionCookieName(), token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+  });
+  return user.id;
+}
+
 export async function registerTeamPublic(slug: string, formData: FormData) {
   const tournament = Tournaments.bySlug(slug);
   if (!tournament) throw new Error("Tournament not found");
@@ -375,10 +405,13 @@ export async function registerTeamPublic(slug: string, formData: FormData) {
   const name = String(formData.get("name") || "").trim();
   const contactName = String(formData.get("contactName") || "").trim();
   const contactEmail = String(formData.get("contactEmail") || "").trim();
+  const password = String(formData.get("password") || "");
   const logoUrl = String(formData.get("logoUrl") || "").trim() || null;
   if (!name || !contactName || !contactEmail) throw new Error("All team fields are required");
+  if (!password || password.length < 8) throw new Error("Password must be at least 8 characters");
 
-  const team = Teams.create({ tournamentId: tournament.id, name, contactName, contactEmail, logoUrl });
+  const userId = await attachTeamManagerAccount(contactName, contactEmail, password);
+  const team = Teams.create({ tournamentId: tournament.id, name, contactName, contactEmail, logoUrl, userId });
 
   const playerNames = formData.getAll("playerName") as string[];
   const playerJerseys = formData.getAll("playerJersey") as string[];
@@ -400,10 +433,13 @@ export async function claimTeamInvite(token: string, formData: FormData) {
   const name = String(formData.get("name") || "").trim();
   const contactName = String(formData.get("contactName") || "").trim();
   const contactEmail = String(formData.get("contactEmail") || "").trim();
+  const password = String(formData.get("password") || "");
   const logoUrl = String(formData.get("logoUrl") || "").trim() || null;
   if (!name || !contactName || !contactEmail) throw new Error("All team fields are required");
+  if (!password || password.length < 8) throw new Error("Password must be at least 8 characters");
 
-  const claimed = Teams.claimInvite(team.id, { name, contactName, contactEmail, logoUrl });
+  const userId = await attachTeamManagerAccount(contactName, contactEmail, password);
+  const claimed = Teams.claimInvite(team.id, { name, contactName, contactEmail, logoUrl, userId });
   if (!claimed) throw new Error("Could not claim this invite");
 
   const playerNames = formData.getAll("playerName") as string[];
@@ -415,6 +451,39 @@ export async function claimTeamInvite(token: string, formData: FormData) {
   });
 
   redirect(`/t/${tournament.slug}/register/pay?team=${claimed.id}`);
+}
+
+// A player's passport already exists the moment they're added to a
+// roster — this just attaches a login to it. Existing accounts aren't
+// reused here the way attachTeamManagerAccount reuses a team-manager one:
+// a passport is a one-to-one identity, so claiming always creates a fresh
+// account, and Players.claim's `userId IS NULL` guard is what stops the
+// same link being used twice.
+export async function claimPlayerPassport(playerId: string, formData: FormData) {
+  const player = Players.byId(playerId);
+  if (!player) throw new Error("Passport not found");
+  if (player.userId) throw new Error("This passport has already been claimed");
+
+  const name = String(formData.get("name") || "").trim() || player.name;
+  const email = String(formData.get("email") || "").trim().toLowerCase();
+  const password = String(formData.get("password") || "");
+  if (!email) throw new Error("Email is required");
+  if (!password || password.length < 8) throw new Error("Password must be at least 8 characters");
+  if (Users.byEmail(email)) throw new Error("An account with that email already exists");
+
+  const user = Users.create(email, await hashPassword(password), name, "PLAYER");
+  const claimed = Players.claim(player.id, user.id);
+  if (!claimed) throw new Error("This passport has already been claimed");
+
+  const token = await createSessionToken(user.id);
+  cookies().set(sessionCookieName(), token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+  });
+  redirect("/me");
 }
 
 export async function markTeamPaidDemo(teamId: string) {

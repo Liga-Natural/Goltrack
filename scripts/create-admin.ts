@@ -33,7 +33,7 @@ async function main() {
   }
 
   const password = genPassword();
-  const user = Users.create(email.toLowerCase(), await bcrypt.hash(password, 10), name);
+  const user = Users.create(email.toLowerCase(), await bcrypt.hash(password, 10), name, "ADMIN");
 
   console.log("Admin account created:");
   console.log(`  email:    ${user.email}`);

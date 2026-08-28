@@ -63,6 +63,9 @@ function runMigrations(database: DatabaseSync) {
   ensureColumn(database, "teams", "crestMimeType", "crestMimeType TEXT");
   ensureColumn(database, "teams", "crestUpdatedAt", "crestUpdatedAt TEXT");
   ensureColumn(database, "teams", "logoToken", "logoToken TEXT");
+  ensureColumn(database, "teams", "userId", "userId TEXT");
+  ensureColumn(database, "players", "userId", "userId TEXT");
+  ensureColumn(database, "users", "role", "role TEXT NOT NULL DEFAULT 'ORGANIZER'");
   ensureColumn(database, "site_settings", "theme", "theme TEXT NOT NULL DEFAULT 'dark'");
   // logoToken's inline UNIQUE in schema.sql only takes effect on a brand-new
   // CREATE TABLE; a database that already existed before this column was
@@ -71,6 +74,11 @@ function runMigrations(database: DatabaseSync) {
   // actually enforces uniqueness for that case — must run after the column
   // above is guaranteed to exist. IF NOT EXISTS makes it a no-op afterward.
   database.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_logoToken ON teams(logoToken) WHERE logoToken IS NOT NULL;`);
+  // One-time backfill: on any database seeded before roles existed, the demo
+  // account (the only user this app creates for you automatically) should
+  // be the platform admin rather than falling through to the ORGANIZER
+  // default above. Idempotent — a no-op once it's already ADMIN.
+  database.exec(`UPDATE users SET role = 'ADMIN' WHERE email = 'demo@jogo.app' AND role != 'ADMIN';`);
 }
 
 export const db = getDb();

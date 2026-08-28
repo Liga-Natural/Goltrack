@@ -1,8 +1,13 @@
+-- role distinguishes the four account types the product supports:
+-- ADMIN (platform-wide), ORGANIZER (runs their own tournaments, the
+-- original/default account type), TEAM_MANAGER (linked to one team via
+-- teams.userId), PLAYER (linked to one player via players.userId).
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   passwordHash TEXT NOT NULL,
   name TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'ORGANIZER',
   createdAt TEXT NOT NULL
 );
 
@@ -44,12 +49,14 @@ CREATE TABLE IF NOT EXISTS teams (
   checkedIn INTEGER NOT NULL DEFAULT 0,
   inviteToken TEXT UNIQUE,
   invitedAt TEXT,
+  userId TEXT, -- the team manager account, if the team registered with a password
   createdAt TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS players (
   id TEXT PRIMARY KEY,
   teamId TEXT NOT NULL,
+  userId TEXT, -- the player/parent account, if the passport has been claimed
   name TEXT NOT NULL,
   jerseyNumber TEXT,
   birthdate TEXT,

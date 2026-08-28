@@ -23,6 +23,13 @@ export function InviteClaimForm({ token }: { token: string }) {
           <input className="input" type="email" name="contactEmail" required />
         </div>
       </div>
+      <div>
+        <label className="label">Password</label>
+        <input className="input" type="password" name="password" minLength={8} required />
+        <p className="text-xs text-black/30 mt-1">
+          At least 8 characters — this logs you into your team&apos;s dashboard after you register.
+        </p>
+      </div>
 
       <div>
         <div className="flex items-center justify-between mb-2">

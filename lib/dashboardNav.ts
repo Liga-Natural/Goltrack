@@ -9,3 +9,15 @@ export const tournamentNav = [
   { href: "/referees", label: "Referees" },
   { href: "/checkin", label: "Check-in" },
 ];
+
+// One nav array per account type, all consumed by the same DashboardSidebar
+// shell (see components/DashboardSidebar.tsx) — same chrome, different
+// links, rather than four bespoke layouts.
+export const adminNav = [
+  { href: "/admin", label: "Overview" },
+  { href: "/admin/tournaments", label: "All tournaments" },
+];
+
+export const teamNav = [{ href: "/team", label: "My team" }];
+
+export const playerNav = [{ href: "/me", label: "My passport" }];

@@ -22,12 +22,17 @@ export default function LoginPage() {
       body: JSON.stringify({ email, password }),
     });
     setLoading(false);
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
       setError(data.error || "Something went wrong.");
       return;
     }
-    router.push("/dashboard");
+    // Each account type lands somewhere different — an organizer's
+    // tournament list isn't a team manager's roster isn't a player's
+    // passport. ROLE_HOME mirrors lib/auth.ts's roleHome() since this is a
+    // client component and can't import a server-only cookies() call.
+    const ROLE_HOME: Record<string, string> = { ADMIN: "/admin", TEAM_MANAGER: "/team", PLAYER: "/me" };
+    router.push(ROLE_HOME[data.role] || "/dashboard");
     router.refresh();
   }
 

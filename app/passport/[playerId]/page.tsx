@@ -4,6 +4,8 @@ import { Players, Teams, Tournaments, Matches, CheckIns } from "@/lib/models";
 import { qrDataUrl } from "@/lib/qr";
 import { Logo } from "@/components/Logo";
 import { TeamBadge } from "@/components/TeamBadge";
+import { ClaimPassportForm } from "@/components/ClaimPassportForm";
+import { getCurrentUser } from "@/lib/auth";
 
 export const revalidate = 5;
 
@@ -25,6 +27,8 @@ export default async function PassportPage({ params }: { params: { playerId: str
 
   const checkIns = CheckIns.listByPlayer(player.id);
   const isCheckedIn = checkIns.some((c) => c.tournamentId === tournament.id);
+  const currentUser = await getCurrentUser();
+  const isOwnPassport = currentUser?.role === "PLAYER" && player.userId === currentUser.id;
 
   const passportUrl = `/passport/${player.id}`;
   const qr = await qrDataUrl(passportUrl);
@@ -119,6 +123,14 @@ export default async function PassportPage({ params }: { params: { playerId: str
                 {played.length} match{played.length === 1 ? "" : "es"} played
               </p>
             </div>
+
+            {isOwnPassport ? (
+              <Link href="/me" className="btn-ghost w-full text-sm mt-4 justify-center">
+                Go to my dashboard
+              </Link>
+            ) : (
+              !player.userId && <ClaimPassportForm playerId={player.id} defaultName={player.name} />
+            )}
           </div>
         </div>
 

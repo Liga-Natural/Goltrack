@@ -66,9 +66,13 @@ function seedDemoDataUnsafe(database: DatabaseSync): void {
     ownerId = existingUser.id;
   } else {
     ownerId = uid();
+    // ADMIN, not ORGANIZER: this is the one account the app creates for you
+    // with zero setup, so it doubles as the platform superadmin login —
+    // "Alex Rivera" both owns the demo tournament (as any organizer would)
+    // and can see every tournament/account on the platform via /admin.
     database
-      .prepare(`INSERT INTO users (id, email, passwordHash, name, createdAt) VALUES (?,?,?,?,?)`)
-      .run(ownerId, "demo@jogo.app", bcrypt.hashSync("demo1234", 10), "Alex Rivera", nowIso());
+      .prepare(`INSERT INTO users (id, email, passwordHash, name, role, createdAt) VALUES (?,?,?,?,?,?)`)
+      .run(ownerId, "demo@jogo.app", bcrypt.hashSync("demo1234", 10), "Alex Rivera", "ADMIN", nowIso());
   }
 
   const tournamentId = uid();

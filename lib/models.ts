@@ -7,12 +7,14 @@ export type Format = "ROUND_ROBIN" | "GROUPS_KNOCKOUT";
 export type TournamentStatus = "DRAFT" | "REGISTRATION_OPEN" | "SCHEDULED" | "LIVE" | "COMPLETED";
 export type Stage = "GROUP" | "KNOCKOUT";
 export type MatchStatus = "SCHEDULED" | "LIVE" | "FINAL";
+export type Role = "ADMIN" | "ORGANIZER" | "TEAM_MANAGER" | "PLAYER";
 
 export interface User {
   id: string;
   email: string;
   passwordHash: string;
   name: string;
+  role: Role;
   createdAt: string;
 }
 
@@ -54,12 +56,14 @@ export interface Team {
   checkedIn: number; // 0/1
   inviteToken: string | null; // set while the slot is an unclaimed invite link, cleared on claim
   invitedAt: string | null;
+  userId: string | null; // the team manager account, if the team registered with a password
   createdAt: string;
 }
 
 export interface Player {
   id: string;
   teamId: string;
+  userId: string | null; // the player/parent account, if the passport has been claimed
   name: string;
   jerseyNumber: string | null;
   birthdate: string | null;
@@ -104,9 +108,17 @@ export interface CheckIn {
 // ---------- Users ----------
 
 export const Users = {
-  create(email: string, passwordHash: string, name: string): User {
-    const user: User = { id: uid(), email, passwordHash, name, createdAt: nowIso() };
-    run(`INSERT INTO users (id, email, passwordHash, name, createdAt) VALUES ($id,$email,$passwordHash,$name,$createdAt)`, user as any);
+  // role is a required argument, never left to the column's SQL-level
+  // default — a lesson learned the hard way elsewhere in this file (see
+  // setAccentColor/setTheme below): that default is baked in at CREATE
+  // TABLE time and doesn't move just because schema.sql's text changes, so
+  // every call site names the role it actually wants.
+  create(email: string, passwordHash: string, name: string, role: Role): User {
+    const user: User = { id: uid(), email, passwordHash, name, role, createdAt: nowIso() };
+    run(
+      `INSERT INTO users (id, email, passwordHash, name, role, createdAt) VALUES ($id,$email,$passwordHash,$name,$role,$createdAt)`,
+      user as any
+    );
     return user;
   },
   byEmail(email: string): User | undefined {
@@ -114,6 +126,15 @@ export const Users = {
   },
   byId(id: string): User | undefined {
     return get<User>(`SELECT * FROM users WHERE id = $id`, { $id: id } as any);
+  },
+  // Aggregate counts only — /admin's overview stat tiles have no reason to
+  // pull every user row (passwordHash included) across the platform just
+  // to count them.
+  countsByRole(): Record<Role, number> {
+    const rows = all<{ role: Role; n: number }>(`SELECT role, COUNT(*) AS n FROM users GROUP BY role`);
+    const counts: Record<Role, number> = { ADMIN: 0, ORGANIZER: 0, TEAM_MANAGER: 0, PLAYER: 0 };
+    for (const row of rows) counts[row.role] = row.n;
+    return counts;
   },
 };
 
@@ -137,6 +158,12 @@ export const Tournaments = {
   },
   listByOwner(ownerId: string): Tournament[] {
     return all<Tournament>(`SELECT * FROM tournaments WHERE ownerId = $ownerId ORDER BY createdAt DESC`, { $ownerId: ownerId } as any);
+  },
+  // Platform-wide, cross-owner — only /admin calls this. Every other
+  // tournament list in the app is scoped to the current user's own
+  // tournaments via listByOwner above.
+  listAll(): Tournament[] {
+    return all<Tournament>(`SELECT * FROM tournaments ORDER BY createdAt DESC`);
   },
   listPublic(): Tournament[] {
     return all<Tournament>(
@@ -172,17 +199,18 @@ function generateToken(): string {
 // disk for a team list or lookup that only needs metadata. hasCrest is a
 // cheap computed flag; the actual bytes are only ever fetched by
 // Teams.crestBytes(), used solely by the image-serving API route.
-const TEAM_COLUMNS = `id, tournamentId, name, contactName, contactEmail, groupName, logoUrl, crestMimeType, crestUpdatedAt, (crestBlob IS NOT NULL) AS hasCrest, logoToken, paid, checkedIn, inviteToken, invitedAt, createdAt`;
+const TEAM_COLUMNS = `id, tournamentId, name, contactName, contactEmail, groupName, logoUrl, crestMimeType, crestUpdatedAt, (crestBlob IS NOT NULL) AS hasCrest, logoToken, paid, checkedIn, inviteToken, invitedAt, userId, createdAt`;
 
 export const Teams = {
   create(
     input: Omit<
       Team,
-      "id" | "createdAt" | "paid" | "checkedIn" | "groupName" | "logoUrl" | "crestMimeType" | "crestUpdatedAt" | "hasCrest" | "logoToken" | "inviteToken" | "invitedAt"
+      "id" | "createdAt" | "paid" | "checkedIn" | "groupName" | "logoUrl" | "crestMimeType" | "crestUpdatedAt" | "hasCrest" | "logoToken" | "inviteToken" | "invitedAt" | "userId"
     > & {
       paid?: boolean;
       groupName?: string | null;
       logoUrl?: string | null;
+      userId?: string | null;
     }
   ): Team {
     let logoToken = generateToken();
@@ -190,8 +218,8 @@ export const Teams = {
     const id = uid();
     const createdAt = nowIso();
     run(
-      `INSERT INTO teams (id, tournamentId, name, contactName, contactEmail, groupName, logoUrl, logoToken, paid, checkedIn, inviteToken, invitedAt, createdAt)
-       VALUES ($id,$tournamentId,$name,$contactName,$contactEmail,$groupName,$logoUrl,$logoToken,$paid,$checkedIn,NULL,NULL,$createdAt)`,
+      `INSERT INTO teams (id, tournamentId, name, contactName, contactEmail, groupName, logoUrl, logoToken, paid, checkedIn, inviteToken, invitedAt, userId, createdAt)
+       VALUES ($id,$tournamentId,$name,$contactName,$contactEmail,$groupName,$logoUrl,$logoToken,$paid,$checkedIn,NULL,NULL,$userId,$createdAt)`,
       {
         $id: id,
         $tournamentId: input.tournamentId,
@@ -203,6 +231,7 @@ export const Teams = {
         $logoToken: logoToken,
         $paid: input.paid ? 1 : 0,
         $checkedIn: 0,
+        $userId: input.userId ?? null,
         $createdAt: createdAt,
       } as any
     );
@@ -244,18 +273,22 @@ export const Teams = {
   },
   // Fills in an invited slot's details and clears the token so the link
   // can't be claimed a second time.
-  claimInvite(id: string, input: { name: string; contactName: string; contactEmail: string; logoUrl?: string | null }): Team | undefined {
+  claimInvite(id: string, input: { name: string; contactName: string; contactEmail: string; logoUrl?: string | null; userId?: string | null }): Team | undefined {
     run(
-      `UPDATE teams SET name=$name, contactName=$contactName, contactEmail=$contactEmail, logoUrl=$logoUrl, inviteToken=NULL WHERE id=$id`,
+      `UPDATE teams SET name=$name, contactName=$contactName, contactEmail=$contactEmail, logoUrl=$logoUrl, userId=$userId, inviteToken=NULL WHERE id=$id`,
       {
         $id: id,
         $name: input.name,
         $contactName: input.contactName,
         $contactEmail: input.contactEmail,
         $logoUrl: input.logoUrl ?? null,
+        $userId: input.userId ?? null,
       } as any
     );
     return Teams.byId(id);
+  },
+  byUserId(userId: string): Team | undefined {
+    return get<Team>(`SELECT ${TEAM_COLUMNS} FROM teams WHERE userId = $userId`, { $userId: userId } as any);
   },
   setGroup(id: string, groupName: string | null) {
     run(`UPDATE teams SET groupName = $groupName WHERE id = $id`, { $id: id, $groupName: groupName } as any);
@@ -301,6 +334,9 @@ export const Teams = {
     run(`DELETE FROM players WHERE teamId = $id`, { $id: id } as any);
     run(`DELETE FROM teams WHERE id = $id`, { $id: id } as any);
   },
+  countAll(): number {
+    return get<{ n: number }>(`SELECT COUNT(*) AS n FROM teams`)!.n;
+  },
 };
 
 // ---------- Players ----------
@@ -310,6 +346,7 @@ export const Players = {
     const p: Player = {
       id: uid(),
       teamId: input.teamId,
+      userId: null,
       name: input.name,
       jerseyNumber: input.jerseyNumber ?? null,
       birthdate: input.birthdate ?? null,
@@ -317,8 +354,8 @@ export const Players = {
       createdAt: nowIso(),
     };
     run(
-      `INSERT INTO players (id, teamId, name, jerseyNumber, birthdate, passportId, createdAt)
-       VALUES ($id,$teamId,$name,$jerseyNumber,$birthdate,$passportId,$createdAt)`,
+      `INSERT INTO players (id, teamId, userId, name, jerseyNumber, birthdate, passportId, createdAt)
+       VALUES ($id,$teamId,$userId,$name,$jerseyNumber,$birthdate,$passportId,$createdAt)`,
       p as any
     );
     return p;
@@ -331,6 +368,19 @@ export const Players = {
   },
   listByTeam(teamId: string): Player[] {
     return all<Player>(`SELECT * FROM players WHERE teamId = $teamId ORDER BY createdAt ASC`, { $teamId: teamId } as any);
+  },
+  byUserId(userId: string): Player | undefined {
+    return get<Player>(`SELECT * FROM players WHERE userId = $userId`, { $userId: userId } as any);
+  },
+  // Links a passport to a freshly created account. Guarded on userId
+  // currently being NULL so a claim link can't be replayed to hijack a
+  // passport someone else already claimed.
+  claim(id: string, userId: string): boolean {
+    const result = run(`UPDATE players SET userId = $userId WHERE id = $id AND userId IS NULL`, { $id: id, $userId: userId } as any);
+    return (result as any).changes > 0;
+  },
+  countAll(): number {
+    return get<{ n: number }>(`SELECT COUNT(*) AS n FROM players`)!.n;
   },
 };
 
