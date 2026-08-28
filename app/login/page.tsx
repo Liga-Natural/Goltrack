@@ -16,24 +16,36 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    setLoading(false);
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      setError(data.error || "Something went wrong.");
-      return;
+    // Without this try/catch, any failure below fetch() actually resolving
+    // (offline, a dropped connection, the function crashing with a
+    // non-JSON error page) throws out of this handler entirely — loading
+    // never gets reset and no error ever renders, so the button just sits
+    // there disabled forever with nothing visibly wrong. That reads
+    // exactly like "the login button doesn't do anything," so it's worth
+    // catching and saying something rather than failing silently.
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || "Something went wrong.");
+        return;
+      }
+      // Each account type lands somewhere different — an organizer's
+      // tournament list isn't a team manager's roster isn't a player's
+      // passport. ROLE_HOME mirrors lib/auth.ts's roleHome() since this is
+      // a client component and can't import a server-only cookies() call.
+      const ROLE_HOME: Record<string, string> = { ADMIN: "/admin", TEAM_MANAGER: "/team", PLAYER: "/me" };
+      router.push(ROLE_HOME[data.role] || "/dashboard");
+      router.refresh();
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-    // Each account type lands somewhere different — an organizer's
-    // tournament list isn't a team manager's roster isn't a player's
-    // passport. ROLE_HOME mirrors lib/auth.ts's roleHome() since this is a
-    // client component and can't import a server-only cookies() call.
-    const ROLE_HOME: Record<string, string> = { ADMIN: "/admin", TEAM_MANAGER: "/team", PLAYER: "/me" };
-    router.push(ROLE_HOME[data.role] || "/dashboard");
-    router.refresh();
   }
 
   return (
