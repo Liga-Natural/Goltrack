@@ -20,26 +20,34 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 // Tailwind's "black" and "white" read from these (see tailwind.config.ts).
-// Light mode is a soft off-black on warm off-white (#111111 / #FAF9F6) —
-// the brand's actual ink/paper pairing — not pure #000/#FFF, which reads
-// harsher and flatter than the rest of the identity. Dark mode swaps their
-// roles: "ink" (foreground/text/border usage) becomes light, "paper"
-// (background/surface usage) becomes that same #111111 ink tone used as
-// the dark surface.
+// "Daylight Pitch": light mode is pure white paper (#FFFFFF) on deep pitch
+// black ink (#050505) — a deliberately harder, more editorial contrast than
+// the earlier off-white/off-black pairing, matching the Nike/Apple-style
+// crisp-minimalist direction this site is designed around. Dark mode swaps
+// their roles: "ink" (foreground/text/border usage) becomes light, "paper"
+// (background/surface usage) becomes that same near-black tone used as the
+// dark surface. surface2/hairline are the two secondary tokens the same
+// pivot needs: a slightly-off-white section background (surface2, so
+// feature sections read as a separate layer without a hard line) and a
+// dedicated ultra-thin border color (hairline) distinct from an ink-alpha
+// blend, so 1px card/input borders hit an exact, designed color rather
+// than whatever percentage of ink happens to compute to.
 const THEME_VARS = {
-  light: { ink: "17 17 17", paper: "250 249 246" },
-  dark: { ink: "250 249 246", paper: "17 17 17" },
+  light: { ink: "5 5 5", paper: "255 255 255", surface2: "247 247 249", hairline: "229 229 234" },
+  dark: { ink: "250 249 246", paper: "17 17 17", surface2: "24 24 27", hairline: "42 42 46" },
 } as const;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const ramp = generateRamp(await SiteSettings.getAccentColor());
   const theme = await SiteSettings.getTheme();
-  const { ink, paper } = THEME_VARS[theme];
+  const { ink, paper, surface2, hairline } = THEME_VARS[theme];
 
   const cssVars = [
     ...Object.entries(ramp).map(([shade, rgb]) => `--pitch-${shade}: ${rgb};`),
     `--ink: ${ink};`,
     `--paper: ${paper};`,
+    `--surface-2: ${surface2};`,
+    `--hairline: ${hairline};`,
   ].join(" ");
 
   return (

@@ -15,7 +15,7 @@ export default function RegisterPage() {
   const [state, formAction] = useFormState(registerTeamPublic.bind(null, params.slug), initialState);
 
   return (
-    <main className="min-h-screen stadium-glow">
+    <main className="min-h-screen">
       <header className="border-b border-black/5">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 py-4">
           <Link href="/">

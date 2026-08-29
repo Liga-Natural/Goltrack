@@ -8,7 +8,7 @@ export default async function MeLayout({ children }: { children: React.ReactNode
   if (user.role !== "PLAYER") redirect("/dashboard");
 
   return (
-    <div className="min-h-screen stadium-glow">
+    <div className="min-h-screen">
       <SimpleDashboardHeader label="Player" userName={user.name} />
       <main className="mx-auto max-w-md px-4 sm:px-6 py-8">{children}</main>
     </div>

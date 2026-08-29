@@ -12,7 +12,7 @@ export default async function InviteClaimPage({ params }: { params: { slug: stri
   const alreadyClaimed = !team && !!params.token;
 
   return (
-    <main className="min-h-screen stadium-glow">
+    <main className="min-h-screen">
       <header className="border-b border-black/5">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 py-4">
           <Link href="/">

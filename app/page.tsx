@@ -23,7 +23,7 @@ export default function Home() {
     <main className="min-h-screen overflow-x-clip">
       <MarketingNav links={NAV_LINKS} />
 
-      <section className="relative stadium-glow tactical-grid">
+      <section className="relative">
         <PitchPattern className="pointer-events-none absolute -z-10 h-[560px] w-[560px] text-black/[0.04] -right-40 -top-24" />
 
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-20 sm:pt-20 sm:pb-28 grid lg:grid-cols-[1.15fr_1fr] gap-12 items-center">
@@ -100,7 +100,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-y-2 border-black bg-black/[0.02] relative overflow-hidden">
+      <section className="border-y-2 border-black bg-surface2 relative overflow-hidden">
         <div className="grain-overlay" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
           <div className="reveal flex items-end justify-between gap-6 mb-8 flex-wrap">
@@ -146,7 +146,7 @@ export default function Home() {
           the site's theme toggle — same fix and reasoning as
           HeroPhoneMockup's always-dark phone screen; left unpinned, dark mode
           flips the tokens and this band inverts to a light band instead. */}
-      <section className="reveal relative surface-light bg-black text-white py-24 text-center overflow-hidden stadium-glow tactical-grid">
+      <section className="reveal relative surface-light bg-black text-white py-24 text-center overflow-hidden">
         <PitchPattern className="pointer-events-none absolute -z-0 h-[480px] w-[480px] text-white/[0.04] -left-32 -bottom-32" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
           <Logo showMark={false} className="justify-center mb-7" wordmarkClassName="h-9 sm:h-11" />

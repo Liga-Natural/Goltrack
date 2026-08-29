@@ -10,7 +10,7 @@
     @apply bg-white text-black font-body antialiased;
   }
   h1, h2, h3, h4 {
-    @apply font-display font-extrabold;
+    @apply font-display font-extrabold leading-tight;
   }
   /* Tailwind's preflight strips the default focus ring; without a visible
      replacement, keyboard users lose track of focus entirely. One rule
@@ -37,18 +37,18 @@
     @apply btn bg-black text-white hover:bg-black/80;
   }
   .btn-ghost {
-    @apply btn bg-transparent text-black hover:bg-black/5 border border-black/15;
+    @apply btn bg-transparent text-black hover:bg-black/5 border border-black;
   }
   /* Default card: flat list rows, secondary content — no hover behavior of
      its own, on purpose (see .card-interactive below for anything clickable).
-     backdrop-blur is the "glass" half of a glassmorphic surface — harmless
-     in light mode (nothing behind a card blurs into visible mush there),
-     but in dark mode it gives a card real depth against whatever's behind
-     it (the ambient glow, the tactical grid) instead of reading as a flat
-     opaque rectangle. Border reads a touch crisper (15% not 10%) for the
-     same reason — depth needs a findable edge. */
+     Solid opaque paper (not the earlier translucent/backdrop-blur glass
+     treatment) is deliberate: "Daylight Pitch" wants cards to read as
+     physical paper sitting slightly off the page's grey, not a glass panel
+     — that only worked as a device against the retired dark/stadium
+     background. hairline (not an ink-alpha blend) is the exact 1px border
+     color the spec calls for. */
   .card {
-    @apply rounded-2xl bg-white/95 backdrop-blur-sm border border-black/15 shadow-card;
+    @apply rounded-2xl bg-white border border-hairline shadow-card;
   }
   /* For clickable cards (links to a tournament/team/etc.) — a real lift on
      hover rather than the old bare hover:shadow-lg with no other change. */
@@ -58,20 +58,15 @@
   /* Higher-hierarchy content: stat panels, the live-score card, anything
      that should visibly sit above the page rather than blend into the list. */
   .card-elevated {
-    @apply rounded-2xl bg-white/95 backdrop-blur-sm border border-black/15 shadow-elevated;
+    @apply rounded-2xl bg-white border border-hairline shadow-elevated;
   }
   /* A pure white fill on a white card/page gives a field zero visual
      separation from its container — the only thing marking it as a box was
-     a 1px 15%-black border. An ink tint gives it a real, findable edge
-     without reading as "disabled grey", and it brightens to the page's base
-     surface on focus so the active field still pops. 0.025/15% was tuned
-     against a white card on a white page; against a dark card on a dark
-     page (now the site default) that same tint was nearly imperceptible —
-     eyes are less sensitive to a faint lightening on dark than an
-     equally-faint darkening on light — so both are bumped for a contrast
-     level that reads clearly in either mode. */
+     a 1px border. hairline gives it a real, findable edge without reading
+     as "disabled grey", and it brightens to the page's base surface on
+     focus so the active field still pops. */
   .input {
-    @apply w-full rounded-lg bg-black/[0.06] border border-black/25 px-3 py-2 text-sm text-black placeholder:text-black/30 transition-colors focus:outline-none focus:bg-white focus:ring-2 focus:ring-pitch-400;
+    @apply w-full rounded-lg bg-black/[0.06] border border-hairline px-3 py-2 text-sm text-black placeholder:text-black/30 transition-colors focus:outline-none focus:bg-white focus:ring-2 focus:ring-pitch-400;
   }
   .label {
     @apply block text-xs font-semibold uppercase tracking-wide text-black/50 mb-1.5;
@@ -135,8 +130,8 @@
    did. */
 .surface-light {
   color-scheme: light;
-  --ink: 17 17 17;
-  --paper: 250 249 246;
+  --ink: 5 5 5;
+  --paper: 255 255 255;
 }
 
 /* Subtle top-rule accent so flat white sections don't look like a plain fill */
@@ -240,93 +235,31 @@
    viewport instead of reading as "floating" — still gets the drop-shadow,
    just no rotation. The container's own max-width (set where it's used)
    gives the tilted-and-scaled object room so its rotated bounding box
-   doesn't clip against the layout edge. */
+   doesn't clip against the layout edge.
+   "Daylight Pitch" pass: shadows are plain soft black (no accent-color
+   tint) — the earlier red-tinted glow sold "catching stadium light" against
+   a dark background; against pure white paper a tinted shadow would just
+   look like a color mistake, so this is a photographic drop-shadow instead,
+   the way a real product photo floats over white. */
 .hero-phone-container {
   perspective: 1200px;
 }
 .hero-phone-card {
-  filter: drop-shadow(0 30px 35px rgba(0, 0, 0, 0.8)) drop-shadow(0 10px 12px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.05));
 }
 @media (min-width: 1024px) {
   .hero-phone-card {
-    transform: rotateX(12deg) rotateY(-15deg) rotateZ(2deg);
-    transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), filter 0.7s cubic-bezier(0.16, 1, 0.3, 1);
-    /* The second, tinted shadow layer is a brand-red glow (via the
-       accent-color variable, not a hardcoded hex) rather than a second
-       pure-black shadow — reads as the device catching stadium light
-       instead of just sitting in a darker room. */
-    filter: drop-shadow(-20px 40px 45px rgba(0, 0, 0, 0.95)) drop-shadow(0 15px 20px rgb(var(--pitch-400) / 0.15));
+    transform: rotateX(10deg) rotateY(-12deg) rotateZ(2deg);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    filter: drop-shadow(-15px 25px 30px rgba(0, 0, 0, 0.12)) drop-shadow(0 10px 10px rgba(0, 0, 0, 0.05));
   }
   .hero-phone-card:hover {
-    transform: rotateX(0deg) rotateY(0deg) scale(1.04);
-    filter: drop-shadow(0 40px 60px rgba(0, 0, 0, 0.99));
+    transform: rotateX(0deg) rotateY(0deg) scale(1.03);
+    filter: drop-shadow(0 25px 40px rgba(0, 0, 0, 0.15));
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-phone-card {
     transition: none;
   }
-}
-
-/* Ambient "stadium lighting": a large, softly blurred wash of brand-red
-   light in one corner of a dark hero/CTA section, standing in for the
-   glow of floodlights instead of a flat single-tone background. Applied
-   as a positioned pseudo-element on a `relative overflow-hidden` section
-   so it never affects layout or intercepts clicks. Reads as intended only
-   against a dark surface — deliberately not applied site-wide, just the
-   handful of dark marketing bands that are meant to feel like standing
-   pitchside at night. */
-.stadium-glow {
-  position: relative;
-  isolation: isolate;
-}
-.stadium-glow::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image: radial-gradient(circle at 85% -10%, rgb(var(--pitch-400) / 0.16), transparent 55%),
-    radial-gradient(circle at -10% 110%, rgb(var(--pitch-400) / 0.1), transparent 50%);
-  /* "Dynamic" here means a slow breathing pulse, not a spotlight sweep — a
-     stadium floodlight doesn't visibly move, but its wash isn't perfectly
-     static either. Opacity-only (no transform/scale): this class is applied
-     directly to page-level wrappers that also contain the sticky nav, and a
-     transform big enough to read as motion pushes this inset:0 layer's
-     visual bounds past its own box — clipping that back with overflow:hidden
-     silently breaks position:sticky for every descendant (verified: it did,
-     site-wide). Opacity never changes the box, so no clipping is needed and
-     sticky nav keeps working everywhere this is applied. */
-  animation: stadium-glow-pulse 12s ease-in-out infinite;
-}
-@keyframes stadium-glow-pulse {
-  0%, 100% {
-    opacity: 0.7;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .stadium-glow::before {
-    animation: none;
-  }
-}
-
-/* A faint tactical-board grid — the kind of 1px line grid a coach sketches
-   plays on — laid over a dark section as texture. Pure decoration: fixed
-   pointer-events:none, opacity low enough that it reads as "texture" and
-   never competes with real content. Built as a tiny tiled SVG rather than
-   a background-image gradient grid so the lines stay crisp at any zoom. */
-.tactical-grid {
-  position: relative;
-}
-.tactical-grid::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.05;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><path d='M40 0H0V40' fill='none' stroke='white' stroke-width='1'/></svg>");
 }

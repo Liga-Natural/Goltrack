@@ -77,7 +77,7 @@ export function RoleTabs() {
                 on the earlier flat-list version this replaced: as an inline
                 sibling it collides with any heading that wraps to two lines. */}
             <span
-              className="font-display text-6xl text-black/[0.04] leading-none select-none absolute -top-1 left-0 z-0"
+              className="font-display text-6xl text-[#F0F0F2] leading-none select-none absolute -top-1 left-0 z-0"
               aria-hidden="true"
             >
               {String(i + 1).padStart(2, "0")}

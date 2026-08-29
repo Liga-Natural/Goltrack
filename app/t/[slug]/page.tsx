@@ -42,7 +42,7 @@ export default async function PublicTournamentPage({
   const standingByTeamId = new Map(overallStandings.map((r) => [r.team.id, r]));
 
   return (
-    <main className="min-h-screen stadium-glow">
+    <main className="min-h-screen">
       <header className="border-b border-black/5">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link href="/">

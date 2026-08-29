@@ -15,7 +15,7 @@ const formats = [
 
 export default function InquirePage() {
   return (
-    <main className="min-h-screen stadium-glow">
+    <main className="min-h-screen">
       <MarketingNav links={NAV_LINKS} />
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-8 text-center">
@@ -34,7 +34,7 @@ export default function InquirePage() {
                   the homepage feature list — a heading that wraps to two
                   lines can never run into the numeral, at any width. */}
               <span
-                className="font-display text-6xl text-black/[0.06] leading-none select-none absolute -top-1 left-0 z-0"
+                className="font-display text-6xl text-[#F0F0F2] leading-none select-none absolute -top-1 left-0 z-0"
                 aria-hidden="true"
               >
                 {String(i + 1).padStart(2, "0")}

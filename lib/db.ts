@@ -158,7 +158,7 @@ async function runMigrations(pool: Pool) {
   await ensureColumn(pool, "teams", "userid", "userId TEXT");
   await ensureColumn(pool, "players", "userid", "userId TEXT");
   await ensureColumn(pool, "users", "role", "role TEXT NOT NULL DEFAULT 'ORGANIZER'");
-  await ensureColumn(pool, "site_settings", "theme", "theme TEXT NOT NULL DEFAULT 'dark'");
+  await ensureColumn(pool, "site_settings", "theme", "theme TEXT NOT NULL DEFAULT 'light'");
   // logoToken's inline UNIQUE in schema.sql only takes effect on a brand-new
   // CREATE TABLE; a database that already existed before this column was
   // added just got it via ALTER TABLE ADD COLUMN above, which can't attach

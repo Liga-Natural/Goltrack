@@ -24,7 +24,7 @@ export function TeamBadge({
   sport: string;
   size?: "sm" | "md" | "lg";
 }) {
-  const dims = size === "sm" ? "h-8 w-8 text-xs" : size === "lg" ? "h-16 w-16 text-xl" : "h-10 w-10 text-sm";
+  const dims = size === "sm" ? "h-6 w-6 text-[10px]" : size === "lg" ? "h-16 w-16 text-xl" : "h-10 w-10 text-sm";
 
   const src = hasCrest
     ? `/api/teams/${id}/crest${crestUpdatedAt ? `?v=${encodeURIComponent(crestUpdatedAt)}` : ""}`

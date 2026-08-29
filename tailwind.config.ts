@@ -28,6 +28,14 @@ const config: Config = {
         // project's own identity language.
         black: "rgb(var(--ink) / <alpha-value>)",
         white: "rgb(var(--paper) / <alpha-value>)",
+        // Two more theme-aware surface tokens, same trick: "Ultra-light
+        // Athletic Grey" for secondary/feature-section backgrounds
+        // (surface2) and "Cool Slate" for the exact 1px hairline border
+        // cards and inputs want (hairline) — both exact designed colors in
+        // light mode rather than an ink-alpha approximation, and still
+        // theme-aware since app/layout.tsx defines a dark-mode pair too.
+        surface2: "rgb(var(--surface-2) / <alpha-value>)",
+        hairline: "rgb(var(--hairline) / <alpha-value>)",
         // "pitch" is the general brand accent, chosen by whoever runs the
         // site from /dashboard/settings (defaults to "Sideline Red",
         // #F2545C). Every shade below reads from a CSS variable — set at
@@ -117,7 +125,7 @@ const config: Config = {
         // mode --ink is the light color, so these correctly become a soft
         // light halo / a light hard-edge shadow instead of a literally
         // invisible dark-on-dark shadow.
-        card: "0 1px 2px rgb(var(--ink) / 0.04), 0 8px 24px -8px rgb(var(--ink) / 0.12)",
+        card: "0 4px 20px rgb(var(--ink) / 0.04)",
         elevated: "0 2px 4px rgb(var(--ink) / 0.06), 0 20px 40px -14px rgb(var(--ink) / 0.22)",
         ticket: "3px 3px 0 rgb(var(--ink) / 0.92)",
         glow: "0 0 60px -10px rgb(var(--pitch-400) / 0.35)",

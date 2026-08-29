@@ -29,10 +29,13 @@ export function HeroPhoneMockup() {
     <div className="hero-phone-container surface-light">
       <div className="hero-phone-card relative w-[280px] sm:w-[300px]">
         {/* The bezel is one step lighter than navy-900 (#1F1F1F vs #111111)
-            on purpose — now that the page itself defaults to dark, a bezel
-            in the exact same tone as the page background would merge into
-            it and the device would lose its "floating object" definition
-            that the drop-shadow above is trying to sell. */}
+            so the device's own edge stays visible against its dark screen —
+            a real phone's bezel is never the exact same black as its
+            display. The mockup's screen is deliberately always dark
+            (surface-light above pins it that way regardless of the site's
+            own light/dark toggle) — a dark device photographed against the
+            site's white page is the same "hero product shot" language
+            Apple/Nike-style pages use, not a mismatch to fix. */}
         <div className="relative rounded-[2.75rem] bg-[#1F1F1F] p-2.5 border border-white/10">
           <div className="relative overflow-hidden rounded-[2.1rem] bg-navy-900 pb-5">
             {/* Status bar + notch */}
