@@ -94,7 +94,7 @@ export default async function PassportPage({ params }: { params: { playerId: str
             </div>
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs text-black/40">Status</span>
-              <span className={`badge ${isCheckedIn ? "bg-pitch-500/10 text-pitch-600" : "bg-black/5 text-black/50"}`}>
+              <span className={`badge ${isCheckedIn ? "bg-volt-400/10 text-volt-500" : "bg-black/5 text-black/50"}`}>
                 {isCheckedIn ? "Checked in ✓" : "Not checked in"}
               </span>
             </div>

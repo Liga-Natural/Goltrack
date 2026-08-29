@@ -98,13 +98,13 @@ export function HeroPhoneMockup() {
 
               {/* Live section */}
               <p className="text-[10px] uppercase tracking-[0.15em] text-white/35 mb-2 mt-4">Live now</p>
-              <div className="rounded-xl bg-pitch-400/10 border border-pitch-400/30 p-3 mb-4">
+              <div className="rounded-xl bg-volt-400/10 border border-volt-400/30 p-3 mb-4">
                 <div className="flex items-center gap-1.5 mb-2">
                   <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pitch-400 opacity-75" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-pitch-400" />
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-volt-400 opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-volt-400" />
                   </span>
-                  <span className="text-[10px] font-bold text-pitch-400 tracking-wide">LIVE · 62&apos;</span>
+                  <span className="text-[10px] font-bold text-volt-500 tracking-wide">LIVE · 62&apos;</span>
                 </div>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="flex items-center gap-1.5 text-sm font-medium text-white">

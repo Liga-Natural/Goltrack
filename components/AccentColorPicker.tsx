@@ -98,12 +98,6 @@ export function AccentColorPicker({ currentColor }: { currentColor: string }) {
             >
               Soft badge
             </span>
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold" style={{ color: selected }}>
-              <span className="relative flex h-2 w-2">
-                <span className="relative inline-flex h-2 w-2 rounded-full" style={{ backgroundColor: selected }} />
-              </span>
-              LIVE indicator
-            </span>
           </div>
           <p className="text-sm text-black/60">
             This is what a link or highlighted word looks like in{" "}
@@ -126,7 +120,8 @@ export function AccentColorPicker({ currentColor }: { currentColor: string }) {
           {saved ? "Saved ✓" : "Save accent color"}
         </button>
         <p className="text-xs text-black/30 mt-2">
-          Applies site-wide — buttons, links, badges, and LIVE indicators everywhere, not just this page. Takes effect
+          Applies site-wide — buttons, links, and badges everywhere, not just this page. (LIVE status stays a fixed
+          emerald green, independent of this color, so a live match is always recognizable at a glance.) Takes effect
           immediately on pages rendered per-request (dashboard, tournament pages); the marketing pages catch up within
           about a minute.
         </p>

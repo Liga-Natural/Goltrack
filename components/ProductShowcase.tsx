@@ -65,7 +65,7 @@ export function ProductShowcase({
                 <p className="font-medium text-sm">{t.name}</p>
                 <p className="text-xs text-black/40">{(playersByTeam[t.id] || []).length} players</p>
               </div>
-              <span className={`badge ${t.paid ? "bg-pitch-400/15 text-pitch-600" : "bg-black/10 text-black/50"}`}>
+              <span className={`badge ${t.paid ? "bg-volt-400/15 text-volt-500" : "bg-black/10 text-black/50"}`}>
                 {t.paid ? "Paid ✓" : "Unpaid"}
               </span>
             </div>
@@ -124,7 +124,7 @@ export function ProductShowcase({
       preview: (
         <div className="card p-4 text-center">
           <p className="text-sm text-black/50">Passport scanned</p>
-          <p className="font-semibold text-pitch-600 mt-1">✓ Checked in</p>
+          <p className="font-semibold text-volt-500 mt-1">✓ Checked in</p>
         </div>
       ),
     },

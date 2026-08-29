@@ -49,7 +49,7 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
                   </div>
                   <div className="flex items-center gap-2">
                     <form action={team.paid ? setPaidFalse : setPaidTrue}>
-                      <button className={`badge ${team.paid ? "bg-pitch-400/15 text-pitch-600" : "bg-black/10 text-black/50"}`}>
+                      <button className={`badge ${team.paid ? "bg-volt-400/15 text-volt-500" : "bg-black/10 text-black/50"}`}>
                         {team.paid ? "Paid ✓" : "Unpaid"}
                       </button>
                     </form>

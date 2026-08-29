@@ -44,7 +44,7 @@ export default async function TeamDashboardPage() {
       <div className="grid sm:grid-cols-3 gap-4 my-6">
         <div className="card p-4">
           <p className="text-xs uppercase tracking-wide text-black/40 mb-1">Registration</p>
-          <span className={`badge ${team.paid ? "bg-pitch-400/15 text-pitch-600" : "bg-black/10 text-black/50"}`}>
+          <span className={`badge ${team.paid ? "bg-volt-400/15 text-volt-500" : "bg-black/10 text-black/50"}`}>
             {team.paid ? "Paid ✓" : "Unpaid"}
           </span>
         </div>
