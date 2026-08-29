@@ -25,7 +25,14 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
   return (
     <div>
       <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
+        {/* min-w-0: a grid item's default min-width:auto refuses to shrink
+            below its content's min-content size — with long unbroken crest-
+            link tokens and player names inside, that dragged this whole
+            column (and the page) wider than the viewport on mobile instead
+            of letting the truncate/wrap rules further down actually kick
+            in. Same fix, same root cause, as StandingsTable's own
+            min-w-0 note. */}
+        <div className="lg:col-span-2 space-y-4 min-w-0">
           {teams.length === 0 && pendingInvites.length === 0 && (
             <p className="text-black/50">No teams yet — add one, generate an invite link, or share the registration link.</p>
           )}
@@ -38,16 +45,16 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
             return (
               <div key={team.id} className="card p-5">
                 <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <TeamBadge id={team.id} name={team.name} hasCrest={team.hasCrest} crestUpdatedAt={team.crestUpdatedAt} logoUrl={team.logoUrl} sport={tournament.sport} />
-                    <div>
-                      <h3 className="font-semibold">
+                    <div className="min-w-0">
+                      <h3 className="font-semibold truncate">
                         {team.name} {team.groupName && <span className="text-black/40 font-normal text-sm">· Group {team.groupName}</span>}
                       </h3>
-                      <p className="text-sm text-black/40">{team.contactName} · {team.contactEmail}</p>
+                      <p className="text-sm text-black/40 truncate">{team.contactName} · {team.contactEmail}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <form action={team.paid ? setPaidFalse : setPaidTrue}>
                       <button className={`badge ${team.paid ? "bg-volt-400/15 text-volt-500" : "bg-black/10 text-black/50"}`}>
                         {team.paid ? "Paid ✓" : "Unpaid"}
@@ -62,7 +69,7 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
                 <div className="flex flex-wrap items-center gap-2 mb-3 bg-black/[0.03] rounded-lg px-3 py-2">
                   <form action={uploadCrestWithIds} className="flex items-center gap-2 flex-1 min-w-[220px]">
                     <input
-                      className="text-xs flex-1 file:mr-2 file:btn-secondary file:text-xs file:px-2.5 file:py-1 file:border-0 file:cursor-pointer"
+                      className="text-xs flex-1 min-w-0 file:mr-2 file:btn-secondary file:text-xs file:px-2.5 file:py-1 file:border-0 file:cursor-pointer"
                       type="file"
                       name="crest"
                       accept="image/png,image/jpeg,image/webp,image/svg+xml"
@@ -72,8 +79,8 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
                       {team.hasCrest ? "Replace crest" : "Upload crest"}
                     </button>
                   </form>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <code className="text-xs text-pitch-600">…/crest/{logoToken}</code>
+                  <div className="flex items-center gap-1.5 min-w-0 w-full sm:w-auto">
+                    <code className="text-xs text-pitch-600 truncate min-w-0">…/crest/{logoToken}</code>
                     <CopyLinkButton path={`/t/${tournament.slug}/crest/${logoToken}`} />
                   </div>
                 </div>
@@ -83,15 +90,15 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
 
                 <div className="space-y-1.5 mb-3">
                   {players.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between text-sm text-black/60 border-b border-black/5 pb-1">
-                      <span>
+                    <div key={p.id} className="flex items-center justify-between gap-2 text-sm text-black/60 border-b border-black/5 pb-1">
+                      <span className="truncate min-w-0">
                         {p.jerseyNumber && <span className="text-black/30 mr-2">#{p.jerseyNumber}</span>}
                         {p.name}
                       </span>
                       <a
                         href={`/passport/${p.id}`}
                         target="_blank"
-                        className="text-black/30 hover:text-pitch-600 text-xs underline decoration-dotted"
+                        className="text-black/30 hover:text-pitch-600 text-xs underline decoration-dotted shrink-0"
                       >
                         passport →
                       </a>
@@ -132,7 +139,7 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
               <div className="space-y-2">
                 {pendingInvites.map((invite) => (
                   <div key={invite.id} className="flex items-center justify-between gap-2 bg-black/[0.05] rounded-lg px-2.5 py-2">
-                    <code className="text-xs text-pitch-600 truncate">…/invite/{invite.inviteToken}</code>
+                    <code className="text-xs text-pitch-600 truncate min-w-0">…/invite/{invite.inviteToken}</code>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <CopyLinkButton path={`/t/${tournament.slug}/invite/${invite.inviteToken}`} />
                       <form action={removeTeam.bind(null, tournament.id, invite.id)}>
