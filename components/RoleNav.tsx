@@ -37,7 +37,7 @@ export function RoleNav() {
   }
 
   return (
-    <div className="hidden xl:inline-flex items-center gap-1 p-1 rounded-full border border-hairline bg-white">
+    <div className="hidden xl:inline-flex items-center gap-1 p-1 rounded-full border border-hairline bg-surface">
       {ROLES.map((r, i) => (
         <Link
           key={r.key}

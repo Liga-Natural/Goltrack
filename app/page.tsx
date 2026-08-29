@@ -42,7 +42,7 @@ export default function Home() {
                 </span>
               ))}
             </div>
-            <h1 className="font-display text-display-sm sm:text-display-md lg:text-display-lg tracking-tight text-black">
+            <h1 className="font-display text-display-sm sm:text-display-md lg:text-display-lg text-black">
               RUN YOUR
               <br />
               LEAGUE.

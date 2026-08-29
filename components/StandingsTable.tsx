@@ -25,11 +25,11 @@ export function StandingsTable({ rows, title, sport }: { rows: StandingRow[]; ti
             more to the right. A static edge fade is a cheap, JS-free hint
             that doesn't need to track scroll position to stay honest: the
             table is always wider than a mobile viewport here. */}
-        <div className="sm:hidden pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10" />
+        <div className="sm:hidden pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-surface to-transparent z-10" />
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[420px]">
           <thead>
-            <tr className="text-left text-black/40 text-[10px] sm:text-xs uppercase tracking-wide">
+            <tr className="text-left text-ink2 text-[10px] sm:text-xs uppercase tracking-wide">
               <th className="py-2 pr-2">Team</th>
               <th className="py-2 px-1.5 sm:px-2 text-center">P</th>
               <th className="py-2 px-1.5 sm:px-2 text-center">W</th>
@@ -43,7 +43,7 @@ export function StandingsTable({ rows, title, sport }: { rows: StandingRow[]; ti
           </thead>
           <tbody>
             {rows.map((r, i) => (
-              <tr key={r.team.id} className={`border-t border-black/5 ${i % 2 === 1 ? "bg-black/[0.02]" : ""}`}>
+              <tr key={r.team.id} className={`border-t border-hairline ${i % 2 === 1 ? "bg-white" : "bg-surface"}`}>
                 <td className="py-2 pr-2 font-medium">
                   <div className="flex items-center gap-2">
                     <span className="text-black/30">{i + 1}</span>

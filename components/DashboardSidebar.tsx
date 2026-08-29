@@ -118,7 +118,7 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
 
   return (
     <div className="lg:flex min-h-screen">
-      <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3.5 border-b border-black/10 bg-white/90 backdrop-blur">
+      <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3.5 border-b border-black/10 bg-surface/90 backdrop-blur">
         <Link href="/dashboard">
           <Logo markClassName="h-6 w-6" />
         </Link>
@@ -134,7 +134,7 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
       {open && <div className="fixed inset-0 z-40 bg-black/60 lg:hidden" onClick={() => setOpen(false)} />}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-black/10 bg-white flex flex-col transition-transform duration-200 lg:static lg:z-auto lg:w-60 lg:shrink-0 lg:bg-surface2 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-black/10 bg-surface flex flex-col transition-transform duration-200 lg:static lg:z-auto lg:w-60 lg:shrink-0 lg:bg-surface2 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >

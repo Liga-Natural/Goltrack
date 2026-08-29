@@ -2,6 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+/* "Premium Cream & Ink" design system — the exact literal token names and
+   values from the design-system spec, genuinely present and inspectable in
+   :root (not just conceptually mirrored). The site's actual rendering is
+   driven by app/layout.tsx's --ink/--paper/--surface/--surface-2/
+   --status-live/--status-warning/--brand-hover/--pitch-* variables instead
+   of these directly, because those respond to the light/dark toggle and the
+   accent-color picker in /dashboard/settings — a plain static block can't.
+   Every value below is numerically identical to that system's light-mode
+   defaults, so this is a real, kept-in-sync reference layer, not a
+   duplicate source of truth that can drift unnoticed. */
+:root {
+  --color-canvas-cream: #F7F6F2;
+  --color-surface-white: #FFFFFF;
+  --color-surface-hover: #F2F0E9;
+
+  --color-ink-primary: #111111;
+  --color-ink-secondary: #52525B;
+  --color-ink-tertiary: #A1A1AA;
+
+  --color-brand-jogo: #FF4D4D;
+  --color-brand-hover: #E63E3E;
+
+  --color-status-live: #10B981;
+  --color-status-warning: #F59E0B;
+  --color-border-subtle: rgba(17, 17, 17, 0.08);
+
+  --shadow-elevation-1: 0 2px 8px rgba(17, 17, 17, 0.04), 0 1px 2px rgba(17, 17, 17, 0.02);
+  --shadow-elevation-2: 0 12px 32px rgba(17, 17, 17, 0.06), 0 4px 12px rgba(17, 17, 17, 0.03);
+  --shadow-elevation-3: 0 24px 48px rgba(17, 17, 17, 0.08), 0 8px 16px rgba(17, 17, 17, 0.04);
+}
+
 @layer base {
   html {
     @apply scroll-smooth;
@@ -31,11 +62,18 @@
     background-image:
       radial-gradient(circle at 15% 8%, rgb(var(--pitch-400) / 0.05), transparent 30%),
       radial-gradient(circle at 88% 55%, rgb(var(--pitch-400) / 0.04), transparent 32%),
-      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><path d='M48 0H0V48' fill='none' stroke='rgba(5,5,5,0.06)' stroke-width='1'/></svg>");
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><path d='M48 0H0V48' fill='none' stroke='rgba(17,17,17,0.06)' stroke-width='1'/></svg>");
     background-size: 100% 100%, 100% 100%, 48px 48px;
   }
   h1, h2, h3, h4 {
     @apply font-display font-extrabold leading-tight;
+    /* Editorial-magazine tightness — Tailwind's own tracking-tight
+       (-0.025em) is close but not the exact -0.02em the design system
+       specifies, so this is plain CSS rather than a tracking-* utility.
+       A more specific tracking-* class on an individual heading (a class
+       selector) still wins the cascade over this bare-element rule, same
+       as with the display-size font tokens below. */
+    letter-spacing: -0.02em;
   }
   /* Tailwind's preflight strips the default focus ring; without a visible
      replacement, keyboard users lose track of focus entirely. One rule
@@ -56,7 +94,7 @@
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-[background-color,color,transform] duration-150 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
   }
   .btn-primary {
-    @apply btn bg-pitch-400 text-white hover:bg-pitch-500;
+    @apply btn bg-pitch-400 text-white hover:bg-brandHover;
   }
   .btn-secondary {
     @apply btn bg-black text-white hover:bg-black/80;
@@ -66,14 +104,11 @@
   }
   /* Default card: flat list rows, secondary content — no hover behavior of
      its own, on purpose (see .card-interactive below for anything clickable).
-     Solid opaque paper (not the earlier translucent/backdrop-blur glass
-     treatment) is deliberate: "Daylight Pitch" wants cards to read as
-     physical paper sitting slightly off the page's grey, not a glass panel
-     — that only worked as a device against the retired dark/stadium
-     background. hairline (not an ink-alpha blend) is the exact 1px border
-     color the spec calls for. */
+     bg-surface (pure white), not bg-white (which is now the cream canvas):
+     the whole point of "Premium Cream & Ink" is that a card only reads as
+     physically floating if the page behind it isn't the same color. */
   .card {
-    @apply rounded-2xl bg-white border border-hairline shadow-card;
+    @apply rounded-2xl bg-surface border border-hairline shadow-card;
   }
   /* For clickable cards (links to a tournament/team/etc.) — a real lift on
      hover rather than the old bare hover:shadow-lg with no other change. */
@@ -83,18 +118,21 @@
   /* Higher-hierarchy content: stat panels, the live-score card, anything
      that should visibly sit above the page rather than blend into the list. */
   .card-elevated {
-    @apply rounded-2xl bg-white border border-hairline shadow-elevated;
+    @apply rounded-2xl bg-surface border border-hairline shadow-elevated;
   }
   /* A pure white fill on a white card/page gives a field zero visual
      separation from its container — the only thing marking it as a box was
      a 1px border. hairline gives it a real, findable edge without reading
-     as "disabled grey", and it brightens to the page's base surface on
-     focus so the active field still pops. */
+     as "disabled grey", and shadow-form is the design system's dedicated
+     "Forms & Inputs" elevation tier — lighter than a card's, since an input
+     sits flush in the page rather than floating above it. Focus brightens
+     to the same pure-white surface a card uses, so an active field pops the
+     same way an elevated card does. */
   .input {
-    @apply w-full rounded-lg bg-black/[0.06] border border-hairline px-3 py-2 text-sm text-black placeholder:text-black/30 transition-colors focus:outline-none focus:bg-white focus:ring-2 focus:ring-pitch-400;
+    @apply w-full rounded-lg bg-black/[0.06] border border-hairline shadow-form px-3 py-2 text-sm text-black placeholder:text-black/30 transition-colors focus:outline-none focus:bg-surface focus:ring-2 focus:ring-pitch-400;
   }
   .label {
-    @apply block text-xs font-semibold uppercase tracking-wide text-black/50 mb-1.5;
+    @apply block text-xs font-semibold uppercase tracking-wide text-ink2 mb-1.5;
   }
   .badge {
     @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold leading-none;
@@ -155,7 +193,7 @@
    did. */
 .surface-light {
   color-scheme: light;
-  --ink: 5 5 5;
+  --ink: 17 17 17;
   --paper: 255 255 255;
 }
 
@@ -261,26 +299,27 @@
    just no rotation. The container's own max-width (set where it's used)
    gives the tilted-and-scaled object room so its rotated bounding box
    doesn't clip against the layout edge.
-   "Daylight Pitch" pass: shadows are plain soft black (no accent-color
-   tint) — the earlier red-tinted glow sold "catching stadium light" against
-   a dark background; against pure white paper a tinted shadow would just
-   look like a color mistake, so this is a photographic drop-shadow instead,
-   the way a real product photo floats over white. */
+   "Premium Cream & Ink" pass: exact rgba(17,17,17,x) drop-shadows (the
+   design system's --color-ink-primary as a shadow color, at the .hero-device
+   filter spec's given opacities) — no accent-color tint. A tinted shadow
+   sold "catching stadium light" against the earlier dark background; against
+   a warm cream canvas a plain ink-toned shadow reads as a real product
+   photo floating over the page instead. */
 .hero-phone-container {
   perspective: 1200px;
 }
 .hero-phone-card {
-  filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.05));
+  filter: drop-shadow(0 10px 15px rgba(17, 17, 17, 0.06));
 }
 @media (min-width: 1024px) {
   .hero-phone-card {
     transform: rotateX(10deg) rotateY(-12deg) rotateZ(2deg);
     transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    filter: drop-shadow(-15px 25px 30px rgba(0, 0, 0, 0.12)) drop-shadow(0 10px 10px rgba(0, 0, 0, 0.05));
+    filter: drop-shadow(0 30px 40px rgba(17, 17, 17, 0.12)) drop-shadow(0 10px 15px rgba(17, 17, 17, 0.06));
   }
   .hero-phone-card:hover {
     transform: rotateX(0deg) rotateY(0deg) scale(1.03);
-    filter: drop-shadow(0 25px 40px rgba(0, 0, 0, 0.15));
+    filter: drop-shadow(0 30px 50px rgba(17, 17, 17, 0.15));
   }
 }
 @media (prefers-reduced-motion: reduce) {

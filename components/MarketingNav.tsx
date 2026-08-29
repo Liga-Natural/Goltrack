@@ -44,7 +44,7 @@ export function MarketingNav({
     // the top and stretching corner to corner like a conventional navbar.
     <header className="sticky top-3 sm:top-4 z-20 px-3 sm:px-4">
       <div className={`mx-auto ${maxWidthClass}`}>
-        <div className="flex items-center justify-between gap-4 rounded-full border border-black/10 bg-white/75 backdrop-blur-xl shadow-elevated px-3 sm:px-5 py-2 sm:py-2.5">
+        <div className="flex items-center justify-between gap-4 rounded-full border border-black/10 bg-surface/75 backdrop-blur-xl shadow-elevated px-3 sm:px-5 py-2 sm:py-2.5">
           <Link href="/" className="pl-1">
             <Logo />
           </Link>
@@ -85,7 +85,7 @@ export function MarketingNav({
         </div>
 
         {open && (
-          <nav className="lg:hidden mt-2 rounded-2xl border border-black/10 bg-white/90 backdrop-blur-xl shadow-elevated px-3 py-2">
+          <nav className="lg:hidden mt-2 rounded-2xl border border-black/10 bg-surface/90 backdrop-blur-xl shadow-elevated px-3 py-2">
             {links.map((l) => (
               <Link key={l.href} href={l.href} className="block w-full rounded-lg px-3 py-2.5 text-sm font-medium text-black/70 hover:bg-black/5 hover:text-black">
                 {l.label}

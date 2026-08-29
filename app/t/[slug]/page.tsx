@@ -99,7 +99,7 @@ export default async function PublicTournamentPage({
               <div className="ticket-card__tear mx-2" style={{ ["--ticket-punch-bg" as any]: "rgb(var(--paper))" }} />
               <div className="space-y-2 px-5 pt-4 pb-5">
                 {liveMatches.map((m) => (
-                  <div key={m.id} className="flex items-center justify-between text-sm border-l-4 border-pitch-400 pl-3">
+                  <div key={m.id} className="flex items-center justify-between text-sm border-l-4 border-volt-400 pl-3">
                     <span className="flex items-center gap-2">
                       <TeamInline team={teamsById.get(m.homeTeamId || "")} sport={tournament.sport} />
                       <span className="text-black/30">vs</span>
@@ -157,7 +157,7 @@ export default async function PublicTournamentPage({
                   return (
                     <div
                       key={m.id}
-                      className={`border-b border-black/5 pb-2 ${m.status === "LIVE" ? "border-l-4 border-l-pitch-400 pl-3" : ""}`}
+                      className={`border-b border-black/5 pb-2 ${m.status === "LIVE" ? "border-l-4 border-l-volt-400 pl-3" : ""}`}
                     >
                       <div className="flex items-center justify-between text-sm">
                         <div>
@@ -175,8 +175,9 @@ export default async function PublicTournamentPage({
                         </div>
                       </div>
                       {motm && (
-                        <p className="text-xs text-black/40 mt-1">
-                          ⭐ Man of the match: <span className="text-black/60">{motm.name}</span>
+                        <p className="text-xs text-ink2 mt-1">
+                          <span className="text-warning-500">⭐</span> Man of the match:{" "}
+                          <span className="text-black/60">{motm.name}</span>
                         </p>
                       )}
                     </div>

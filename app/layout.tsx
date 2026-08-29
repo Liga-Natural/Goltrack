@@ -20,34 +20,61 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 // Tailwind's "black" and "white" read from these (see tailwind.config.ts).
-// "Daylight Pitch": light mode is pure white paper (#FFFFFF) on deep pitch
-// black ink (#050505) — a deliberately harder, more editorial contrast than
-// the earlier off-white/off-black pairing, matching the Nike/Apple-style
-// crisp-minimalist direction this site is designed around. Dark mode swaps
-// their roles: "ink" (foreground/text/border usage) becomes light, "paper"
-// (background/surface usage) becomes that same near-black tone used as the
-// dark surface. surface2/hairline are the two secondary tokens the same
-// pivot needs: a slightly-off-white section background (surface2, so
-// feature sections read as a separate layer without a hard line) and a
-// dedicated ultra-thin border color (hairline) distinct from an ink-alpha
-// blend, so 1px card/input borders hit an exact, designed color rather
-// than whatever percentage of ink happens to compute to.
+// "Premium Cream & Ink": light mode's paper is a warm cream canvas
+// (#F7F6F2), not pure white — pure white is now its own separate token
+// (surface) reserved for elevated cards, which is what lets a white card
+// actually pop off the page instead of blending into an equally-white
+// background. Ink is a deep off-black (#111111), not a harder near-black,
+// for the same "editorial, not stark" reason. Dark mode swaps ink/paper's
+// roles as before: "ink" becomes the light color, "paper" becomes the dark
+// surface. surface/surface2 are secondary tokens: surface is the pure
+// elevated-card white (light) / a lightened card tone (dark); surface2 is
+// the slightly-tinted hover/section shade one step off the canvas.
+// statusLive/statusWarning/brandHover are exact, non-ramp-derived brand
+// colors — statusLive in particular deliberately reintroduces a dedicated
+// green for LIVE badges (see tailwind.config.ts's volt definition), a
+// direct, explicit reversal of an earlier "unified brand red" decision.
 const THEME_VARS = {
-  light: { ink: "5 5 5", paper: "255 255 255", surface2: "247 247 249", hairline: "229 229 234" },
-  dark: { ink: "250 249 246", paper: "17 17 17", surface2: "24 24 27", hairline: "42 42 46" },
+  light: {
+    ink: "17 17 17",
+    ink2: "82 82 91",
+    ink3: "161 161 170",
+    paper: "247 246 242",
+    surface: "255 255 255",
+    surface2: "242 240 233",
+    statusLive: "16 185 129",
+    statusWarning: "245 158 11",
+    brandHover: "230 62 62",
+  },
+  dark: {
+    ink: "250 249 246",
+    ink2: "163 163 168",
+    ink3: "113 113 122",
+    paper: "17 17 17",
+    surface: "26 26 30",
+    surface2: "34 34 38",
+    statusLive: "16 185 129",
+    statusWarning: "245 158 11",
+    brandHover: "230 62 62",
+  },
 } as const;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const ramp = generateRamp(await SiteSettings.getAccentColor());
   const theme = await SiteSettings.getTheme();
-  const { ink, paper, surface2, hairline } = THEME_VARS[theme];
+  const { ink, ink2, ink3, paper, surface, surface2, statusLive, statusWarning, brandHover } = THEME_VARS[theme];
 
   const cssVars = [
     ...Object.entries(ramp).map(([shade, rgb]) => `--pitch-${shade}: ${rgb};`),
     `--ink: ${ink};`,
+    `--ink-2: ${ink2};`,
+    `--ink-3: ${ink3};`,
     `--paper: ${paper};`,
+    `--surface: ${surface};`,
     `--surface-2: ${surface2};`,
-    `--hairline: ${hairline};`,
+    `--status-live: ${statusLive};`,
+    `--status-warning: ${statusWarning};`,
+    `--brand-hover: ${brandHover};`,
   ].join(" ");
 
   return (

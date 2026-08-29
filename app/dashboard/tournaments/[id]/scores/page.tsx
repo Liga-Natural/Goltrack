@@ -22,7 +22,7 @@ export default async function ScoresPage({ params }: { params: { id: string } })
           {matches.map((m) => (
             <div
               key={m.id}
-              className={`card p-4 flex flex-wrap items-center justify-between gap-3 ${m.status === "LIVE" ? "border-l-4 border-l-pitch-400" : ""}`}
+              className={`card p-4 flex flex-wrap items-center justify-between gap-3 ${m.status === "LIVE" ? "border-l-4 border-l-volt-400" : ""}`}
             >
               <div>
                 <p className="text-xs text-black/40 mb-0.5">
