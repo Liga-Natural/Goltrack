@@ -3,11 +3,11 @@ import { Tournaments, Users } from "@/lib/models";
 import { getSportTheme } from "@/lib/sportTheme";
 
 const statusColors: Record<string, string> = {
-  DRAFT: "bg-black/10 text-black/60",
+  DRAFT: "bg-neutralBadge text-ink2",
   REGISTRATION_OPEN: "bg-pitch-400/15 text-pitch-600",
-  SCHEDULED: "bg-black/10 text-black/70",
+  SCHEDULED: "bg-neutralBadge text-ink2",
   LIVE: "bg-volt-400/20 text-volt-500",
-  COMPLETED: "bg-black/10 text-black/40",
+  COMPLETED: "bg-neutralBadge text-ink3",
 };
 
 export default async function AdminTournamentsPage() {
@@ -17,7 +17,7 @@ export default async function AdminTournamentsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-1">All tournaments</h1>
+      <h1 className="text-3xl font-extrabold mb-1">All tournaments</h1>
       <p className="text-black/50 text-sm mb-6">Across every organizer on the platform.</p>
 
       {tournaments.length === 0 ? (

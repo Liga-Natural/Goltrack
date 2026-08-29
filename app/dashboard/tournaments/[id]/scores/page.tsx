@@ -1,5 +1,4 @@
 import { Tournaments, Teams, Matches, Referees, Players } from "@/lib/models";
-import { MatchStatusBadge } from "@/components/MatchStatusBadge";
 import { ScoreForm } from "@/components/ScoreForm";
 import { TeamInline } from "@/components/TeamInline";
 
@@ -35,7 +34,6 @@ export default async function ScoresPage({ params }: { params: { id: string } })
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <MatchStatusBadge status={m.status} />
                 <ScoreForm
                   tournamentId={tournament.id}
                   matchId={m.id}

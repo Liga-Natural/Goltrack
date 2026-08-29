@@ -65,14 +65,21 @@
       url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><path d='M48 0H0V48' fill='none' stroke='rgba(17,17,17,0.06)' stroke-width='1'/></svg>");
     background-size: 100% 100%, 100% 100%, 48px 48px;
   }
-  h1, h2, h3, h4 {
+  /* h1/h2 get the "Pro Max" pass's own tighter -0.03em — they're the
+     anchor headings the polish pass called out as reading weak — while
+     h3/h4 keep the previous -0.02em: tighter tracking is a large-type
+     trick, and applying -0.03em all the way down to small sub-headings
+     starts to look cramped rather than premium. Plain CSS, not a
+     tracking-* utility, so the exact value is guaranteed; a more specific
+     tracking-* class on an individual heading (a class selector) still
+     wins the cascade over these bare-element rules, same as the
+     display-size font tokens below. */
+  h1, h2 {
     @apply font-display font-extrabold leading-tight;
-    /* Editorial-magazine tightness — Tailwind's own tracking-tight
-       (-0.025em) is close but not the exact -0.02em the design system
-       specifies, so this is plain CSS rather than a tracking-* utility.
-       A more specific tracking-* class on an individual heading (a class
-       selector) still wins the cascade over this bare-element rule, same
-       as with the display-size font tokens below. */
+    letter-spacing: -0.03em;
+  }
+  h3, h4 {
+    @apply font-display font-extrabold leading-tight;
     letter-spacing: -0.02em;
   }
   /* Tailwind's preflight strips the default focus ring; without a visible
@@ -120,16 +127,20 @@
   .card-elevated {
     @apply rounded-2xl bg-surface border border-hairline shadow-elevated;
   }
-  /* A pure white fill on a white card/page gives a field zero visual
-     separation from its container — the only thing marking it as a box was
-     a 1px border. hairline gives it a real, findable edge without reading
-     as "disabled grey", and shadow-form is the design system's dedicated
-     "Forms & Inputs" elevation tier — lighter than a card's, since an input
-     sits flush in the page rather than floating above it. Focus brightens
-     to the same pure-white surface a card uses, so an active field pops the
-     same way an elevated card does. */
+  /* "Pro Max" polish: pure white (bg-surface), not the earlier grey ink-
+     tint fill — the grey fill was the single biggest contributor to the
+     dashboard reading "muddy" against the new cream canvas, since a
+     translucent-grey field on a cream page just looks dirty rather than
+     like a distinct, inviting input. A crisp hairline border plus a
+     shallow *inset* shadow (not the outward drop-shadow every other
+     elevation tier uses) is what actually reads as "a real field" instead
+     of a flat rectangle — an inset shadow recedes, which is exactly the
+     opposite of what a floating card should do, so this is deliberately
+     its own one-off rather than reusing shadow-form. Focus still brightens
+     (kept, if now redundant now that the resting state is already white)
+     and adds the ring, so the active field still visibly pops. */
   .input {
-    @apply w-full rounded-lg bg-black/[0.06] border border-hairline shadow-form px-3 py-2 text-sm text-black placeholder:text-black/30 transition-colors focus:outline-none focus:bg-surface focus:ring-2 focus:ring-pitch-400;
+    @apply w-full rounded-lg bg-surface border border-hairline shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] px-3 py-2 text-sm text-black placeholder:text-black/30 transition-colors focus:outline-none focus:bg-surface focus:ring-2 focus:ring-pitch-400;
   }
   .label {
     @apply block text-xs font-semibold uppercase tracking-wide text-ink2 mb-1.5;

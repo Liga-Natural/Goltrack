@@ -42,6 +42,7 @@ const THEME_VARS = {
     paper: "247 246 242",
     surface: "255 255 255",
     surface2: "242 240 233",
+    neutralBadge: "244 244 245",
     statusLive: "16 185 129",
     statusWarning: "245 158 11",
     brandHover: "230 62 62",
@@ -53,6 +54,7 @@ const THEME_VARS = {
     paper: "17 17 17",
     surface: "26 26 30",
     surface2: "34 34 38",
+    neutralBadge: "39 39 42",
     statusLive: "16 185 129",
     statusWarning: "245 158 11",
     brandHover: "230 62 62",
@@ -62,7 +64,7 @@ const THEME_VARS = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const ramp = generateRamp(await SiteSettings.getAccentColor());
   const theme = await SiteSettings.getTheme();
-  const { ink, ink2, ink3, paper, surface, surface2, statusLive, statusWarning, brandHover } = THEME_VARS[theme];
+  const { ink, ink2, ink3, paper, surface, surface2, neutralBadge, statusLive, statusWarning, brandHover } = THEME_VARS[theme];
 
   const cssVars = [
     ...Object.entries(ramp).map(([shade, rgb]) => `--pitch-${shade}: ${rgb};`),
@@ -72,6 +74,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     `--paper: ${paper};`,
     `--surface: ${surface};`,
     `--surface-2: ${surface2};`,
+    `--neutral-badge: ${neutralBadge};`,
     `--status-live: ${statusLive};`,
     `--status-warning: ${statusWarning};`,
     `--brand-hover: ${brandHover};`,
@@ -83,7 +86,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Unbounded:wght@900&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Unbounded:wght@900&display=swap"
           rel="stylesheet"
         />
         <style>{`:root { ${cssVars} }`}</style>

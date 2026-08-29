@@ -42,6 +42,11 @@ const config: Config = {
         // design system's literal --color-border-subtle: rgba(ink, 0.08)
         // rather than a separately-designed grey that could drift from it.
         hairline: "rgb(var(--ink) / 0.08)",
+        // The washed-out "grey badge" fix: a designed neutral fill distinct
+        // from an ink-alpha blend (which read muddy against the cream
+        // canvas) paired with ink2 for text — used for SCHEDULED/Unpaid/
+        // "Not checked in"-style neutral status badges site-wide.
+        neutralBadge: "rgb(var(--neutral-badge) / <alpha-value>)",
         // ink2/ink3 are the exact secondary/tertiary text greys the design
         // system specifies for meta-data, dates, table headers, and
         // disabled/placeholder text — distinct, designed colors rather than
@@ -133,15 +138,19 @@ const config: Config = {
         "display-xl": ["6rem", { lineHeight: "0.92", letterSpacing: "-0.025em" }],
       },
       fontFamily: {
-        // Bricolage Grotesque carries every piece of lettering site-wide —
-        // headings and body alike — as part of the Sideline Red identity.
-        // Unlike Archivo Black it's a real variable family (400-800), so
-        // headings get an explicit heavy weight in globals.css instead of
-        // relying on a font that only ships one weight.
-        display: ["'Bricolage Grotesque'", "system-ui", "sans-serif"],
-        body: ["'Bricolage Grotesque'", "system-ui", "sans-serif"],
-        // Scoped to the wordmark only (Logo.tsx) — the rest of the site
-        // stays in Bricolage Grotesque above.
+        // Plus Jakarta Sans: a premium geometric sans carrying every piece
+        // of lettering site-wide — headings and body alike. Replaces
+        // Bricolage Grotesque, whose rounder, softer letterforms were
+        // reading "generic/weak" for anchor headings even at extrabold
+        // weight; Jakarta's geometric construction holds up better at both
+        // heavy display weights and small uppercase labels. A real
+        // variable family (200-800 plus italics), so headings still get an
+        // explicit heavy weight in globals.css rather than relying on the
+        // font shipping only one weight.
+        display: ["'Plus Jakarta Sans'", "system-ui", "sans-serif"],
+        body: ["'Plus Jakarta Sans'", "system-ui", "sans-serif"],
+        // Scoped to the wordmark only (Logo.tsx) — deliberately untouched,
+        // the rest of the site is Plus Jakarta Sans above.
         logo: ["'Unbounded'", "system-ui", "sans-serif"],
       },
       boxShadow: {
@@ -155,7 +164,11 @@ const config: Config = {
         // unrelated — a hard, confident offset shadow for the
         // sports-ticket-styled elements, not soft/diffuse like the rest.
         form: "0 2px 8px rgb(var(--ink) / 0.04), 0 1px 2px rgb(var(--ink) / 0.02)",
-        card: "0 12px 32px rgb(var(--ink) / 0.06), 0 4px 12px rgb(var(--ink) / 0.03)",
+        // "Pro Max" polish: the exact multi-layer shadow this pass specified
+        // for main content containers — noticeably tighter/subtler than the
+        // previous elevation-2 tuning, which read too heavy against the
+        // cream canvas ("muddy"). Still ink-relative for theme-awareness.
+        card: "0 4px 6px -1px rgb(var(--ink) / 0.05), 0 2px 4px -1px rgb(var(--ink) / 0.03)",
         elevated: "0 24px 48px rgb(var(--ink) / 0.08), 0 8px 16px rgb(var(--ink) / 0.04)",
         ticket: "3px 3px 0 rgb(var(--ink) / 0.92)",
         glow: "0 0 60px -10px rgb(var(--pitch-400) / 0.35)",

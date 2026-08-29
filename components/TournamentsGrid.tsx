@@ -6,11 +6,11 @@ import { getSportTheme, SPORT_NAMES } from "@/lib/sportTheme";
 import type { Tournament } from "@/lib/models";
 
 const statusColors: Record<string, string> = {
-  DRAFT: "bg-black/10 text-black/60",
+  DRAFT: "bg-neutralBadge text-ink2",
   REGISTRATION_OPEN: "bg-pitch-400/15 text-pitch-600",
-  SCHEDULED: "bg-black/10 text-black/70",
+  SCHEDULED: "bg-neutralBadge text-ink2",
   LIVE: "bg-volt-400/20 text-volt-500",
-  COMPLETED: "bg-black/10 text-black/40",
+  COMPLETED: "bg-neutralBadge text-ink3",
 };
 
 export function TournamentsGrid({ tournaments, teamCounts }: { tournaments: Tournament[]; teamCounts: Record<string, number> }) {

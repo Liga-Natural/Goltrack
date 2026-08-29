@@ -6,10 +6,13 @@ import { SPORTS, SPORT_NAMES } from "@/lib/sportTheme";
 
 function Section({ n, title, hint, children }: { n: string; title: string; hint?: string; children: React.ReactNode }) {
   return (
-    <div className="border-t border-black/5 pt-6 first:border-t-0 first:pt-0">
+    <div className="border-t border-black/5 pt-8 first:border-t-0 first:pt-0">
+      {/* Section labels: small, bold, wide-tracked, Jogo red — meant to pop
+          against the cream card as a real section marker, not blend in as
+          quiet metadata the way a muted grey label would. */}
       <div className="flex items-baseline gap-2.5 mb-4">
-        <span className="font-mono text-xs text-pitch-600/70">{n}</span>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-black/70">{title}</h2>
+        <span className="font-mono text-xs font-bold text-pitch-400">{n}</span>
+        <h2 className="text-xs font-bold uppercase tracking-[0.05em] text-pitch-400">{title}</h2>
       </div>
       {hint && <p className="text-xs text-black/40 -mt-2.5 mb-4">{hint}</p>}
       {children}
@@ -22,7 +25,9 @@ export function NewTournamentForm() {
   const formats = SPORTS[sport]?.formats || [];
 
   return (
-    <form action={createTournament} className="card p-6 sm:p-8 space-y-6">
+    // space-y-10 (2.5rem): the polish pass explicitly called out the gap
+    // between numbered sections as too cramped — was space-y-6 (1.5rem).
+    <form action={createTournament} className="card p-6 sm:p-8 space-y-10">
       <Section n="01" title="Tournament details">
         <div className="space-y-4">
           <div>

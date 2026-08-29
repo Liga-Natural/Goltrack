@@ -3,10 +3,10 @@ import { Tournaments, Teams, Players, Users } from "@/lib/models";
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="card-elevated p-5 relative overflow-hidden">
+    <div className="card-elevated p-6 relative overflow-hidden">
       <div className="absolute top-0 left-0 h-[2px] w-8 bg-pitch-400" />
       <p className="text-xs uppercase tracking-wide text-black/40 mb-1.5">{label}</p>
-      <p className="font-score text-3xl">{value}</p>
+      <p className="font-score text-4xl">{value}</p>
     </div>
   );
 }
@@ -22,7 +22,7 @@ export default async function AdminOverviewPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-1">Platform overview</h1>
+      <h1 className="text-3xl font-extrabold mb-1">Platform overview</h1>
       <p className="text-black/50 text-sm mb-6">Every tournament and account on Jogo, not just your own.</p>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -63,7 +63,7 @@ export default async function AdminOverviewPage() {
                 <p className="font-medium text-sm">{t.name}</p>
                 <p className="text-xs text-black/40">{t.supervisorName} · {t.supervisorEmail}</p>
               </div>
-              <span className="badge bg-black/5 text-black/60 text-xs">{t.status.replace("_", " ")}</span>
+              <span className="badge bg-neutralBadge text-ink2 text-xs">{t.status.replace("_", " ")}</span>
             </Link>
           ))
         )}

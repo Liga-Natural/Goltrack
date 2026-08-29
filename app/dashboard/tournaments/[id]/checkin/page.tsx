@@ -27,7 +27,7 @@ export default async function CheckInPage({ params }: { params: { id: string } }
                   </p>
                 </div>
                 <form action={setChecked}>
-                  <button className={`badge ${team.checkedIn ? "bg-volt-400/15 text-volt-500" : "bg-black/10 text-black/50"}`}>
+                  <button className={`badge ${team.checkedIn ? "bg-volt-400/15 text-volt-500" : "bg-neutralBadge text-ink2"}`}>
                     {team.checkedIn ? "Checked in ✓" : "Not checked in"}
                   </button>
                 </form>

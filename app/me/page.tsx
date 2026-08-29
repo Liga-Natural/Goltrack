@@ -29,7 +29,7 @@ export default async function PlayerDashboardPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-1">Hey, {player.name.split(" ")[0]}</h1>
+      <h1 className="text-3xl font-extrabold mb-1">Hey, {player.name.split(" ")[0]}</h1>
       <p className="text-black/50 text-sm mb-6">Your passport and this season&apos;s stats.</p>
 
       {team && (

@@ -4,11 +4,11 @@ import { getSportTheme } from "@/lib/sportTheme";
 import { TournamentBreadcrumb } from "./TournamentBreadcrumb";
 
 const statusColors: Record<string, string> = {
-  DRAFT: "bg-black/10 text-black/60",
+  DRAFT: "bg-neutralBadge text-ink2",
   REGISTRATION_OPEN: "bg-pitch-400/15 text-pitch-600",
-  SCHEDULED: "bg-black/10 text-black/70",
+  SCHEDULED: "bg-neutralBadge text-ink2",
   LIVE: "bg-volt-400/20 text-volt-500",
-  COMPLETED: "bg-black/10 text-black/40",
+  COMPLETED: "bg-neutralBadge text-ink3",
 };
 
 export function TournamentHeader({ tournament }: { tournament: Tournament }) {
@@ -19,7 +19,7 @@ export function TournamentHeader({ tournament }: { tournament: Tournament }) {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2.5 mb-1.5">
-            <h1 className="text-2xl font-semibold">{tournament.name}</h1>
+            <h1 className="text-3xl font-extrabold">{tournament.name}</h1>
             <span className={`badge ${theme.soft}`}>
               {theme.emoji} {theme.label} {tournament.teamFormat}
             </span>
