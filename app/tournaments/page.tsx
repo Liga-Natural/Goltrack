@@ -42,7 +42,7 @@ export default async function TournamentsHubPage() {
 
       <footer className="border-t border-black/5">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-black/30">
-          <Logo markClassName="h-5 w-5" wordmarkClassName="h-4" />
+          <Logo wordmarkClassName="text-sm" />
           <p>© {new Date().getFullYear()} Jogo. Built for organizers, players, and families.</p>
         </div>
       </footer>

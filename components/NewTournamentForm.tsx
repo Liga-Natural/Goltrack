@@ -15,12 +15,13 @@ function Section({ n, title, hint, children }: { n: string; title: string; hint?
     // Scoping to DIVs skips that injected input, since it's an INPUT.
     // The !mt-0 is what overrides the parent's space-y-10.
     <div className="border-t border-black/5 pt-8 [&:first-of-type]:border-t-0 [&:first-of-type]:pt-0 [&:first-of-type]:!mt-0">
-      {/* Section labels: small, bold, wide-tracked, Jogo red — meant to pop
-          against the cream card as a real section marker, not blend in as
-          quiet metadata the way a muted grey label would. */}
+      {/* Section labels: small, extrabold, wide-tracked. Frosted silver
+          rather than the brand red they used to be — the wordmark is the
+          only prominent red left in the UI, so hierarchy here comes from
+          weight and tracking instead of colour. */}
       <div className="flex items-baseline gap-2.5 mb-4">
-        <span className="font-mono text-[11px] font-extrabold text-pitch-400">{n}</span>
-        <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-pitch-400">{title}</h2>
+        <span className="font-mono text-[11px] font-extrabold text-ink3">{n}</span>
+        <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-ink2">{title}</h2>
       </div>
       {hint && <p className="text-xs text-ink2 font-medium -mt-2.5 mb-4">{hint}</p>}
       {children}

@@ -441,7 +441,7 @@ export const Matches = {
 
 const SITE_SETTINGS_ID = "singleton";
 const DEFAULT_ACCENT_COLOR = "#FF4D4D";
-const DEFAULT_THEME: SiteTheme = "light";
+const DEFAULT_THEME: SiteTheme = "dark";
 
 export type SiteTheme = "light" | "dark";
 

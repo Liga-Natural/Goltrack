@@ -34,7 +34,7 @@ export default function InquirePage() {
                   the homepage feature list — a heading that wraps to two
                   lines can never run into the numeral, at any width. */}
               <span
-                className="font-display text-6xl text-[#F0F0F2] leading-none select-none absolute -top-1 left-0 z-0"
+                className="font-display text-6xl text-black/[0.06] leading-none select-none absolute -top-1 left-0 z-0"
                 aria-hidden="true"
               >
                 {String(i + 1).padStart(2, "0")}
@@ -68,7 +68,7 @@ export default function InquirePage() {
 
       <footer className="border-t border-black/5">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-black/30">
-          <Logo markClassName="h-5 w-5" wordmarkClassName="h-4" />
+          <Logo wordmarkClassName="text-sm" />
           <p>© {new Date().getFullYear()} Jogo. Built for organizers, players, and families.</p>
         </div>
       </footer>

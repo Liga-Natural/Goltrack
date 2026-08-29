@@ -51,18 +51,34 @@ const THEME_VARS = {
     statusWarning: "245 158 11",
     brandHover: "230 62 62",
   },
+  // "True Black Glass": a pure #000000 abyss with frosted white-sheer
+  // panels floating over it. Every surface token here is white — the actual
+  // translucency (white at 3%, 6% on hover) is applied in the dark-scoped
+  // rules in globals.css, because a token can only carry a colour, not the
+  // alpha + backdrop-blur pair that makes a panel read as glass.
+  // Secondary text is white-at-opacity rather than a zinc ramp so it
+  // blends into the glass layers instead of sitting on top of them as its
+  // own grey.
+  // Values are the *composited* result of the spec's white-at-opacity over
+  // the black canvas (e.g. line = white/10 on #000 = #1A1A1A). They have to
+  // be flat colours because most call sites use these tokens bare
+  // (`text-ink2`, `border-line`) with no alpha modifier, so a token set to
+  // pure white would render fully opaque. The genuinely translucent
+  // surfaces — the glass panels themselves, where the alpha has to stay
+  // live so the blur can refract through it — are handled by the
+  // dark-scoped rules in globals.css instead.
   dark: {
-    ink: "250 249 246",
+    ink: "255 255 255",
     inkDisplay: "255 255 255",
-    ink2: "161 161 170",
-    ink3: "113 113 122",
-    paper: "17 17 17",
-    surface: "26 26 30",
-    surface2: "34 34 38",
-    sidebar: "22 22 25",
-    line: "48 48 54",
-    lineSoft: "38 38 42",
-    neutralBadge: "39 39 42",
+    ink2: "138 138 138",
+    ink3: "102 102 102",
+    paper: "0 0 0",
+    surface: "10 10 10",
+    surface2: "10 10 10",
+    sidebar: "0 0 0",
+    line: "38 38 38",
+    lineSoft: "20 20 20",
+    neutralBadge: "26 26 26",
     statusLive: "16 185 129",
     statusWarning: "245 158 11",
     brandHover: "230 62 62",
@@ -93,7 +109,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   ].join(" ");
 
   return (
-    <html lang="en">
+    // data-theme mirrors the saved setting onto the document so CSS can
+    // branch on it. The token vars alone can't express everything this
+    // aesthetic needs — translucency + backdrop-blur reads as premium glass
+    // on carbon but as smeared haze on a light page — so the genuinely
+    // theme-specific treatments live in [data-theme="dark"] rules in
+    // globals.css rather than being forced on both themes.
+    <html lang="en" data-theme={theme}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

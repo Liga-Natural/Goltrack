@@ -40,12 +40,15 @@ function NavItem({
     <Link
       href={href}
       onClick={onNavigate}
-      className={`group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-        active ? "bg-pitch-400/10 text-pitch-600" : "text-black/55 hover:text-black hover:bg-black/5"
+      // Active state is carried by surface brightness, not hue — the red is
+      // reserved for the wordmark, so an active item is simply the one lit
+      // panel in the rail rather than the one coloured one.
+      className={`group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-300 ${
+        active ? "bg-black/10 text-black font-semibold" : "text-ink2 hover:text-black hover:bg-black/5"
       }`}
     >
       <span
-        className={`absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-full bg-pitch-400 transition-transform origin-center ${
+        className={`absolute left-0 top-1/2 -translate-y-1/2 h-full w-1 rounded-r bg-black/60 transition-transform origin-center ${
           active ? "scale-y-100" : "scale-y-0 group-hover:scale-y-50"
         }`}
       />
@@ -92,12 +95,12 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
           <Link
             href="/dashboard"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-black/35 hover:text-black/60 transition-colors mb-1"
+            className="flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-ink3 hover:text-black transition-colors mb-1"
           >
             <IconArrowLeft className="h-3.5 w-3.5" />
             All tournaments
           </Link>
-          <p className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wide text-black/30">Managing</p>
+          <p className="px-3 pb-2 text-[11px] font-extrabold uppercase tracking-widest text-ink3">Managing</p>
           {tournamentNav.map((item) => {
             const href = `${base}${item.href}`;
             return (
@@ -118,14 +121,14 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
 
   return (
     <div className="lg:flex min-h-screen">
-      <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3.5 border-b border-black/10 bg-surface/90 backdrop-blur">
+      <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3.5 border-b border-line bg-sidebar/90 backdrop-blur">
         <Link href="/dashboard">
-          <Logo markClassName="h-6 w-6" />
+          <Logo wordmarkClassName="text-lg" />
         </Link>
         <button
           onClick={() => setOpen(true)}
           aria-label="Open menu"
-          className="h-9 w-9 flex items-center justify-center rounded-lg border border-black/10 text-black/70 hover:text-black hover:bg-black/5"
+          className="h-9 w-9 flex items-center justify-center rounded-lg border border-line text-ink2 hover:text-black hover:bg-black/5"
         >
           <IconMenu className="h-5 w-5" />
         </button>
@@ -138,9 +141,9 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="px-4 py-5 border-b border-black/5 flex items-center justify-between">
+        <div className="px-4 py-5 border-b border-line flex items-center justify-between">
           <Link href="/dashboard" onClick={() => setOpen(false)}>
-            <Logo markClassName="h-7 w-7" />
+            <Logo wordmarkClassName="text-xl" />
           </Link>
           <button
             onClick={() => setOpen(false)}
@@ -153,8 +156,8 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
 
         {nav}
 
-        <div className="px-4 py-4 border-t border-black/5 flex items-center justify-between gap-2">
-          <span className="text-sm text-black/50 truncate">{userName}</span>
+        <div className="px-4 py-4 border-t border-line flex items-center justify-between gap-2">
+          <span className="text-sm text-ink2 truncate">{userName}</span>
           <LogoutButton />
         </div>
       </aside>

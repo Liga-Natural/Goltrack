@@ -10,12 +10,15 @@
 // JIT scanner only emits a class it can see as a literal in a scanned file,
 // and lib/ is in tailwind.config.ts's content globs precisely so maps like
 // this one keep working.
+// These are the light-theme fills. In dark mode the `.badge` rule in
+// globals.css flattens all of them to a ghost outline; LIVE opts back into
+// its colour via `badge-live` so it stays scannable (see MatchStatusBadge).
 export const tournamentStatusStyles: Record<string, string> = {
-  DRAFT: "bg-neutralBadge text-ink2",
+  DRAFT: "bg-neutralBadge text-ink2 border border-line",
   REGISTRATION_OPEN: "bg-pitch-400/15 text-pitch-600",
-  SCHEDULED: "bg-neutralBadge text-ink2",
-  LIVE: "bg-volt-400/20 text-volt-500",
-  COMPLETED: "bg-neutralBadge text-ink3",
+  SCHEDULED: "bg-neutralBadge text-ink2 border border-line",
+  LIVE: "badge-live bg-volt-400/20 text-volt-500",
+  COMPLETED: "bg-neutralBadge text-ink3 border border-line",
 };
 
 export function tournamentStatusClass(status: string): string {

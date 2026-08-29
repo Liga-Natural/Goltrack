@@ -5,7 +5,7 @@ import { tournamentStatusClass } from "@/lib/statusStyles";
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="card-elevated p-6 relative overflow-hidden">
-      <div className="absolute top-0 left-0 h-[2px] w-8 bg-pitch-400" />
+      <div className="absolute top-0 left-0 h-[2px] w-8 bg-black/25" />
       <p className="text-xs uppercase tracking-wide text-ink2 font-semibold mb-1.5">{label}</p>
       <p className="font-score text-4xl text-inkDisplay">{value}</p>
     </div>

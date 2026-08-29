@@ -65,7 +65,7 @@ export function ProductShowcase({
                 <p className="font-medium text-sm">{t.name}</p>
                 <p className="text-xs text-black/40">{(playersByTeam[t.id] || []).length} players</p>
               </div>
-              <span className={`badge ${t.paid ? "bg-volt-400/15 text-volt-500" : "bg-neutralBadge text-ink2"}`}>
+              <span className={`badge ${t.paid ? "bg-volt-400/15 text-volt-500" : "bg-neutralBadge text-ink2 border border-line"}`}>
                 {t.paid ? "Paid ✓" : "Unpaid"}
               </span>
             </div>
@@ -180,7 +180,7 @@ export function ProductShowcase({
 
       <footer className="border-t border-black/5">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-black/30">
-          <Logo markClassName="h-5 w-5" wordmarkClassName="h-4" />
+          <Logo wordmarkClassName="text-sm" />
           <p>© {new Date().getFullYear()} Jogo. Built for organizers, players, and families.</p>
         </div>
       </footer>
