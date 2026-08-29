@@ -7,7 +7,32 @@
     @apply scroll-smooth;
   }
   body {
-    @apply bg-white text-black font-body antialiased;
+    @apply text-black font-body antialiased relative;
+  }
+  /* Global ambient canvas: two faint radial washes of the accent color plus
+     a barely-there tactical-grid texture, sitting behind every page site-
+     wide — not scoped to hero sections the way the earlier stadium-glow
+     was. position:fixed (not background-attachment:fixed, which is
+     unreliable on mobile Safari) pins it to the viewport rather than the
+     document, so the wash reads the same near the top of a short page and
+     three screens down a long one, instead of being stretched/compressed
+     across whatever the page's total scroll height happens to be.
+     z-index:-1 plus pointer-events:none keeps it decoration-only; every
+     card/section still paints its own opaque background on top, so this
+     only shows through in the gaps between them — that's deliberate, it's
+     meant to read as atmosphere, not compete with real content. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: rgb(var(--paper));
+    background-image:
+      radial-gradient(circle at 15% 8%, rgb(var(--pitch-400) / 0.05), transparent 30%),
+      radial-gradient(circle at 88% 55%, rgb(var(--pitch-400) / 0.04), transparent 32%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><path d='M48 0H0V48' fill='none' stroke='rgba(5,5,5,0.06)' stroke-width='1'/></svg>");
+    background-size: 100% 100%, 100% 100%, 48px 48px;
   }
   h1, h2, h3, h4 {
     @apply font-display font-extrabold leading-tight;

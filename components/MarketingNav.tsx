@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
+import { RoleNav } from "./RoleNav";
 import { IconMenu, IconX } from "./icons";
 
 interface NavLink {
@@ -47,6 +48,12 @@ export function MarketingNav({
           <Link href="/" className="pl-1">
             <Logo />
           </Link>
+
+          {/* xl-only (1280px+), not lg — this header is already tight at
+              1024px with the widest link set (see the note above on why
+              lg is the hamburger cutoff); a third pill cluster needs real
+              room instead of squeezing in right at that same edge. */}
+          <RoleNav />
 
           <nav className="hidden lg:flex items-center gap-1">
             {links.map((l) => (

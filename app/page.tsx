@@ -100,7 +100,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-y-2 border-black bg-surface2 relative overflow-hidden">
+      <section id="roles" className="border-y-2 border-black bg-surface2 relative overflow-hidden">
         <div className="grain-overlay" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
           <div className="reveal flex items-end justify-between gap-6 mb-8 flex-wrap">

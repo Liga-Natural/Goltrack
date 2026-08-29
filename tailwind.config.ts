@@ -125,7 +125,12 @@ const config: Config = {
         // mode --ink is the light color, so these correctly become a soft
         // light halo / a light hard-edge shadow instead of a literally
         // invisible dark-on-dark shadow.
-        card: "0 4px 20px rgb(var(--ink) / 0.04)",
+        // Two-layer "Pro Max" elevation: a tight, dark contact shadow (what
+        // actually grounds the card to the page) plus a wide, soft,
+        // accent-tinted glow (what gives it presence instead of reading as
+        // a flat outline) — replaces the single flat shadow this token
+        // used to be.
+        card: "0 1px 3px rgb(var(--ink) / 0.06), 0 20px 40px -12px rgb(var(--pitch-400) / 0.08)",
         elevated: "0 2px 4px rgb(var(--ink) / 0.06), 0 20px 40px -14px rgb(var(--ink) / 0.22)",
         ticket: "3px 3px 0 rgb(var(--ink) / 0.92)",
         glow: "0 0 60px -10px rgb(var(--pitch-400) / 0.35)",

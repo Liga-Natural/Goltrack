@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IconClipboard, IconCalendar, IconBracket, IconWhistle, IconUsers, IconQr, IconCheckShield, IconPulse, IconGrid } from "./icons";
+import { ROLE_KEYS, ROLE_HANDOFF_KEY } from "./RoleNav";
 
 const ROLES = [
   {
@@ -40,6 +41,26 @@ const ROLES = [
 export function RoleTabs() {
   const [active, setActive] = useState(0);
   const role = ROLES[active];
+
+  // RoleNav (the header's Organizers/Teams/Players pill switcher, visible
+  // on every marketing page) hands off which role the visitor picked via
+  // sessionStorage rather than a URL query param — reading it in a plain
+  // useEffect keeps this entirely client-side, so it never forces this
+  // otherwise-static homepage into dynamic rendering the way useSearchParams
+  // would (that hook requires a Suspense boundary to avoid a full-page SSR
+  // bailout). Cleared immediately after reading so it's a one-shot handoff,
+  // not a sticky preference that would surprise a later, unrelated visit.
+  useEffect(() => {
+    let saved: string | null = null;
+    try {
+      saved = sessionStorage.getItem(ROLE_HANDOFF_KEY);
+      if (saved) sessionStorage.removeItem(ROLE_HANDOFF_KEY);
+    } catch {
+      return;
+    }
+    const idx = ROLE_KEYS.indexOf(saved as (typeof ROLE_KEYS)[number]);
+    if (idx !== -1) setActive(idx);
+  }, []);
 
   return (
     <div>
