@@ -129,14 +129,19 @@
      each orb as they pass, instead of the whole scene sliding as one flat
      sheet. Same z-index:-1 / pointer-events:none contract as ::before, and
      it paints above ::before (same stacking level, later in paint order),
-     so the orbs sit over the ambient washes and grid. Dark theme only —
-     on the light canvas these would read as smudges, not depth. */
-  [data-theme="dark"] body::after {
+     so the orbs sit over the ambient washes and grid.
+
+     Geometry (sizes and positions) is shared by both themes so the
+     composition doesn't shift when the theme is toggled — only the colours
+     change, in the two scoped rules below. */
+  body::after {
     content: "";
     position: fixed;
     inset: 0;
     z-index: -1;
     pointer-events: none;
+  }
+  [data-theme="dark"] body::after {
     background-image:
       /* top-left, large */
       radial-gradient(7rem 7rem at 10.5% 7.5%, rgb(255 255 255 / 0.2) 0%, rgb(255 255 255 / 0.12) 45%, transparent 72%),
@@ -159,6 +164,46 @@
       /* bottom, small */
       radial-gradient(3.5rem 3.5rem at 55.5% 82%, rgb(255 255 255 / 0.18) 0%, rgb(255 255 255 / 0.11) 45%, transparent 72%),
       radial-gradient(8rem 8rem at 58% 86%, rgb(255 255 255 / 0.095) 0%, rgb(255 255 255 / 0.09) 48%, rgb(255 255 255 / 0.065) 66%, transparent 79%);
+  }
+  /* Light theme: the same seven spheres with the lighting model inverted.
+     On black an orb is *lighter* than the canvas and its lit cap is
+     brighter still; on cream an orb has to be *darker* than the canvas,
+     with the cap running back toward white — otherwise a light-on-light
+     sphere has nothing to be seen against.
+
+     The body colour is a cool slate (148 154 172), not neutral grey. A
+     straight black-at-opacity disc on cream reads as a dirty smudge (the
+     same reason .input above is pure white rather than a grey ink-tint
+     fill); pulling the mix slightly blue keeps it reading as shadow and
+     glass rather than as grime, and it's what makes the white sheen on top
+     look like light rather than a gap in the fill.
+
+     Alpha runs roughly 1.3x the dark theme's because these sit on a
+     high-key canvas where the eye has far less headroom to detect a
+     low-contrast shape. */
+  [data-theme="light"] body::after {
+    background-image:
+      /* top-left, large */
+      radial-gradient(7rem 7rem at 10.5% 7.5%, rgb(255 255 255 / 0.85) 0%, rgb(255 255 255 / 0.45) 45%, transparent 72%),
+      radial-gradient(16rem 16rem at 14% 12%, rgb(148 154 172 / 0.15) 0%, rgb(148 154 172 / 0.14) 48%, rgb(148 154 172 / 0.1) 66%, transparent 79%),
+      /* top-centre, clipped by the top edge */
+      radial-gradient(6rem 6rem at 57% 0%, rgb(255 255 255 / 0.8) 0%, rgb(255 255 255 / 0.4) 45%, transparent 72%),
+      radial-gradient(13rem 13rem at 60% 4%, rgb(148 154 172 / 0.13) 0%, rgb(148 154 172 / 0.12) 48%, rgb(148 154 172 / 0.09) 66%, transparent 79%),
+      /* top-right, small */
+      radial-gradient(3rem 3rem at 93.5% 8.5%, rgb(255 255 255 / 0.85) 0%, rgb(255 255 255 / 0.45) 45%, transparent 72%),
+      radial-gradient(6.5rem 6.5rem at 95% 11%, rgb(148 154 172 / 0.15) 0%, rgb(148 154 172 / 0.14) 48%, rgb(148 154 172 / 0.1) 66%, transparent 79%),
+      /* right, largest */
+      radial-gradient(7.5rem 7.5rem at 86% 42%, rgb(255 255 255 / 0.8) 0%, rgb(255 255 255 / 0.4) 45%, transparent 72%),
+      radial-gradient(17rem 17rem at 90% 48%, rgb(148 154 172 / 0.13) 0%, rgb(148 154 172 / 0.12) 48%, rgb(148 154 172 / 0.09) 66%, transparent 79%),
+      /* left, small */
+      radial-gradient(3rem 3rem at 3.5% 63%, rgb(255 255 255 / 0.85) 0%, rgb(255 255 255 / 0.45) 45%, transparent 72%),
+      radial-gradient(6.5rem 6.5rem at 5% 66%, rgb(148 154 172 / 0.15) 0%, rgb(148 154 172 / 0.14) 48%, rgb(148 154 172 / 0.1) 66%, transparent 79%),
+      /* bottom-centre, clipped by the bottom edge */
+      radial-gradient(6rem 6rem at 39% 90%, rgb(255 255 255 / 0.8) 0%, rgb(255 255 255 / 0.4) 45%, transparent 72%),
+      radial-gradient(14rem 14rem at 42% 95%, rgb(148 154 172 / 0.13) 0%, rgb(148 154 172 / 0.12) 48%, rgb(148 154 172 / 0.09) 66%, transparent 79%),
+      /* bottom, small */
+      radial-gradient(3.5rem 3.5rem at 55.5% 82%, rgb(255 255 255 / 0.8) 0%, rgb(255 255 255 / 0.4) 45%, transparent 72%),
+      radial-gradient(8rem 8rem at 58% 86%, rgb(148 154 172 / 0.13) 0%, rgb(148 154 172 / 0.12) 48%, rgb(148 154 172 / 0.09) 66%, transparent 79%);
   }
   /* h1/h2 get the "Pro Max" pass's own tighter -0.03em — they're the
      anchor headings the polish pass called out as reading weak — while
@@ -373,6 +418,68 @@
     border-color: rgb(var(--status-live) / 0.5);
     color: rgb(var(--status-live));
   }
+
+  /* ── "White Glass" — the light theme's counterpart ────────────────────
+     Same treatment, inverted. Two things genuinely differ from the dark
+     rules rather than just being recoloured:
+
+     1. Light glass still needs a drop shadow. On black, a panel separates
+        from the canvas because it is lighter than it; on cream, a
+        translucent white panel is nearly the same luminance as the page
+        behind it, so without a cast shadow it dissolves. The dark rules
+        deliberately carry no drop shadow at all — a shadow on black is
+        invisible — so this is not an oversight being corrected, it is the
+        one place the two themes need different physics.
+
+     2. The film is far less sheer (0.62 vs 0.03). Sheerness on black still
+        leaves plenty of text contrast because everything behind it is
+        near-black anyway; at 0.03 on cream the orbs would read straight
+        through the panel and sit behind body copy.
+
+     Scoped to [data-theme="light"] rather than left as the bare component
+     defaults so the opaque cards stay reachable — the base .card is still
+     what renders anywhere the attribute is missing (a page rendered before
+     hydration, or any future surface that opts out of theming). */
+  [data-theme="light"] .card,
+  [data-theme="light"] .card-elevated {
+    background-color: rgb(255 255 255 / 0.62);
+    border-color: rgb(255 255 255 / 0.9);
+    backdrop-filter: blur(40px);
+    box-shadow:
+      0 1px 2px rgb(17 17 17 / 0.04),
+      0 10px 30px rgb(17 17 17 / 0.06),
+      inset 0 1px 1px rgb(255 255 255 / 0.9);
+  }
+  [data-theme="light"] .card-interactive {
+    transition: background-color 300ms ease, transform 200ms ease, box-shadow 200ms ease;
+  }
+  /* Hover fills the glass in rather than brightening it — the dark theme
+     lifts a panel by adding light, which on cream would mean going past
+     white. Going more opaque is the only direction left, and it reads the
+     same way: the surface catching more of the light. */
+  [data-theme="light"] .card-interactive:hover {
+    background-color: rgb(255 255 255 / 0.85);
+    border-color: rgb(255 255 255);
+    box-shadow:
+      0 2px 4px rgb(17 17 17 / 0.05),
+      0 16px 40px rgb(17 17 17 / 0.09),
+      inset 0 1px 1px rgb(255 255 255 / 0.9);
+  }
+  /* Recessed glass, same idea as the dark input: the field sits *under*
+     the panel it's cut into. On cream that means less white than the card,
+     not more black. */
+  [data-theme="light"] .input {
+    background-color: rgb(255 255 255 / 0.55);
+    border-color: rgb(17 17 17 / 0.1);
+    backdrop-filter: blur(12px);
+    box-shadow: inset 0 1px 2px rgb(17 17 17 / 0.04);
+  }
+  [data-theme="light"] .input:focus {
+    background-color: rgb(255 255 255 / 0.92);
+  }
+  [data-theme="light"] .badge {
+    backdrop-filter: blur(12px);
+  }
 }
 
 /* The sidebar rail as its own glass panel, matching the cards. Not a
@@ -382,6 +489,15 @@
 [data-theme="dark"] aside {
   background-color: rgb(255 255 255 / 0.03);
   border-color: rgb(255 255 255 / 0.1);
+  backdrop-filter: blur(40px);
+}
+/* Same rail, light theme. Kept a touch more opaque than the cards: the
+   sidebar is a full-height column, so orbs drifting behind it are read as
+   streaks down the whole edge of the screen rather than as depth under a
+   discrete panel. */
+[data-theme="light"] aside {
+  background-color: rgb(255 255 255 / 0.72);
+  border-color: rgb(17 17 17 / 0.07);
   backdrop-filter: blur(40px);
 }
 

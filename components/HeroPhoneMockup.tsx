@@ -48,9 +48,14 @@ export function HeroPhoneMockup() {
             {/* App header */}
             <div className="flex items-center justify-between px-5 pt-3 pb-4">
               <IconMenu className="h-4 w-4 text-white/50" />
-              <span className="font-logo text-lg font-bold text-white">
-                Jogo<span className="text-pitch-400">.</span>
-              </span>
+              {/* The real logotype, not type styled to match it — this mock
+                  sits directly beside the header wordmark on the homepage,
+                  so two different sets of letterforms would read as a
+                  mistake. Fully red here rather than the old white-with-a-
+                  red-dot treatment, which is also what the actual mobile
+                  header renders. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/jogo-wordmark.png" alt="Jogo" className="h-[0.95rem] w-auto select-none" draggable={false} />
               <span className="relative">
                 <IconBell className="h-4 w-4 text-white/50" />
                 <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-pitch-400" />
