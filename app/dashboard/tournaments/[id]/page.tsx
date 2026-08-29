@@ -5,8 +5,8 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
   return (
     <div className="card-elevated p-6 relative overflow-hidden">
       <div className="absolute top-0 left-0 h-[2px] w-8 bg-pitch-400" />
-      <p className="text-xs uppercase tracking-wide text-black/40 mb-1.5">{label}</p>
-      <p className="font-score text-4xl">{value}</p>
+      <p className="text-xs uppercase tracking-wide text-ink2 font-semibold mb-1.5">{label}</p>
+      <p className="font-score text-4xl text-inkDisplay">{value}</p>
       {sub && <p className="text-xs text-black/30 mt-1">{sub}</p>}
     </div>
   );
@@ -36,14 +36,14 @@ export default async function TournamentOverviewPage({ params }: { params: { id:
       </div>
 
       <div className="grid sm:grid-cols-2 gap-6 mb-6">
-        <div className="card p-6">
-          <h2 className="font-semibold mb-1">Public registration link</h2>
+        <div className="card p-6 sm:p-8">
+          <h2 className="font-extrabold mb-1">Public registration link</h2>
           <p className="text-sm text-black/50 mb-3">Share this with team captains so they can register and pay.</p>
           <code className="block bg-black/[0.05] rounded-lg px-3 py-2 text-sm text-pitch-500 break-all">{publicUrl}/register</code>
         </div>
 
-        <div className="card p-6">
-          <h2 className="font-semibold mb-1">Tournament director</h2>
+        <div className="card p-6 sm:p-8">
+          <h2 className="font-extrabold mb-1">Tournament director</h2>
           <p className="text-sm text-black/50 mb-3">On file as the point of contact for this event.</p>
           <p className="text-sm font-medium">{tournament.supervisorName}</p>
           <p className="text-sm text-black/50">{tournament.supervisorEmail}</p>
@@ -51,8 +51,8 @@ export default async function TournamentOverviewPage({ params }: { params: { id:
         </div>
       </div>
 
-      <div className="card p-6">
-        <h2 className="font-semibold mb-4">Schedule actions</h2>
+      <div className="card p-6 sm:p-8">
+        <h2 className="font-extrabold mb-4">Schedule actions</h2>
         <div className="flex flex-wrap gap-3">
           <form action={generateScheduleWithId}>
             <button className="btn-primary" formAction={generateScheduleWithId}>

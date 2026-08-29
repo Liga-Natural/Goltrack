@@ -14,7 +14,7 @@ export default async function CheckInPage({ params }: { params: { id: string } }
     <div>
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-3">
-          <h2 className="font-semibold mb-1">Team roster check-in</h2>
+          <h2 className="font-extrabold mb-1">Team roster check-in</h2>
           {teamsWithPlayers.map(({ team, players }) => {
             const checkedCount = players.filter((p) => checkedInPlayerIds.has(p.id)).length;
             const setChecked = setTeamCheckedIn.bind(null, tournament.id, team.id, !team.checkedIn);
@@ -27,7 +27,15 @@ export default async function CheckInPage({ params }: { params: { id: string } }
                   </p>
                 </div>
                 <form action={setChecked}>
-                  <button className={`badge ${team.checkedIn ? "bg-volt-400/15 text-volt-500" : "bg-neutralBadge text-ink2"}`}>
+                  {/* "Not checked in" is red-tinted, not neutral grey: on
+                      match day this is an action-needed state (a team that
+                      still has to be verified at the table), not a quiet
+                      default, so it should read as outstanding work. */}
+                  <button
+                    className={`badge ${
+                      team.checkedIn ? "bg-volt-400/15 text-volt-500" : "bg-pitch-400/10 text-pitch-700"
+                    }`}
+                  >
                     {team.checkedIn ? "Checked in ✓" : "Not checked in"}
                   </button>
                 </form>

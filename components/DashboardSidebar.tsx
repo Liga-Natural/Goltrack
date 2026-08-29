@@ -45,7 +45,7 @@ function NavItem({
       }`}
     >
       <span
-        className={`absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[3px] rounded-full bg-pitch-400 transition-transform origin-center ${
+        className={`absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-full bg-pitch-400 transition-transform origin-center ${
           active ? "scale-y-100" : "scale-y-0 group-hover:scale-y-50"
         }`}
       />
@@ -134,7 +134,7 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
       {open && <div className="fixed inset-0 z-40 bg-black/60 lg:hidden" onClick={() => setOpen(false)} />}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-black/10 bg-surface flex flex-col transition-transform duration-200 lg:static lg:z-auto lg:w-60 lg:shrink-0 lg:bg-surface2 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-line bg-sidebar flex flex-col transition-transform duration-200 lg:static lg:z-auto lg:w-60 lg:shrink-0 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >

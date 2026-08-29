@@ -1,14 +1,8 @@
 import Link from "next/link";
 import { Tournaments, Users } from "@/lib/models";
 import { getSportTheme } from "@/lib/sportTheme";
+import { tournamentStatusClass } from "@/lib/statusStyles";
 
-const statusColors: Record<string, string> = {
-  DRAFT: "bg-neutralBadge text-ink2",
-  REGISTRATION_OPEN: "bg-pitch-400/15 text-pitch-600",
-  SCHEDULED: "bg-neutralBadge text-ink2",
-  LIVE: "bg-volt-400/20 text-volt-500",
-  COMPLETED: "bg-neutralBadge text-ink3",
-};
 
 export default async function AdminTournamentsPage() {
   const tournaments = await Tournaments.listAll();
@@ -17,8 +11,8 @@ export default async function AdminTournamentsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-extrabold mb-1">All tournaments</h1>
-      <p className="text-black/50 text-sm mb-6">Across every organizer on the platform.</p>
+      <h1 className="text-3xl font-extrabold text-inkDisplay mb-1">All tournaments</h1>
+      <p className="text-ink2 text-sm font-medium mb-6">Across every organizer on the platform.</p>
 
       {tournaments.length === 0 ? (
         <div className="card p-10 text-center text-black/50">No tournaments on the platform yet.</div>
@@ -31,8 +25,8 @@ export default async function AdminTournamentsPage() {
               <Link key={t.id} href={`/dashboard/tournaments/${t.id}`} className="card-interactive relative overflow-hidden p-5">
                 <div className={`absolute top-0 left-0 right-0 h-1.5 ${theme.dot}`} />
                 <div className="flex items-start justify-between mb-3 gap-2 mt-1">
-                  <h2 className="font-semibold">{t.name}</h2>
-                  <span className={`badge shrink-0 ${statusColors[t.status]}`}>{t.status.replace("_", " ")}</span>
+                  <h2 className="font-extrabold">{t.name}</h2>
+                  <span className={`badge shrink-0 ${tournamentStatusClass(t.status)}`}>{t.status.replace("_", " ")}</span>
                 </div>
                 <div className="flex items-center gap-2 mb-2">
                   <span className={`badge ${theme.soft}`}>

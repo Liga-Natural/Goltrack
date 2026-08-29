@@ -43,10 +43,15 @@ export function StandingsTable({ rows, title, sport }: { rows: StandingRow[]; ti
           </thead>
           <tbody>
             {rows.map((r, i) => (
-              <tr key={r.team.id} className={`border-t border-hairline ${i % 2 === 1 ? "bg-white" : "bg-surface"}`}>
-                <td className="py-2 pr-2 font-medium">
+              // Solid white rows on a lineSoft rule, replacing the earlier
+              // alternating fill: on a white card the zebra stripe was
+              // adding a second horizontal rhythm competing with the
+              // divider lines, which is exactly the "visual overload" this
+              // pass is meant to strip out.
+              <tr key={r.team.id} className="bg-surface border-b border-lineSoft last:border-b-0">
+                <td className="py-3.5 pr-2 font-semibold">
                   <div className="flex items-center gap-2">
-                    <span className="text-black/30">{i + 1}</span>
+                    <span className="text-ink3 font-medium">{i + 1}</span>
                     <TeamBadge
                       id={r.team.id}
                       name={r.team.name}
@@ -63,16 +68,16 @@ export function StandingsTable({ rows, title, sport }: { rows: StandingRow[]; ti
                     treatment) — at single-digit table-cell size, every
                     column in the display face would read as uniformly heavy
                     and erase the emphasis Pts is supposed to have. */}
-                <td className="tabular-nums py-2 px-1.5 sm:px-2 text-center text-black/60">{r.played}</td>
-                <td className="tabular-nums py-2 px-1.5 sm:px-2 text-center text-black/60">{r.won}</td>
-                <td className="tabular-nums py-2 px-1.5 sm:px-2 text-center text-black/60">{r.drawn}</td>
-                <td className="tabular-nums py-2 px-1.5 sm:px-2 text-center text-black/60">{r.lost}</td>
-                <td className="tabular-nums py-2 px-1.5 sm:px-2 text-center text-black/60">{r.goalsFor}</td>
-                <td className="tabular-nums py-2 px-1.5 sm:px-2 text-center text-black/60">{r.goalsAgainst}</td>
-                <td className="tabular-nums py-2 px-1.5 sm:px-2 text-center text-black/60">
+                <td className="tabular-nums py-3.5 px-1.5 sm:px-2 text-center text-black">{r.played}</td>
+                <td className="tabular-nums py-3.5 px-1.5 sm:px-2 text-center text-black">{r.won}</td>
+                <td className="tabular-nums py-3.5 px-1.5 sm:px-2 text-center text-black">{r.drawn}</td>
+                <td className="tabular-nums py-3.5 px-1.5 sm:px-2 text-center text-black">{r.lost}</td>
+                <td className="tabular-nums py-3.5 px-1.5 sm:px-2 text-center text-black">{r.goalsFor}</td>
+                <td className="tabular-nums py-3.5 px-1.5 sm:px-2 text-center text-black">{r.goalsAgainst}</td>
+                <td className="tabular-nums py-3.5 px-1.5 sm:px-2 text-center text-black">
                   {r.goalDiff > 0 ? `+${r.goalDiff}` : r.goalDiff}
                 </td>
-                <td className="font-score py-2 pl-1.5 sm:pl-2 pr-1 text-center">{r.points}</td>
+                <td className="font-score py-3.5 pl-1.5 sm:pl-2 pr-1 text-center text-inkDisplay">{r.points}</td>
               </tr>
             ))}
           </tbody>

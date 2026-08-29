@@ -2,14 +2,8 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { Tournaments } from "@/lib/models";
 import { getSportTheme } from "@/lib/sportTheme";
+import { tournamentStatusClass } from "@/lib/statusStyles";
 
-const statusColors: Record<string, string> = {
-  DRAFT: "bg-neutralBadge text-ink2",
-  REGISTRATION_OPEN: "bg-pitch-400/15 text-pitch-600",
-  SCHEDULED: "bg-neutralBadge text-ink2",
-  LIVE: "bg-volt-400/20 text-volt-500",
-  COMPLETED: "bg-neutralBadge text-ink3",
-};
 
 export default async function DashboardHome() {
   const user = await getCurrentUser();
@@ -19,7 +13,7 @@ export default async function DashboardHome() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-extrabold">Your tournaments</h1>
+          <h1 className="text-3xl font-extrabold text-inkDisplay">Your tournaments</h1>
           <p className="text-black/50 text-sm mt-1">Create, schedule, and run your events.</p>
         </div>
         <Link href="/dashboard/tournaments/new" className="btn-primary shrink-0 self-start sm:self-auto whitespace-nowrap">
@@ -48,8 +42,8 @@ export default async function DashboardHome() {
               >
                 <div className={`absolute top-0 left-0 right-0 h-1.5 ${theme.dot}`} />
                 <div className="flex items-start justify-between mb-3 gap-2 mt-1">
-                  <h2 className="font-semibold">{t.name}</h2>
-                  <span className={`badge shrink-0 ${statusColors[t.status]}`}>{t.status.replace("_", " ")}</span>
+                  <h2 className="font-extrabold">{t.name}</h2>
+                  <span className={`badge shrink-0 ${tournamentStatusClass(t.status)}`}>{t.status.replace("_", " ")}</span>
                 </div>
                 <div className="flex items-center gap-2 mb-2">
                   <span className={`badge ${theme.soft}`}>

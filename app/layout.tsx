@@ -37,11 +37,15 @@ export const revalidate = 60;
 const THEME_VARS = {
   light: {
     ink: "17 17 17",
-    ink2: "82 82 91",
+    inkDisplay: "5 5 5",
+    ink2: "113 113 122",
     ink3: "161 161 170",
     paper: "247 246 242",
     surface: "255 255 255",
     surface2: "242 240 233",
+    sidebar: "253 253 252",
+    line: "228 228 231",
+    lineSoft: "244 244 245",
     neutralBadge: "244 244 245",
     statusLive: "16 185 129",
     statusWarning: "245 158 11",
@@ -49,11 +53,15 @@ const THEME_VARS = {
   },
   dark: {
     ink: "250 249 246",
-    ink2: "163 163 168",
+    inkDisplay: "255 255 255",
+    ink2: "161 161 170",
     ink3: "113 113 122",
     paper: "17 17 17",
     surface: "26 26 30",
     surface2: "34 34 38",
+    sidebar: "22 22 25",
+    line: "48 48 54",
+    lineSoft: "38 38 42",
     neutralBadge: "39 39 42",
     statusLive: "16 185 129",
     statusWarning: "245 158 11",
@@ -64,20 +72,24 @@ const THEME_VARS = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const ramp = generateRamp(await SiteSettings.getAccentColor());
   const theme = await SiteSettings.getTheme();
-  const { ink, ink2, ink3, paper, surface, surface2, neutralBadge, statusLive, statusWarning, brandHover } = THEME_VARS[theme];
+  const v = THEME_VARS[theme];
 
   const cssVars = [
     ...Object.entries(ramp).map(([shade, rgb]) => `--pitch-${shade}: ${rgb};`),
-    `--ink: ${ink};`,
-    `--ink-2: ${ink2};`,
-    `--ink-3: ${ink3};`,
-    `--paper: ${paper};`,
-    `--surface: ${surface};`,
-    `--surface-2: ${surface2};`,
-    `--neutral-badge: ${neutralBadge};`,
-    `--status-live: ${statusLive};`,
-    `--status-warning: ${statusWarning};`,
-    `--brand-hover: ${brandHover};`,
+    `--ink: ${v.ink};`,
+    `--ink-display: ${v.inkDisplay};`,
+    `--ink-2: ${v.ink2};`,
+    `--ink-3: ${v.ink3};`,
+    `--paper: ${v.paper};`,
+    `--surface: ${v.surface};`,
+    `--surface-2: ${v.surface2};`,
+    `--sidebar: ${v.sidebar};`,
+    `--line: ${v.line};`,
+    `--line-soft: ${v.lineSoft};`,
+    `--neutral-badge: ${v.neutralBadge};`,
+    `--status-live: ${v.statusLive};`,
+    `--status-warning: ${v.statusWarning};`,
+    `--brand-hover: ${v.brandHover};`,
   ].join(" ");
 
   return (

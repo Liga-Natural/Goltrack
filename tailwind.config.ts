@@ -41,19 +41,38 @@ const config: Config = {
         // "8% of whatever ink currently is" in either theme, matching the
         // design system's literal --color-border-subtle: rgba(ink, 0.08)
         // rather than a separately-designed grey that could drift from it.
-        hairline: "rgb(var(--ink) / 0.08)",
+        hairline: "rgb(var(--ink) / 0.06)",
         // The washed-out "grey badge" fix: a designed neutral fill distinct
         // from an ink-alpha blend (which read muddy against the cream
         // canvas) paired with ink2 for text — used for SCHEDULED/Unpaid/
         // "Not checked in"-style neutral status badges site-wide.
         neutralBadge: "rgb(var(--neutral-badge) / <alpha-value>)",
-        // ink2/ink3 are the exact secondary/tertiary text greys the design
-        // system specifies for meta-data, dates, table headers, and
-        // disabled/placeholder text — distinct, designed colors rather than
-        // an ink-alpha blend (which reads warmer/lighter than these on the
-        // new cream canvas).
+        // inkDisplay (#050505) is reserved for h1/h2 display headers — one
+        // step deeper than body ink, so a page title reads as a genuine
+        // anchor rather than the same weight as the paragraph under it.
+        // Deliberately NOT applied as a global `h1,h2 { color }` rule: the
+        // homepage's inverted CTA band puts an h2 on a near-black surface
+        // and relies on inheriting text-white, so an element-level color
+        // here would render that heading black-on-black. Applied as an
+        // explicit class on the (enumerable) dashboard headings instead.
+        inkDisplay: "rgb(var(--ink-display) / <alpha-value>)",
+        // ink2 (#71717A, "slate") / ink3 are the exact secondary/tertiary
+        // text greys the design system specifies for meta-data, dates,
+        // table headers, and disabled/placeholder text — distinct, designed
+        // colors rather than an ink-alpha blend (which reads warmer and
+        // lighter than these on the cream canvas).
         ink2: "rgb(var(--ink-2) / <alpha-value>)",
         ink3: "rgb(var(--ink-3) / <alpha-value>)",
+        // Two structural line weights: `line` (#E4E4E7, zinc-200) is the
+        // crisp border on inputs and the sidebar's edge; `lineSoft`
+        // (#F4F4F5) is the lighter rule that separates rows inside a data
+        // table, where a full-strength border would read as a grid.
+        line: "rgb(var(--line) / <alpha-value>)",
+        lineSoft: "rgb(var(--line-soft) / <alpha-value>)",
+        // The sidebar's own off-white (#FDFDFC) — a hair lighter than the
+        // cream canvas so the rail separates from the page without going
+        // to full card-white and competing with the content cards.
+        sidebar: "rgb(var(--sidebar) / <alpha-value>)",
         // "pitch" is the general brand accent, chosen by whoever runs the
         // site from /dashboard/settings (defaults to "Sideline Red",
         // #F2545C). Every shade below reads from a CSS variable — set at
@@ -164,11 +183,14 @@ const config: Config = {
         // unrelated — a hard, confident offset shadow for the
         // sports-ticket-styled elements, not soft/diffuse like the rest.
         form: "0 2px 8px rgb(var(--ink) / 0.04), 0 1px 2px rgb(var(--ink) / 0.02)",
-        // "Pro Max" polish: the exact multi-layer shadow this pass specified
-        // for main content containers — noticeably tighter/subtler than the
-        // previous elevation-2 tuning, which read too heavy against the
-        // cream canvas ("muddy"). Still ink-relative for theme-awareness.
-        card: "0 4px 6px -1px rgb(var(--ink) / 0.05), 0 2px 4px -1px rgb(var(--ink) / 0.03)",
+        // "Editorial Cream & Ink" elevation physics. --ink is exactly
+        // 17 17 17 in light mode, so rgb(var(--ink) / x) resolves to the
+        // spec's literal rgba(17,17,17,x) values while still adapting in
+        // dark mode instead of baking in a light-mode-only black.
+        // card = resting surface, cardHover = the lifted/interactive state
+        // (paired with a -2px translate on .card-interactive).
+        card: "0 8px 24px rgb(var(--ink) / 0.04), 0 2px 8px rgb(var(--ink) / 0.02)",
+        cardHover: "0 20px 40px rgb(var(--ink) / 0.08), 0 4px 12px rgb(var(--ink) / 0.04)",
         elevated: "0 24px 48px rgb(var(--ink) / 0.08), 0 8px 16px rgb(var(--ink) / 0.04)",
         ticket: "3px 3px 0 rgb(var(--ink) / 0.92)",
         glow: "0 0 60px -10px rgb(var(--pitch-400) / 0.35)",

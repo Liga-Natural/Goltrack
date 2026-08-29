@@ -4,14 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { getSportTheme, SPORT_NAMES } from "@/lib/sportTheme";
 import type { Tournament } from "@/lib/models";
+import { tournamentStatusClass } from "@/lib/statusStyles";
 
-const statusColors: Record<string, string> = {
-  DRAFT: "bg-neutralBadge text-ink2",
-  REGISTRATION_OPEN: "bg-pitch-400/15 text-pitch-600",
-  SCHEDULED: "bg-neutralBadge text-ink2",
-  LIVE: "bg-volt-400/20 text-volt-500",
-  COMPLETED: "bg-neutralBadge text-ink3",
-};
 
 export function TournamentsGrid({ tournaments, teamCounts }: { tournaments: Tournament[]; teamCounts: Record<string, number> }) {
   const [filter, setFilter] = useState<string | null>(null);
@@ -65,7 +59,7 @@ export function TournamentsGrid({ tournaments, teamCounts }: { tournaments: Tour
                   <span className={`badge ${theme.soft}`}>
                     {theme.emoji} {theme.label}
                   </span>
-                  <span className={`badge ${statusColors[t.status]}`}>{t.status.replace("_", " ")}</span>
+                  <span className={`badge ${tournamentStatusClass(t.status)}`}>{t.status.replace("_", " ")}</span>
                 </div>
                 <h3 className="font-semibold text-black mb-1.5">{t.name}</h3>
                 <p className="text-sm text-black/50 mb-3">

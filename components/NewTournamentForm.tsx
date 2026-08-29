@@ -6,15 +6,23 @@ import { SPORTS, SPORT_NAMES } from "@/lib/sportTheme";
 
 function Section({ n, title, hint, children }: { n: string; title: string; hint?: string; children: React.ReactNode }) {
   return (
-    <div className="border-t border-black/5 pt-8 first:border-t-0 first:pt-0">
+    // :first-of-type, not :first-child. Next injects a hidden
+    // <input name="$ACTION_ID_…"> as the form's literal first child to wire
+    // up the Server Action, so Section 01 is actually :nth-child(2) and the
+    // plain `first:` variants silently never matched — leaving the top
+    // section with a stray divider line, 32px of dead padding, and a 40px
+    // space-y margin above it (the empty band at the top of the card).
+    // Scoping to DIVs skips that injected input, since it's an INPUT.
+    // The !mt-0 is what overrides the parent's space-y-10.
+    <div className="border-t border-black/5 pt-8 [&:first-of-type]:border-t-0 [&:first-of-type]:pt-0 [&:first-of-type]:!mt-0">
       {/* Section labels: small, bold, wide-tracked, Jogo red — meant to pop
           against the cream card as a real section marker, not blend in as
           quiet metadata the way a muted grey label would. */}
       <div className="flex items-baseline gap-2.5 mb-4">
-        <span className="font-mono text-xs font-bold text-pitch-400">{n}</span>
-        <h2 className="text-xs font-bold uppercase tracking-[0.05em] text-pitch-400">{title}</h2>
+        <span className="font-mono text-[11px] font-extrabold text-pitch-400">{n}</span>
+        <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-pitch-400">{title}</h2>
       </div>
-      {hint && <p className="text-xs text-black/40 -mt-2.5 mb-4">{hint}</p>}
+      {hint && <p className="text-xs text-ink2 font-medium -mt-2.5 mb-4">{hint}</p>}
       {children}
     </div>
   );
@@ -27,7 +35,7 @@ export function NewTournamentForm() {
   return (
     // space-y-10 (2.5rem): the polish pass explicitly called out the gap
     // between numbered sections as too cramped — was space-y-6 (1.5rem).
-    <form action={createTournament} className="card p-6 sm:p-8 space-y-10">
+    <form action={createTournament} className="card p-6 sm:p-8 space-y-10 mt-6">
       <Section n="01" title="Tournament details">
         <div className="space-y-4">
           <div>

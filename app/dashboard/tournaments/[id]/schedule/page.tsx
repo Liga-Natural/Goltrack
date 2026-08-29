@@ -24,7 +24,7 @@ export default async function SchedulePage({ params }: { params: { id: string } 
 
       {groups.length > 0 && groupMatches.length > 0 && (
         <div className="card p-6 mb-6">
-          <h2 className="font-semibold mb-4">Group standings</h2>
+          <h2 className="font-extrabold mb-4">Group standings</h2>
           {/* lg (not sm) — same fix as the public tournament page: two
               groups sharing a row at tablet widths squeezed each 9-column
               table into half the card, well before there's actually room. */}
@@ -38,7 +38,7 @@ export default async function SchedulePage({ params }: { params: { id: string } 
 
       {groupMatches.length > 0 && (
         <div className="card p-6 mb-6">
-          <h2 className="font-semibold mb-4">Group stage fixtures</h2>
+          <h2 className="font-extrabold mb-4">Group stage fixtures</h2>
           <div className="space-y-2">
             {groupMatches.map((m) => (
               <div key={m.id} className="flex items-center justify-between text-sm border-b border-black/5 pb-2">
@@ -61,7 +61,7 @@ export default async function SchedulePage({ params }: { params: { id: string } 
 
       {knockoutMatches.length > 0 && (
         <div className="card p-6">
-          <h2 className="font-semibold mb-4">Knockout bracket</h2>
+          <h2 className="font-extrabold mb-4">Knockout bracket</h2>
           <BracketView matches={knockoutMatches} teams={teams} sport={tournament.sport} />
         </div>
       )}

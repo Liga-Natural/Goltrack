@@ -32,7 +32,7 @@ export default async function TeamDashboardPage() {
       <div className="flex items-center gap-3 mb-1">
         <TeamBadge id={team.id} name={team.name} hasCrest={team.hasCrest} crestUpdatedAt={team.crestUpdatedAt} logoUrl={team.logoUrl} sport={tournament?.sport || "Soccer"} size="lg" />
         <div>
-          <h1 className="text-3xl font-extrabold">{team.name}</h1>
+          <h1 className="text-3xl font-extrabold text-inkDisplay">{team.name}</h1>
           {tournament && (
             <Link href={`/t/${tournament.slug}`} className="text-sm text-pitch-600 hover:underline">
               {tournament.name}
@@ -43,24 +43,24 @@ export default async function TeamDashboardPage() {
 
       <div className="grid sm:grid-cols-3 gap-4 my-6">
         <div className="card p-4">
-          <p className="text-xs uppercase tracking-wide text-black/40 mb-1">Registration</p>
+          <p className="text-xs uppercase tracking-wide text-ink2 font-semibold mb-1">Registration</p>
           <span className={`badge ${team.paid ? "bg-volt-400/15 text-volt-500" : "bg-neutralBadge text-ink2"}`}>
             {team.paid ? "Paid ✓" : "Unpaid"}
           </span>
         </div>
         <div className="card p-4">
-          <p className="text-xs uppercase tracking-wide text-black/40 mb-1">Roster size</p>
+          <p className="text-xs uppercase tracking-wide text-ink2 font-semibold mb-1">Roster size</p>
           <p className="font-score text-xl">{players.length}</p>
         </div>
         {team.logoToken && (
           <Link href={`/t/${tournament?.slug}/crest/${team.logoToken}`} className="card p-4 hover:bg-black/[0.02] transition-colors">
-            <p className="text-xs uppercase tracking-wide text-black/40 mb-1">Team crest</p>
+            <p className="text-xs uppercase tracking-wide text-ink2 font-semibold mb-1">Team crest</p>
             <p className="text-sm text-pitch-600 font-medium">{team.hasCrest ? "Change crest →" : "Upload a crest →"}</p>
           </Link>
         )}
       </div>
 
-      <h2 className="font-semibold mb-3">Roster</h2>
+      <h2 className="font-extrabold mb-3">Roster</h2>
       <div className="card divide-y divide-black/5 mb-8">
         {players.length === 0 ? (
           <p className="p-6 text-sm text-black/40 text-center">No players added yet.</p>
@@ -74,7 +74,7 @@ export default async function TeamDashboardPage() {
         )}
       </div>
 
-      <h2 className="font-semibold mb-3">Schedule</h2>
+      <h2 className="font-extrabold mb-3">Schedule</h2>
       <div className="card divide-y divide-black/5">
         {matches.length === 0 ? (
           <p className="p-6 text-sm text-black/40 text-center">No matches scheduled yet.</p>

@@ -13,7 +13,7 @@ export default async function RefereesPage({ params }: { params: { id: string } 
     <div>
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-2">
-          <h2 className="font-semibold mb-2">Assign referees to matches</h2>
+          <h2 className="font-extrabold mb-2">Assign referees to matches</h2>
           {matches.length === 0 && <p className="text-black/50 text-sm">Generate a schedule first.</p>}
           {matches.map((m) => {
             const assign = assignReferee.bind(null, tournament.id, m.id);

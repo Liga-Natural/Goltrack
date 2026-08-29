@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { Tournaments, Teams, Players, Users } from "@/lib/models";
+import { tournamentStatusClass } from "@/lib/statusStyles";
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="card-elevated p-6 relative overflow-hidden">
       <div className="absolute top-0 left-0 h-[2px] w-8 bg-pitch-400" />
-      <p className="text-xs uppercase tracking-wide text-black/40 mb-1.5">{label}</p>
-      <p className="font-score text-4xl">{value}</p>
+      <p className="text-xs uppercase tracking-wide text-ink2 font-semibold mb-1.5">{label}</p>
+      <p className="font-score text-4xl text-inkDisplay">{value}</p>
     </div>
   );
 }
@@ -22,8 +23,8 @@ export default async function AdminOverviewPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-extrabold mb-1">Platform overview</h1>
-      <p className="text-black/50 text-sm mb-6">Every tournament and account on Jogo, not just your own.</p>
+      <h1 className="text-3xl font-extrabold text-inkDisplay mb-1">Platform overview</h1>
+      <p className="text-ink2 text-sm font-medium mb-6">Every tournament and account on Jogo, not just your own.</p>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard label="Tournaments" value={tournaments.length} />
@@ -34,21 +35,21 @@ export default async function AdminOverviewPage() {
 
       <div className="grid sm:grid-cols-3 gap-4 mb-8">
         <div className="card p-4">
-          <p className="text-xs uppercase tracking-wide text-black/40 mb-1">Team managers</p>
+          <p className="text-xs uppercase tracking-wide text-ink2 font-semibold mb-1">Team managers</p>
           <p className="font-score text-xl">{roleCounts.TEAM_MANAGER}</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs uppercase tracking-wide text-black/40 mb-1">Players (claimed)</p>
+          <p className="text-xs uppercase tracking-wide text-ink2 font-semibold mb-1">Players (claimed)</p>
           <p className="font-score text-xl">{roleCounts.PLAYER}</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs uppercase tracking-wide text-black/40 mb-1">Admins</p>
+          <p className="text-xs uppercase tracking-wide text-ink2 font-semibold mb-1">Admins</p>
           <p className="font-score text-xl">{roleCounts.ADMIN}</p>
         </div>
       </div>
 
       <div className="flex items-center justify-between mb-3">
-        <h2 className="font-semibold">Recent tournaments</h2>
+        <h2 className="font-extrabold">Recent tournaments</h2>
         <Link href="/admin/tournaments" className="text-sm text-pitch-600 hover:underline">
           View all →
         </Link>
@@ -63,7 +64,7 @@ export default async function AdminOverviewPage() {
                 <p className="font-medium text-sm">{t.name}</p>
                 <p className="text-xs text-black/40">{t.supervisorName} · {t.supervisorEmail}</p>
               </div>
-              <span className="badge bg-neutralBadge text-ink2 text-xs">{t.status.replace("_", " ")}</span>
+              <span className={`badge text-xs ${tournamentStatusClass(t.status)}`}>{t.status.replace("_", " ")}</span>
             </Link>
           ))
         )}
