@@ -14,7 +14,7 @@ export default async function TournamentsHubPage() {
   }
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen stadium-glow">
       <header className="border-b border-black/5">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link href="/">

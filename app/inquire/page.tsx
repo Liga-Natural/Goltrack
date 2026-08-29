@@ -15,7 +15,7 @@ const formats = [
 
 export default function InquirePage() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen stadium-glow">
       <MarketingNav links={NAV_LINKS} />
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-8 text-center">

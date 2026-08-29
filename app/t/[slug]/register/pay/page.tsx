@@ -22,7 +22,7 @@ export default async function PayPage({
   const stripeConfigured = !!process.env.STRIPE_SECRET_KEY;
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen stadium-glow">
       <header className="border-b border-black/5">
         <div className="mx-auto max-w-xl px-4 sm:px-6 py-4">
           <Link href="/">

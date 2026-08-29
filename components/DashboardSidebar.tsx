@@ -117,7 +117,7 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
   );
 
   return (
-    <div className="lg:flex min-h-screen">
+    <div className="lg:flex min-h-screen stadium-glow">
       <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3.5 border-b border-black/10 bg-white/90 backdrop-blur">
         <Link href="/dashboard">
           <Logo markClassName="h-6 w-6" />

@@ -131,7 +131,7 @@ export function ProductShowcase({
   ];
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen stadium-glow">
       <MarketingNav links={NAV_LINKS} maxWidthClass="max-w-5xl" />
 
       <section className="mx-auto max-w-5xl px-4 sm:px-6 pt-16 pb-8 text-center">

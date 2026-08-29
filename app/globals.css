@@ -288,6 +288,29 @@
   pointer-events: none;
   background-image: radial-gradient(circle at 85% -10%, rgb(var(--pitch-400) / 0.16), transparent 55%),
     radial-gradient(circle at -10% 110%, rgb(var(--pitch-400) / 0.1), transparent 50%);
+  /* "Dynamic" here means a slow breathing pulse, not a spotlight sweep — a
+     stadium floodlight doesn't visibly move, but its wash isn't perfectly
+     static either. Opacity-only (no transform/scale): this class is applied
+     directly to page-level wrappers that also contain the sticky nav, and a
+     transform big enough to read as motion pushes this inset:0 layer's
+     visual bounds past its own box — clipping that back with overflow:hidden
+     silently breaks position:sticky for every descendant (verified: it did,
+     site-wide). Opacity never changes the box, so no clipping is needed and
+     sticky nav keeps working everywhere this is applied. */
+  animation: stadium-glow-pulse 12s ease-in-out infinite;
+}
+@keyframes stadium-glow-pulse {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stadium-glow::before {
+    animation: none;
+  }
 }
 
 /* A faint tactical-board grid — the kind of 1px line grid a coach sketches

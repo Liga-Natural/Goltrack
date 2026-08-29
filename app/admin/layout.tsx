@@ -13,7 +13,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (user.role !== "ADMIN") redirect("/dashboard");
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen stadium-glow">
       <SimpleDashboardHeader label="Admin" userName={user.name} />
       <div className="border-b border-black/5 bg-black/[0.02]">
         <nav className="mx-auto max-w-5xl px-4 sm:px-6 flex items-center gap-1 py-2">

@@ -13,7 +13,7 @@ export default async function TeamCrestPage({ params }: { params: { slug: string
   const valid = !!team && team.tournamentId === tournament.id && !!team.name;
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen stadium-glow">
       <header className="border-b border-black/5">
         <div className="mx-auto max-w-lg px-4 sm:px-6 py-4">
           <Link href="/">

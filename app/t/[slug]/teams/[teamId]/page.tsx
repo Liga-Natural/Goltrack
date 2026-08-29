@@ -25,7 +25,7 @@ export default async function PublicTeamPage({ params }: { params: { slug: strin
   const motmCount = allMatches.filter((m) => m.motmPlayerId && players.some((p) => p.id === m.motmPlayerId)).length;
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen stadium-glow">
       <header className="border-b border-black/5">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link href="/">

@@ -8,7 +8,7 @@ export default async function TeamLayout({ children }: { children: React.ReactNo
   if (user.role !== "TEAM_MANAGER") redirect("/dashboard");
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen stadium-glow">
       <SimpleDashboardHeader label="Team manager" userName={user.name} />
       <main className="mx-auto max-w-5xl px-4 sm:px-6 py-8">{children}</main>
     </div>
