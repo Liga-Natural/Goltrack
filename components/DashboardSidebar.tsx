@@ -121,7 +121,12 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
 
   return (
     <div className="lg:flex min-h-screen">
-      <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3.5 border-b border-line bg-sidebar/90 backdrop-blur">
+      {/* Mobile header: glass over the abyss rather than a near-solid rail
+          colour. bg-white/40 is the spec's "bg-black/40" — Tailwind's `white`
+          key is remapped onto --paper (the canvas) and `black` onto --ink, so
+          writing bg-black/40 literally would render 40% *white* in dark mode,
+          the exact inverse of the intended glass. */}
+      <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3.5 border-b border-line bg-white/40 backdrop-blur-xl">
         <Link href="/dashboard">
           <Logo wordmarkClassName="text-lg" />
         </Link>

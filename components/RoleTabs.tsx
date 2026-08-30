@@ -71,8 +71,15 @@ export function RoleTabs() {
             type="button"
             onClick={() => setActive(i)}
             aria-pressed={active === i}
+            // Active state is glass, not the brand red it used to be — the
+            // wordmark is the only red left in the UI. bg-black/10 reads as
+            // white/10 in dark and ink/10 in light, since Tailwind's black
+            // key is remapped onto --ink; writing bg-white/10 literally
+            // would resolve to the canvas colour and disappear.
             className={`rounded-full px-3.5 sm:px-4 py-2 transition-colors ${
-              active === i ? "bg-pitch-400 text-white" : "text-black/50 hover:text-black"
+              active === i
+                ? "bg-black/10 text-black border border-black/20 backdrop-blur-md"
+                : "border border-transparent text-black/50 hover:text-black hover:bg-black/5"
             }`}
           >
             {r.label}

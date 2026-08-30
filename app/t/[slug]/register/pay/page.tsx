@@ -23,7 +23,7 @@ export default async function PayPage({
 
   return (
     <main className="min-h-screen">
-      <header className="border-b border-black/5">
+      <header className="sticky top-0 z-50 border-b border-line bg-white/40 backdrop-blur-xl">
         <div className="mx-auto max-w-xl px-4 sm:px-6 py-4">
           <Link href="/">
             <Logo />

@@ -38,13 +38,17 @@ export function MarketingNav({
   useEffect(() => setOpen(false), [pathname]);
 
   return (
-    // Floating, not full-bleed: padding on the header itself (not the pill)
-    // is what detaches the bar from the viewport edges — the pill inside
-    // sits centered with breathing room on every side instead of gluing to
-    // the top and stretching corner to corner like a conventional navbar.
-    <header className="sticky top-3 sm:top-4 z-20 px-3 sm:px-4">
-      <div className={`mx-auto ${maxWidthClass}`}>
-        <div className="flex items-center justify-between gap-4 rounded-full border border-black/10 bg-surface/75 backdrop-blur-xl shadow-elevated px-3 sm:px-5 py-2 sm:py-2.5">
+    // Full-bleed and flush to the top edge, replacing the floating pill this
+    // used to be. bg-white/40, not bg-black/40 as a literal reading of the
+    // spec would give: tailwind.config.ts remaps `black` onto --ink, so
+    // bg-black/40 is 40% *white* in dark mode — the exact inverse of the
+    // intended glass. Tailwind's `white` key IS --paper here, so bg-white/40 is
+    // what "40% of the background" actually means here. Same reason the
+    // bottom edge is border-line (#262626 in dark ≈ white/15) rather than
+    // border-white/10, which would resolve to near-black on black.
+    <header className="sticky top-0 z-50 border-b border-line bg-white/40 backdrop-blur-xl">
+      <div className={`mx-auto ${maxWidthClass} px-3 sm:px-5`}>
+        <div className="flex items-center justify-between gap-4 py-2.5 sm:py-3">
           <Link href="/" className="pl-1">
             <Logo />
           </Link>
@@ -85,7 +89,11 @@ export function MarketingNav({
         </div>
 
         {open && (
-          <nav className="lg:hidden mt-2 rounded-2xl border border-black/10 bg-surface/90 backdrop-blur-xl shadow-elevated px-3 py-2">
+          // bg-white/60, down from bg-surface/90: at 90% the drawer was
+          // effectively an opaque panel with a blur that never showed. 60%
+          // over the blur still reads solid enough for the links while
+          // actually behaving like the rest of the glass.
+          <nav className="lg:hidden mt-2 mb-3 rounded-2xl border border-line bg-white/60 backdrop-blur-xl shadow-elevated px-3 py-2">
             {links.map((l) => (
               <Link key={l.href} href={l.href} className="block w-full rounded-lg px-3 py-2.5 text-sm font-medium text-black/70 hover:bg-black/5 hover:text-black">
                 {l.label}

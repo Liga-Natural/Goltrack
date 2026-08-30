@@ -127,7 +127,11 @@ export default function Home() {
           <div className="hidden sm:block absolute top-8 left-[16.5%] right-[16.5%] h-px bg-gradient-to-r from-transparent via-pitch-400/30 to-transparent" />
           {steps.map((s, i) => (
             <div key={s.n} className="reveal relative text-center sm:text-left" data-reveal-delay={i * 100}>
-              <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-black text-white font-display text-base relative z-10 shadow-ticket">
+              {/* Glass, not the solid disc this was. bg-black resolved to
+                  --ink, which in dark mode is white — so these rendered as
+                  the brightest, heaviest elements on an otherwise
+                  near-black page. */}
+              <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-black/[0.06] text-black border border-black/15 backdrop-blur-md font-display text-base relative z-10">
                 {s.n}
               </span>
               <h3 className="font-semibold text-black mt-5 mb-1.5 text-lg">{s.title}</h3>
@@ -137,26 +141,30 @@ export default function Home() {
         </div>
       </section>
 
-      {/* The one deliberate dark moment on the page — everything else here is
-          white/gray, so this band is the closing punctuation mark rather than
-          another identical section in the same rhythm. Stays inside the
-          locked ink/paper/red palette: black bg, white text, one red button.
-          surface-light pins --ink/--paper to fixed light values so bg-black/
-          text-white below always render as literal black/white regardless of
-          the site's theme toggle — same fix and reasoning as
-          HeroPhoneMockup's always-dark phone screen; left unpinned, dark mode
-          flips the tokens and this band inverts to a light band instead. */}
-      <section className="reveal relative surface-light bg-black text-white py-24 text-center overflow-hidden">
-        <PitchPattern className="pointer-events-none absolute -z-0 h-[480px] w-[480px] text-white/[0.04] -left-32 -bottom-32" />
-        <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-          <Logo className="justify-center mb-7" wordmarkClassName="text-4xl sm:text-5xl" />
-          <h2 className="text-display-sm mb-4">Ready to run your next event on Jogo?</h2>
-          <p className="text-white/50 mb-9 max-w-xl mx-auto text-base">
-            Open registration and have a full bracket ready before kickoff.
-          </p>
-          <Link href="/signup" className="btn-primary text-base px-6 py-3">
-            Get started free
-          </Link>
+      {/* Was the page's one deliberate solid-dark band, pinned to fixed light
+          values by surface-light so it stayed dark under either theme. That
+          trick only earns its keep on a page whose other sections are light:
+          on a pure-black canvas it rendered as a solid #111 slab — the one
+          opaque surface left in an otherwise all-glass UI, and the single
+          biggest violation the audit turned up. It is a floating glass panel
+          now, which reads as the same closing punctuation the solid band was
+          there to provide. surface-light itself stays (HeroPhoneMockup's
+          always-dark phone screen still needs it). */}
+      <section className="reveal relative py-24 text-center">
+        <div className="relative mx-auto max-w-4xl px-4 sm:px-6">
+          <div className="card relative overflow-hidden px-6 py-16 sm:px-12">
+            <PitchPattern className="pointer-events-none absolute -z-0 h-[480px] w-[480px] text-black/[0.04] -left-32 -bottom-32" />
+            <div className="relative">
+              <Logo className="justify-center mb-7" wordmarkClassName="text-4xl sm:text-5xl" />
+              <h2 className="text-display-sm mb-4">Ready to run your next event on Jogo?</h2>
+              <p className="text-ink2 mb-9 max-w-xl mx-auto text-base">
+                Open registration and have a full bracket ready before kickoff.
+              </p>
+              <Link href="/signup" className="btn-primary text-base px-6 py-3">
+                Get started free
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
