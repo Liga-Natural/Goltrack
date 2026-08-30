@@ -4,6 +4,8 @@ import { BracketView } from "@/components/BracketView";
 import { MatchStatusBadge } from "@/components/MatchStatusBadge";
 import { TeamInline } from "@/components/TeamInline";
 import { computeStandings, groupNames } from "@/lib/standings";
+import { findConflicts } from "@/lib/conflicts";
+import { VenueStatusBar } from "@/components/VenueStatusBar";
 
 export default async function SchedulePage({ params }: { params: { id: string } }) {
   const tournament = (await Tournaments.byId(params.id))!;
@@ -13,9 +15,12 @@ export default async function SchedulePage({ params }: { params: { id: string } 
   const groupMatches = matches.filter((m) => m.stage === "GROUP");
   const knockoutMatches = matches.filter((m) => m.stage === "KNOCKOUT");
   const groups = groupNames(teams);
+  const conflicts = findConflicts(matches, teams);
 
   return (
     <div>
+      <VenueStatusBar conflicts={conflicts} />
+
       {matches.length === 0 && (
         <div className="card p-8 text-center text-black/50">
           No schedule yet — go to Overview and click &quot;Generate schedule&quot;.

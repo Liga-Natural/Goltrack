@@ -1,3 +1,4 @@
+import { formatLabel } from "@/lib/formatLabel";
 import Link from "next/link";
 import { Tournament } from "@/lib/models";
 import { getSportTheme } from "@/lib/sportTheme";
@@ -25,7 +26,7 @@ export function TournamentHeader({ tournament }: { tournament: Tournament }) {
             <span className={`badge ${tournamentStatusClass(tournament.status)}`}>{tournament.status.replace("_", " ")}</span>
           </div>
           <p className="text-ink2 text-sm font-medium">
-            {tournament.format === "ROUND_ROBIN" ? "Round robin" : "Groups + knockout"} ·{" "}
+            {formatLabel(tournament.format)} ·{" "}
             {new Date(tournament.startDate).toLocaleDateString()}
             {tournament.location ? ` · ${tournament.location}` : ""}
           </p>

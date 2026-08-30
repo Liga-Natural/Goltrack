@@ -442,12 +442,14 @@
      hydration, or any future surface that opts out of theming). */
   [data-theme="light"] .card,
   [data-theme="light"] .card-elevated {
-    background-color: rgb(255 255 255 / 0.62);
-    border-color: rgb(255 255 255 / 0.9);
+    background-color: rgb(255 255 255 / 0.6);
+    border-color: rgb(255 255 255 / 0.8);
     backdrop-filter: blur(40px);
+    /* The spec's 0 8px 32px rgba(31,38,135,0.07) — a blue-shifted shadow,
+       not a neutral grey one, which is what keeps a white panel reading as
+       glass on a porcelain canvas rather than as paper on paper. */
     box-shadow:
-      0 1px 2px rgb(17 17 17 / 0.04),
-      0 10px 30px rgb(17 17 17 / 0.06),
+      0 8px 32px 0 rgb(31 38 135 / 0.07),
       inset 0 1px 1px rgb(255 255 255 / 0.9);
   }
   [data-theme="light"] .card-interactive {
@@ -469,17 +471,158 @@
      the panel it's cut into. On cream that means less white than the card,
      not more black. */
   [data-theme="light"] .input {
-    background-color: rgb(255 255 255 / 0.55);
-    border-color: rgb(17 17 17 / 0.1);
+    background-color: rgb(255 255 255 / 0.4);
+    border-color: rgb(226 232 240 / 0.8);
     backdrop-filter: blur(12px);
     box-shadow: inset 0 1px 2px rgb(17 17 17 / 0.04);
   }
   [data-theme="light"] .input:focus {
-    background-color: rgb(255 255 255 / 0.92);
+    background-color: rgb(255 255 255);
   }
+  /* Light badges get the same ghost outline the dark theme gives them. The
+     base .badge carries no background of its own — it is coloured by
+     whatever class the caller passes — so a bare <span class="badge"> had an
+     outline on black and rendered as loose unattached text on porcelain. */
   [data-theme="light"] .badge {
+    background-color: rgb(255 255 255 / 0.6);
+    border: 1px solid rgb(226 232 240 / 0.9);
+    color: rgb(var(--ink2));
     backdrop-filter: blur(12px);
   }
+  [data-theme="light"] .badge-live {
+    background-color: rgb(var(--status-live) / 0.1);
+    border-color: rgb(var(--status-live) / 0.35);
+    color: rgb(var(--status-live));
+  }
+}
+
+/* ── Vibrant glass: status and tier accents ──────────────────────────────
+   Literal colour values, not theme tokens. These are semantic — mint always
+   means accepted, amber always means pending — so unlike a surface they must
+   NOT invert with the theme. Each is tuned per theme only for legibility:
+   the same hue, lifted on black and deepened on porcelain, because a 400-
+   weight text colour that reads well on an abyss is unreadable on paper.
+
+   All four tier tags are declared here rather than assembled inline so the
+   set stays a closed vocabulary — a fifth tier has to be added deliberately
+   rather than by someone inventing a colour at a call site. */
+.badge-accepted,
+.badge-pending,
+.badge-danger,
+.tier-premier,
+.tier-gold,
+.tier-silver,
+.tier-bronze {
+  border-width: 1px;
+  border-style: solid;
+}
+.badge-accepted {
+  background-color: rgb(16 185 129 / 0.1);
+  border-color: rgb(16 185 129 / 0.3);
+  color: rgb(5 150 105);
+}
+[data-theme="dark"] .badge-accepted {
+  color: rgb(52 211 153);
+  box-shadow: 0 0 15px rgb(16 185 129 / 0.15);
+}
+.badge-pending {
+  background-color: rgb(245 158 11 / 0.12);
+  border-color: rgb(245 158 11 / 0.3);
+  color: rgb(180 83 9);
+}
+[data-theme="dark"] .badge-pending {
+  color: rgb(252 211 77);
+}
+.badge-danger {
+  background-color: rgb(244 63 94 / 0.1);
+  border-color: rgb(244 63 94 / 0.32);
+  color: rgb(190 18 60);
+}
+[data-theme="dark"] .badge-danger {
+  color: rgb(253 164 175);
+  box-shadow: 0 0 15px rgb(244 63 94 / 0.15);
+}
+.tier-premier {
+  background-color: rgb(139 92 246 / 0.12);
+  border-color: rgb(139 92 246 / 0.32);
+  color: rgb(109 40 217);
+}
+[data-theme="dark"] .tier-premier {
+  color: rgb(196 181 253);
+  box-shadow: 0 0 15px rgb(139 92 246 / 0.15);
+}
+.tier-gold {
+  background-color: rgb(234 179 8 / 0.14);
+  border-color: rgb(234 179 8 / 0.35);
+  color: rgb(161 98 7);
+}
+[data-theme="dark"] .tier-gold {
+  color: rgb(253 224 71);
+}
+.tier-silver {
+  background-color: rgb(148 163 184 / 0.16);
+  border-color: rgb(148 163 184 / 0.4);
+  color: rgb(71 85 105);
+}
+[data-theme="dark"] .tier-silver {
+  color: rgb(203 213 225);
+}
+.tier-bronze {
+  background-color: rgb(180 83 9 / 0.12);
+  border-color: rgb(180 83 9 / 0.32);
+  color: rgb(154 52 18);
+}
+[data-theme="dark"] .tier-bronze {
+  color: rgb(253 186 116);
+}
+
+/* Ambient colour mesh behind a feature panel. Sits on a pseudo-element at
+   z-index 0 with the panel's own content lifted above it, so it tints the
+   card without touching text contrast. Very low alpha on purpose: this is
+   depth, not decoration competing with the data on top of it. */
+.mesh {
+  position: relative;
+  isolation: isolate;
+}
+.mesh::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(40% 60% at 15% 20%, rgb(244 63 94 / 0.16), transparent 70%),
+    radial-gradient(45% 65% at 85% 30%, rgb(99 102 241 / 0.16), transparent 70%),
+    radial-gradient(50% 60% at 50% 100%, rgb(16 185 129 / 0.1), transparent 70%);
+  filter: blur(60px);
+}
+[data-theme="light"] .mesh::before {
+  background-image:
+    radial-gradient(40% 60% at 15% 20%, rgb(244 63 94 / 0.1), transparent 70%),
+    radial-gradient(45% 65% at 85% 30%, rgb(99 102 241 / 0.1), transparent 70%),
+    radial-gradient(50% 60% at 50% 100%, rgb(16 185 129 / 0.08), transparent 70%);
+}
+
+/* Modal and drawer surfaces. A .card is tuned to sit on the page canvas at
+   3% white; floated over a 60%-black scrim it has almost nothing to
+   separate from, so a dialog built out of .card alone reads as text hanging
+   in space rather than a panel on top of the page. These are much denser —
+   near-opaque — while keeping the blur and the edge-lit border, which is
+   what a modal needs to do: obscure what it covers, not merely tint it. */
+.modal-panel {
+  background-color: rgb(var(--surface));
+  border: 1px solid rgb(var(--ink) / 0.1);
+  backdrop-filter: blur(40px);
+}
+[data-theme="dark"] .modal-panel {
+  background-color: rgb(18 18 18 / 0.94);
+  border-color: rgb(255 255 255 / 0.12);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.08);
+}
+[data-theme="light"] .modal-panel {
+  background-color: rgb(255 255 255 / 0.97);
+  border-color: rgb(17 17 17 / 0.08);
+  box-shadow: 0 24px 60px rgb(17 17 17 / 0.18);
 }
 
 /* The sidebar rail as its own glass panel, matching the cards. Not a

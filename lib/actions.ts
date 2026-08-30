@@ -12,15 +12,19 @@ import {
   CheckIns,
   SiteSettings,
   Users,
+  Applications,
+  ApplicationMessages,
   slugify,
   Format,
 } from "@/lib/models";
+import type { ApplicationStatus, PaymentStatus } from "@/lib/models";
 import { cookies } from "next/headers";
 import { getCurrentUser, hashPassword, verifyPassword, createSessionToken, sessionCookieName } from "@/lib/auth";
 import { generateGroupStage, generateRoundRobinOnly, generateKnockoutBracket } from "@/lib/bracket";
 import { computeStandings, groupNames } from "@/lib/standings";
 import { getSportTheme } from "@/lib/sportTheme";
 import { isValidHex } from "@/lib/colorRamp";
+import { groupLetters } from "@/lib/groups";
 
 // Crest uploads are validated by sniffing the file's actual bytes rather
 // than trusting the browser-supplied Content-Type (which is easy to spoof
@@ -83,6 +87,11 @@ export async function createTournament(formData: FormData) {
   const supervisorName = String(formData.get("supervisorName") || "").trim();
   const supervisorEmail = String(formData.get("supervisorEmail") || "").trim();
   const supervisorPhone = String(formData.get("supervisorPhone") || "").trim() || null;
+  // Divisions arrive as one repeated field per checked box. Stored as JSON
+  // rather than a joined string so a division containing a comma (a real
+  // possibility: "U12 Gold, East") can't silently split into two.
+  const divisionList = formData.getAll("divisions").map((d) => String(d).trim()).filter(Boolean);
+  const divisions = divisionList.length ? JSON.stringify(divisionList) : null;
 
   if (!name || !startDate) throw new Error("Name and start date are required");
   if (!supervisorName || !supervisorEmail) throw new Error("Tournament director name and email are required");
@@ -112,10 +121,193 @@ export async function createTournament(formData: FormData) {
     supervisorName,
     supervisorEmail,
     supervisorPhone,
+    divisions,
     ownerId: user.id,
   });
 
   redirect(`/dashboard/tournaments/${tournament.id}`);
+}
+
+
+// ── Team applications ────────────────────────────────────────────────────
+// Public, unauthenticated: this is the form behind a tournament's shareable
+// registration link. It deliberately does NOT create a team — an applicant
+// is a request, and a team row is a confirmed entrant that standings and
+// fixture generation both read from. Accepting is what promotes one to the
+// other (see decideApplication).
+export async function submitApplication(slug: string, formData: FormData) {
+  const tournament = await Tournaments.bySlug(slug);
+  if (!tournament) throw new Error("Tournament not found");
+  if (tournament.status === "COMPLETED") throw new Error("This tournament has finished.");
+
+  const teamName = String(formData.get("teamName") || "").trim();
+  const managerName = String(formData.get("managerName") || "").trim();
+  const managerEmail = String(formData.get("managerEmail") || "").trim();
+  if (!teamName || !managerName || !managerEmail) {
+    throw new Error("Team name, manager name and email are required");
+  }
+
+  // Division is stored as one composed string ("U12 Premier") because that
+  // is what the organizer configured in the wizard and what the applications
+  // table already holds — the form collects the two axes separately only
+  // because that is far easier to pick from on a phone than one long list.
+  const ageGroup = String(formData.get("ageGroup") || "").trim();
+  const tier = String(formData.get("tier") || "").trim();
+  const composed = [ageGroup, tier].filter(Boolean).join(" ");
+
+  const payment = String(formData.get("payment") || "INVOICE_REQUESTED");
+  const paymentStatus: PaymentStatus =
+    payment === "DEPOSIT_PAID" ? "DEPOSIT_PAID" : payment === "PAID" ? "PAID" : "INVOICE_REQUESTED";
+  const application = await Applications.create({
+    tournamentId: tournament.id,
+    teamName,
+    clubName: String(formData.get("clubName") || "").trim() || null,
+    division: composed || String(formData.get("division") || "").trim() || null,
+    managerName,
+    managerEmail,
+    managerPhone: String(formData.get("managerPhone") || "").trim() || null,
+    rosterCount: Math.max(0, Number(formData.get("rosterCount") || 0)),
+    notes: String(formData.get("notes") || "").trim() || null,
+    paymentStatus,
+  });
+
+  revalidatePath(`/dashboard/tournaments/${tournament.id}/applications`);
+  redirect(`/t/${slug}/apply?submitted=${application.id}`);
+}
+
+export async function decideApplication(tournamentId: string, applicationId: string, status: ApplicationStatus) {
+  const { tournament } = await requireOwnedTournament(tournamentId);
+  const application = await Applications.byId(applicationId);
+  if (!application || application.tournamentId !== tournament.id) throw new Error("Application not found");
+
+  let teamId: string | null = application.teamId;
+  // Accepting creates the entrant, once. Re-accepting an already-accepted
+  // application must not mint a second team row, which is why this is
+  // guarded on the existing teamId rather than on the previous status.
+  if (status === "ACCEPTED" && !teamId) {
+    const team = await Teams.create({
+      tournamentId: tournament.id,
+      name: application.teamName,
+      contactName: application.managerName,
+      contactEmail: application.managerEmail,
+      paid: application.paymentStatus === "PAID" || application.paymentStatus === "DEPOSIT_PAID",
+    });
+    teamId = team.id;
+  }
+  // Declining or waitlisting a team that was already accepted has to remove
+  // the entrant again, otherwise it keeps its fixtures and its standings row.
+  if (status !== "ACCEPTED" && application.teamId) {
+    await Teams.remove(application.teamId);
+    teamId = null;
+    await dbRun(`UPDATE applications SET teamId = NULL WHERE id = $id`, { $id: applicationId } as any);
+  }
+
+  await Applications.setStatus(applicationId, status, teamId);
+  revalidatePath(`/dashboard/tournaments/${tournamentId}/applications`);
+  revalidatePath(`/dashboard/tournaments/${tournamentId}/teams`);
+  revalidatePath(`/dashboard/tournaments/${tournamentId}`);
+}
+
+// Stage 2 of the application engine. Accepting is the one transition that
+// also *places* a team: division, payment terms, and which group it lands
+// in are all settled here, and only then is the team row created.
+export async function acceptApplication(tournamentId: string, applicationId: string, formData: FormData) {
+  const { tournament } = await requireOwnedTournament(tournamentId);
+  const application = await Applications.byId(applicationId);
+  if (!application || application.tournamentId !== tournament.id) throw new Error("Application not found");
+
+  const division = String(formData.get("division") || "").trim() || application.division;
+  const paymentRaw = String(formData.get("paymentStatus") || application.paymentStatus);
+  const paymentStatus = (["UNPAID", "DEPOSIT_PAID", "INVOICE_REQUESTED", "PAID"].includes(paymentRaw)
+    ? paymentRaw
+    : "UNPAID") as PaymentStatus;
+
+  // Placement. "auto" balances by headcount rather than round-robining
+  // blindly: the smallest group wins, so a team accepted late fills the gap
+  // left by a decline instead of extending whichever group happens to be
+  // next in the alphabet. Only groups the tournament actually declared are
+  // candidates, so this can never invent a Group D on a two-group event.
+  const letters = groupLetters(tournament.groupsCount);
+  const mode = String(formData.get("placement") || "auto");
+  const existing = await Teams.listByTournament(tournament.id);
+  let groupName: string | null = null;
+  if (tournament.format === "GROUPS_KNOCKOUT") {
+    if (mode === "manual") {
+      const picked = String(formData.get("groupName") || "").trim();
+      groupName = letters.includes(picked) ? picked : letters[0];
+    } else {
+      const counts = new Map(letters.map((l) => [l, 0]));
+      for (const t of existing) {
+        if (t.groupName && counts.has(t.groupName)) counts.set(t.groupName, (counts.get(t.groupName) as number) + 1);
+      }
+      groupName = letters.reduce((best, l) =>
+        (counts.get(l) as number) < (counts.get(best) as number) ? l : best
+      , letters[0]);
+    }
+  }
+
+  let teamId = application.teamId;
+  if (!teamId) {
+    const team = await Teams.create({
+      tournamentId: tournament.id,
+      name: application.teamName,
+      contactName: application.managerName,
+      contactEmail: application.managerEmail,
+      paid: paymentStatus === "PAID" || paymentStatus === "DEPOSIT_PAID",
+      groupName,
+    });
+    teamId = team.id;
+  } else if (groupName) {
+    await Teams.setGroup(teamId, groupName);
+  }
+
+  await dbRun(`UPDATE applications SET division = $division WHERE id = $id`, {
+    $id: applicationId,
+    $division: division,
+  } as any);
+  await Applications.setPaymentStatus(applicationId, paymentStatus);
+  await Applications.setStatus(applicationId, "ACCEPTED", teamId);
+
+  revalidatePath(`/dashboard/tournaments/${tournamentId}/applications`);
+  revalidatePath(`/dashboard/tournaments/${tournamentId}/teams`);
+  revalidatePath(`/dashboard/tournaments/${tournamentId}`);
+  revalidatePath("/team");
+}
+
+export async function setApplicationPayment(tournamentId: string, applicationId: string, paymentStatus: PaymentStatus) {
+  await requireOwnedTournament(tournamentId);
+  await Applications.setPaymentStatus(applicationId, paymentStatus);
+  revalidatePath(`/dashboard/tournaments/${tournamentId}/applications`);
+}
+
+// Records an outbound message. Nothing delivers it yet — this project has no
+// mail or SMS provider wired in — so the row is stored QUEUED rather than
+// SENT. Claiming delivery here would be worse than not sending: an organizer
+// would stop chasing a coach who never heard from them.
+export async function queueApplicationMessage(tournamentId: string, formData: FormData) {
+  const { tournament } = await requireOwnedTournament(tournamentId);
+  const subject = String(formData.get("subject") || "").trim();
+  const body = String(formData.get("body") || "").trim();
+  const audience = String(formData.get("audience") || "ALL");
+  if (!subject || !body) throw new Error("Subject and message are required");
+
+  const applications = await Applications.listByTournament(tournament.id);
+  const targeted = applications.filter((a) => {
+    if (audience === "ALL") return true;
+    if (audience === "UNPAID") return a.paymentStatus === "UNPAID" || a.paymentStatus === "INVOICE_REQUESTED";
+    return a.status === audience;
+  });
+
+  await ApplicationMessages.create({
+    tournamentId: tournament.id,
+    template: String(formData.get("template") || "") || null,
+    audience,
+    subject,
+    body,
+    recipients: JSON.stringify(targeted.map((a) => a.managerEmail)),
+    recipientCount: targeted.length,
+  });
+  revalidatePath(`/dashboard/tournaments/${tournamentId}/applications`);
 }
 
 export async function addTeam(tournamentId: string, formData: FormData) {
@@ -196,6 +388,31 @@ export async function setTeamCheckedIn(tournamentId: string, teamId: string, che
   revalidatePath(`/dashboard/tournaments/${tournamentId}/checkin`);
 }
 
+// Stage 3: roster entry by the team's own manager, not the organizer.
+// addPlayer above is gated on requireOwnedTournament, which is correct for
+// the organizer's Teams page but locks out the very person who should be
+// filling in the roster. This resolves the team from the signed-in user
+// instead, so a manager can only ever write to their own squad — and a team
+// row only exists once an application has been accepted, which is what makes
+// "roster unlocks on acceptance" true rather than merely displayed.
+export async function addOwnPlayer(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Not authenticated");
+  const team = await Teams.byUserId(user.id);
+  if (!team) throw new Error("No team linked to this account");
+
+  const name = String(formData.get("name") || "").trim();
+  if (!name) throw new Error("Player name is required");
+
+  await Players.create({
+    teamId: team.id,
+    name,
+    jerseyNumber: String(formData.get("jerseyNumber") || "").trim() || null,
+    birthdate: String(formData.get("birthdate") || "").trim() || null,
+  });
+  revalidatePath("/team");
+}
+
 export async function checkInPlayerByPassport(tournamentId: string, passportId: string) {
   await requireOwnedTournament(tournamentId);
   const player = await Players.byPassportId(passportId.trim());
@@ -242,7 +459,17 @@ export async function generateSchedule(tournamentId: string) {
   const startTime = new Date(tournament.startDate);
   const surfaceWord = getSportTheme(tournament.sport).surfaceWord;
   let generated;
-  if (tournament.format === "ROUND_ROBIN") {
+  if (tournament.format === "SINGLE_ELIM") {
+    // A single-elimination tournament has no group stage: the bracket *is*
+    // the schedule. Without this branch it fell through to generateGroupStage
+    // and produced a round-robin nobody asked for.
+    generated = generateKnockoutBracket(
+      teams.map((t) => t.id),
+      startTime,
+      `${surfaceWord} 1`
+    ).map((m) => ({ ...m, groupName: null }));
+    for (const t of teams) await Teams.setGroup(t.id, null);
+  } else if (tournament.format === "ROUND_ROBIN") {
     generated = generateRoundRobinOnly(teams, { fieldsCount: tournament.fieldsCount, startTime, surfaceWord });
     for (const t of teams) await Teams.setGroup(t.id, null);
   } else {
@@ -297,7 +524,12 @@ export async function generateKnockout(tournamentId: string) {
   }
 
   const qualifiers: string[] = [];
-  if (tournament.format === "ROUND_ROBIN") {
+  if (tournament.format === "SINGLE_ELIM") {
+    // No group stage to qualify out of — every registered team enters the
+    // bracket. Seeded by registration order, which is the only ordering
+    // that exists before a ball is kicked.
+    qualifiers.push(...teams.map((t) => t.id));
+  } else if (tournament.format === "ROUND_ROBIN") {
     const standings = computeStandings(teams, groupMatches, null);
     qualifiers.push(...standings.slice(0, Math.min(8, standings.length)).map((s) => s.team.id));
   } else {
@@ -443,6 +675,30 @@ export async function registerTeamPublic(slug: string, _prevState: FormActionSta
   }
 
   redirect(`/t/${slug}/register/pay?team=${team.id}`);
+}
+
+// The manager gate in front of team registration. Reuses
+// attachTeamManagerAccount, which already creates-or-signs-in and sets the
+// session cookie — so one form handles both "I'm new" and "I have an
+// account", which is what a coach standing on a touchline actually needs.
+//
+// Phone is carried forward in the redirect rather than stored: the users
+// table has no phone column, and adding one is out of scope here. It lands
+// prefilled on the application form, where managerPhone is a real persisted
+// field — so the number the manager typed is not silently discarded.
+export async function managerGate(slug: string, _prevState: FormActionState, formData: FormData): Promise<FormActionState> {
+  const name = String(formData.get("name") || "").trim();
+  const email = String(formData.get("email") || "").trim();
+  const password = String(formData.get("password") || "");
+  const phone = String(formData.get("phone") || "").trim();
+
+  if (!name || !email) return { error: "Name and email are required" };
+  if (!password || password.length < 8) return { error: "Password must be at least 8 characters" };
+
+  const account = await attachTeamManagerAccount(name, email, password);
+  if ("error" in account) return account;
+
+  redirect(`/t/${slug}/apply${phone ? `?phone=${encodeURIComponent(phone)}` : ""}`);
 }
 
 export async function claimTeamInvite(token: string, _prevState: FormActionState, formData: FormData): Promise<FormActionState> {

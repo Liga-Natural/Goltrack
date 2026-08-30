@@ -17,11 +17,25 @@ import {
   IconMenu,
   IconX,
   IconPalette,
+  IconClipboard,
 } from "./icons";
 import { tournamentNav as tournamentNavBase } from "@/lib/dashboardNav";
 
-const navIcons = [IconGrid, IconUsers, IconCalendar, IconPulse, IconWhistle, IconQr];
-const tournamentNav = tournamentNavBase.map((item, i) => ({ ...item, icon: navIcons[i] }));
+// Keyed by href, not by array position. The previous version zipped
+// tournamentNavBase against a parallel icon array by index, so inserting a
+// nav item silently shifted every icon onto the wrong label and left the
+// last entry with `icon: undefined` — which renders as <undefined /> and
+// throws. Keying means a new page just needs its own entry here.
+const navIcons: Record<string, any> = {
+  "": IconGrid,
+  "/applications": IconClipboard,
+  "/teams": IconUsers,
+  "/schedule": IconCalendar,
+  "/scores": IconPulse,
+  "/referees": IconWhistle,
+  "/checkin": IconQr,
+};
+const tournamentNav = tournamentNavBase.map((item) => ({ ...item, icon: navIcons[item.href] ?? IconGrid }));
 
 function NavItem({
   href,
@@ -139,7 +153,11 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
         </button>
       </div>
 
-      {open && <div className="fixed inset-0 z-40 bg-black/60 lg:hidden" onClick={() => setOpen(false)} />}
+      {/* Literal rgba, not bg-black/60: Tailwind's `black` key is remapped onto
+          --ink here, which is *white* in dark mode — so this scrim was painting
+          a white flash over the page instead of dimming it. A scrim has to
+          darken in both themes, which no theme-following token can do. */}
+      {open && <div className="fixed inset-0 z-40 bg-[rgba(0,0,0,0.6)] lg:hidden" onClick={() => setOpen(false)} />}
 
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-line bg-sidebar flex flex-col transition-transform duration-200 lg:static lg:z-auto lg:w-60 lg:shrink-0 lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen ${

@@ -1,15 +1,20 @@
+import { formatLabel } from "@/lib/formatLabel";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { Tournaments } from "@/lib/models";
 import { getSportTheme } from "@/lib/sportTheme";
 import { tournamentStatusClass } from "@/lib/statusStyles";
+import { RoleWorkspace } from "@/components/RoleWorkspace";
 
 
 export default async function DashboardHome() {
   const user = await getCurrentUser();
   const tournaments = user ? await Tournaments.listByOwner(user.id) : [];
 
-  return (
+  // The organizer view is composed on the server and handed to the client
+  // role switcher as a prop, so switching roles costs no round trip and the
+  // real dashboard keeps its server-rendered data.
+  const organizerView = (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
@@ -50,7 +55,7 @@ export default async function DashboardHome() {
                     {theme.emoji} {t.sport} {t.teamFormat}
                   </span>
                   <span className="text-xs text-black/40">
-                    {t.format === "ROUND_ROBIN" ? "Round robin" : "Groups + knockout"}
+                    {formatLabel(t.format)}
                   </span>
                 </div>
                 <p className="text-sm text-black/40">{new Date(t.startDate).toLocaleDateString()}</p>
@@ -62,4 +67,6 @@ export default async function DashboardHome() {
       )}
     </div>
   );
+
+  return <RoleWorkspace organizer={organizerView} />;
 }

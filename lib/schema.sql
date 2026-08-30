@@ -121,3 +121,44 @@ CREATE TABLE IF NOT EXISTS site_settings (
   theme TEXT NOT NULL DEFAULT 'dark',
   updatedAt TEXT NOT NULL
 );
+
+-- Team applications to a tournament. Deliberately separate from `teams`:
+-- a team row is a confirmed entrant that appears in standings and gets
+-- fixtures generated for it, while an application is a request that may be
+-- waitlisted or declined and must never leak into either. Accepting an
+-- application is what creates the teams row, and applications.teamId is
+-- the link back to it.
+CREATE TABLE IF NOT EXISTS applications (
+  id TEXT PRIMARY KEY,
+  tournamentId TEXT NOT NULL,
+  teamName TEXT NOT NULL,
+  clubName TEXT,
+  division TEXT,
+  managerName TEXT NOT NULL,
+  managerEmail TEXT NOT NULL,
+  managerPhone TEXT,
+  rosterCount INTEGER NOT NULL DEFAULT 0,
+  notes TEXT,
+  status TEXT NOT NULL DEFAULT 'PENDING',
+  paymentStatus TEXT NOT NULL DEFAULT 'UNPAID',
+  teamId TEXT,
+  createdAt TEXT NOT NULL,
+  decidedAt TEXT
+);
+
+-- Outbound messages to applicants. Persisted even though nothing sends
+-- them yet: the record of what an organizer intended to send, to whom, and
+-- when is the part that has to survive: wiring a provider in later only
+-- needs to drain rows whose status is still QUEUED.
+CREATE TABLE IF NOT EXISTS application_messages (
+  id TEXT PRIMARY KEY,
+  tournamentId TEXT NOT NULL,
+  template TEXT,
+  audience TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  body TEXT NOT NULL,
+  recipients TEXT NOT NULL,
+  recipientCount INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'QUEUED',
+  createdAt TEXT NOT NULL
+);

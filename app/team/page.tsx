@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { Teams, Players, Matches, Tournaments } from "@/lib/models";
 import { TeamBadge } from "@/components/TeamBadge";
 import { MatchStatusBadge } from "@/components/MatchStatusBadge";
+import { addOwnPlayer } from "@/lib/actions";
 
 export default async function TeamDashboardPage() {
   const user = await getCurrentUser();
@@ -60,18 +61,50 @@ export default async function TeamDashboardPage() {
         )}
       </div>
 
-      <h2 className="font-extrabold mb-3">Roster</h2>
-      <div className="card divide-y divide-black/5 mb-8">
-        {players.length === 0 ? (
-          <p className="p-6 text-sm text-black/40 text-center">No players added yet.</p>
-        ) : (
-          players.map((p) => (
-            <Link key={p.id} href={`/passport/${p.id}`} className="flex items-center justify-between px-5 py-3 hover:bg-black/[0.02] transition-colors">
-              <span className="text-sm font-medium">{p.name}</span>
-              <span className="text-xs text-black/40">{p.jerseyNumber ? `#${p.jerseyNumber}` : "Passport →"}</span>
-            </Link>
-          ))
-        )}
+      {/* The roster module is only reachable because a team row exists, and a
+          team row is only created when an organizer accepts the application —
+          so "roster unlocks on acceptance" is enforced by the data, not by
+          hiding a form. */}
+      <div className="flex items-center gap-2.5 mb-3">
+        <h2 className="font-extrabold">Roster</h2>
+        <span className="badge badge-live text-[10px]">
+          {team.groupName ? `Accepted · Group ${team.groupName}` : "Accepted · Roster open"}
+        </span>
+      </div>
+      <div className="card p-5 sm:p-6 mb-8">
+        <div className="divide-y divide-lineSoft mb-5">
+          {players.length === 0 ? (
+            <p className="py-6 text-sm text-ink2 text-center">
+              No players yet — add your squad below. Each one gets a digital passport QR for match-day check-in.
+            </p>
+          ) : (
+            players.map((p) => (
+              <Link key={p.id} href={`/passport/${p.id}`} className="flex items-center gap-3 py-3 hover:bg-black/[0.03] transition-colors -mx-2 px-2 rounded-lg">
+                <span className="font-score text-sm text-ink3 w-8 shrink-0">{p.jerseyNumber ? `#${p.jerseyNumber}` : "—"}</span>
+                <span className="text-sm font-semibold truncate min-w-0 flex-1">{p.name}</span>
+                <span className="text-xs text-ink3 shrink-0">Passport →</span>
+              </Link>
+            ))
+          )}
+        </div>
+        <form action={addOwnPlayer} className="border-t border-lineSoft pt-5">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-ink2 mb-3">Add a player</p>
+          <div className="grid sm:grid-cols-[1fr_6rem_9rem_auto] gap-3 items-end">
+            <div className="min-w-0">
+              <label className="label" htmlFor="pname">Full name</label>
+              <input id="pname" className="input" name="name" required placeholder="Alex Moreno" />
+            </div>
+            <div className="min-w-0">
+              <label className="label" htmlFor="pnum">Jersey</label>
+              <input id="pnum" className="input" name="jerseyNumber" placeholder="10" />
+            </div>
+            <div className="min-w-0">
+              <label className="label" htmlFor="pdob">Date of birth</label>
+              <input id="pdob" className="input" type="date" name="birthdate" />
+            </div>
+            <button className="btn-primary text-sm">Add</button>
+          </div>
+        </form>
       </div>
 
       <h2 className="font-extrabold mb-3">Schedule</h2>

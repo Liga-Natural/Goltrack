@@ -3,7 +3,7 @@ import { all, get, run, uid, nowIso } from "./db";
 
 // ---------- Types ----------
 
-export type Format = "ROUND_ROBIN" | "GROUPS_KNOCKOUT";
+export type Format = "ROUND_ROBIN" | "GROUPS_KNOCKOUT" | "SINGLE_ELIM";
 export type TournamentStatus = "DRAFT" | "REGISTRATION_OPEN" | "SCHEDULED" | "LIVE" | "COMPLETED";
 export type Stage = "GROUP" | "KNOCKOUT";
 export type MatchStatus = "SCHEDULED" | "LIVE" | "FINAL";
@@ -36,7 +36,44 @@ export interface Tournament {
   supervisorName: string;
   supervisorEmail: string;
   supervisorPhone: string | null;
+  /** JSON array of division names, e.g. ["U10 Gold","U12 Premier"]. Null on
+      tournaments created before divisions existed. */
+  divisions: string | null;
   ownerId: string;
+  createdAt: string;
+}
+
+export type ApplicationStatus = "PENDING" | "ACCEPTED" | "WAITLISTED" | "DECLINED";
+export type PaymentStatus = "UNPAID" | "DEPOSIT_PAID" | "INVOICE_REQUESTED" | "PAID";
+
+export interface Application {
+  id: string;
+  tournamentId: string;
+  teamName: string;
+  clubName: string | null;
+  division: string | null;
+  managerName: string;
+  managerEmail: string;
+  managerPhone: string | null;
+  rosterCount: number;
+  notes: string | null;
+  status: ApplicationStatus;
+  paymentStatus: PaymentStatus;
+  teamId: string | null;
+  createdAt: string;
+  decidedAt: string | null;
+}
+
+export interface ApplicationMessage {
+  id: string;
+  tournamentId: string;
+  template: string | null;
+  audience: string;
+  subject: string;
+  body: string;
+  recipients: string;
+  recipientCount: number;
+  status: string;
   createdAt: string;
 }
 
@@ -144,8 +181,8 @@ export const Tournaments = {
   async create(input: Omit<Tournament, "id" | "createdAt">): Promise<Tournament> {
     const t: Tournament = { ...input, id: uid(), createdAt: nowIso() };
     await run(
-      `INSERT INTO tournaments (id, slug, name, sport, teamFormat, format, status, location, startDate, endDate, feeCents, fieldsCount, groupsCount, advancePerGroup, supervisorName, supervisorEmail, supervisorPhone, ownerId, createdAt)
-       VALUES ($id,$slug,$name,$sport,$teamFormat,$format,$status,$location,$startDate,$endDate,$feeCents,$fieldsCount,$groupsCount,$advancePerGroup,$supervisorName,$supervisorEmail,$supervisorPhone,$ownerId,$createdAt)`,
+      `INSERT INTO tournaments (id, slug, name, sport, teamFormat, format, status, location, startDate, endDate, feeCents, fieldsCount, groupsCount, advancePerGroup, supervisorName, supervisorEmail, supervisorPhone, divisions, ownerId, createdAt)
+       VALUES ($id,$slug,$name,$sport,$teamFormat,$format,$status,$location,$startDate,$endDate,$feeCents,$fieldsCount,$groupsCount,$advancePerGroup,$supervisorName,$supervisorEmail,$supervisorPhone,$divisions,$ownerId,$createdAt)`,
       t as any
     );
     return t;
@@ -568,6 +605,91 @@ export const Inquiries = {
       i as any
     );
     return i;
+  },
+};
+
+
+export const Applications = {
+  async create(
+    input: Omit<Application, "id" | "createdAt" | "status" | "paymentStatus" | "teamId" | "decidedAt"> & {
+      paymentStatus?: PaymentStatus;
+    }
+  ): Promise<Application> {
+    const a: Application = {
+      id: uid(),
+      tournamentId: input.tournamentId,
+      teamName: input.teamName,
+      clubName: input.clubName ?? null,
+      division: input.division ?? null,
+      managerName: input.managerName,
+      managerEmail: input.managerEmail,
+      managerPhone: input.managerPhone ?? null,
+      rosterCount: input.rosterCount ?? 0,
+      notes: input.notes ?? null,
+      status: "PENDING",
+      paymentStatus: input.paymentStatus ?? "UNPAID",
+      teamId: null,
+      createdAt: nowIso(),
+      decidedAt: null,
+    };
+    await run(
+      `INSERT INTO applications (id, tournamentId, teamName, clubName, division, managerName, managerEmail, managerPhone, rosterCount, notes, status, paymentStatus, teamId, createdAt, decidedAt)
+       VALUES ($id,$tournamentId,$teamName,$clubName,$division,$managerName,$managerEmail,$managerPhone,$rosterCount,$notes,$status,$paymentStatus,NULL,$createdAt,NULL)`,
+      a as any
+    );
+    return a;
+  },
+  async byId(id: string): Promise<Application | undefined> {
+    return get<Application>(`SELECT * FROM applications WHERE id = $id`, { $id: id });
+  },
+  async listByTournament(tournamentId: string): Promise<Application[]> {
+    return all<Application>(
+      `SELECT * FROM applications WHERE tournamentId = $tournamentId ORDER BY createdAt DESC`,
+      { $tournamentId: tournamentId }
+    );
+  },
+  async setStatus(id: string, status: ApplicationStatus, teamId?: string | null): Promise<void> {
+    await run(
+      `UPDATE applications SET status = $status, decidedAt = $decidedAt, teamId = COALESCE($teamId, teamId) WHERE id = $id`,
+      { $id: id, $status: status, $decidedAt: nowIso(), $teamId: teamId ?? null }
+    );
+  },
+  async setPaymentStatus(id: string, paymentStatus: PaymentStatus): Promise<void> {
+    await run(`UPDATE applications SET paymentStatus = $paymentStatus WHERE id = $id`, {
+      $id: id,
+      $paymentStatus: paymentStatus,
+    });
+  },
+};
+
+export const ApplicationMessages = {
+  async create(input: Omit<ApplicationMessage, "id" | "createdAt" | "status">): Promise<ApplicationMessage> {
+    const m: ApplicationMessage = {
+      id: uid(),
+      tournamentId: input.tournamentId,
+      template: input.template ?? null,
+      audience: input.audience,
+      subject: input.subject,
+      body: input.body,
+      recipients: input.recipients,
+      recipientCount: input.recipientCount,
+      // QUEUED, not SENT: nothing delivers these yet. Recording them as sent
+      // would be a lie the organizer would act on.
+      status: "QUEUED",
+      createdAt: nowIso(),
+    };
+    await run(
+      `INSERT INTO application_messages (id, tournamentId, template, audience, subject, body, recipients, recipientCount, status, createdAt)
+       VALUES ($id,$tournamentId,$template,$audience,$subject,$body,$recipients,$recipientCount,$status,$createdAt)`,
+      m as any
+    );
+    return m;
+  },
+  async listByTournament(tournamentId: string): Promise<ApplicationMessage[]> {
+    return all<ApplicationMessage>(
+      `SELECT * FROM application_messages WHERE tournamentId = $tournamentId ORDER BY createdAt DESC`,
+      { $tournamentId: tournamentId }
+    );
   },
 };
 

@@ -159,6 +159,11 @@ async function runMigrations(pool: Pool) {
   await ensureColumn(pool, "players", "userid", "userId TEXT");
   await ensureColumn(pool, "users", "role", "role TEXT NOT NULL DEFAULT 'ORGANIZER'");
   await ensureColumn(pool, "site_settings", "theme", "theme TEXT NOT NULL DEFAULT 'dark'");
+  // Divisions are stored as a JSON array of strings on the tournament
+  // rather than as their own table: they are a fixed list chosen once in the
+  // creation wizard and only ever read back whole, so a join table would
+  // buy nothing but an extra query on every applicant form render.
+  await ensureColumn(pool, "tournaments", "divisions", "divisions TEXT");
   // logoToken's inline UNIQUE in schema.sql only takes effect on a brand-new
   // CREATE TABLE; a database that already existed before this column was
   // added just got it via ALTER TABLE ADD COLUMN above, which can't attach
@@ -223,6 +228,11 @@ const CAMEL_CASE_COLUMNS: Record<string, string> = {
   invitetoken: "inviteToken",
   invitedat: "invitedAt",
   jerseynumber: "jerseyNumber",
+  clubname: "clubName",
+  decidedat: "decidedAt",
+  manageremail: "managerEmail",
+  managername: "managerName",
+  managerphone: "managerPhone",
   logotoken: "logoToken",
   logourl: "logoUrl",
   motmplayerid: "motmPlayerId",
@@ -230,14 +240,18 @@ const CAMEL_CASE_COLUMNS: Record<string, string> = {
   ownerid: "ownerId",
   passportid: "passportId",
   passwordhash: "passwordHash",
+  paymentstatus: "paymentStatus",
   playerid: "playerId",
   refereeid: "refereeId",
+  recipientcount: "recipientCount",
+  rostercount: "rosterCount",
   scheduledat: "scheduledAt",
   startdate: "startDate",
   supervisoremail: "supervisorEmail",
   supervisorname: "supervisorName",
   supervisorphone: "supervisorPhone",
   teamformat: "teamFormat",
+  teamname: "teamName",
   teamid: "teamId",
   tournamentid: "tournamentId",
   tournamenttype: "tournamentType",

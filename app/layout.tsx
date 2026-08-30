@@ -35,18 +35,23 @@ export const revalidate = 60;
 // green for LIVE badges (see tailwind.config.ts's volt definition), a
 // direct, explicit reversal of an earlier "unified brand red" decision.
 const THEME_VARS = {
+  // "Frosted White Glass": a porcelain off-white canvas with a slate ink
+  // ramp, replacing the earlier warm-cream palette. Values are the spec's
+  // literals — #f8fafc canvas, slate-900 headlines, slate-500/400 subtext,
+  // slate-200 rules — converted to the space-separated RGB triples these
+  // tokens use so the alpha modifier (`text-ink2/70`) keeps working.
   light: {
-    ink: "17 17 17",
-    inkDisplay: "5 5 5",
-    ink2: "113 113 122",
-    ink3: "161 161 170",
-    paper: "247 246 242",
+    ink: "15 23 42",
+    inkDisplay: "15 23 42",
+    ink2: "100 116 139",
+    ink3: "148 163 184",
+    paper: "248 250 252",
     surface: "255 255 255",
-    surface2: "242 240 233",
-    sidebar: "253 253 252",
-    line: "228 228 231",
-    lineSoft: "244 244 245",
-    neutralBadge: "244 244 245",
+    surface2: "241 245 249",
+    sidebar: "255 255 255",
+    line: "226 232 240",
+    lineSoft: "241 245 249",
+    neutralBadge: "241 245 249",
     statusLive: "16 185 129",
     statusWarning: "245 158 11",
     brandHover: "230 62 62",

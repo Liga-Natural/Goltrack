@@ -6,7 +6,7 @@ import { StandingsTable } from "@/components/StandingsTable";
 import { FixtureList } from "@/components/FixtureList";
 import { TabPanel } from "@/components/TabPanel";
 import { TeamBadge } from "@/components/TeamBadge";
-import { CopyLinkButton } from "@/components/CopyLinkButton";
+import { ShareRegistrationLink } from "@/components/ShareRegistrationLink";
 
 // A compact figure + label. Deliberately not the old .card-elevated tiles:
 // three big panels for three small numbers was most of the vertical space
@@ -161,12 +161,7 @@ export default async function TournamentOverviewPage({ params }: { params: { id:
         <div className="grid sm:grid-cols-2 gap-6 mb-6">
           <div className="min-w-0">
             <p className="text-sm font-semibold mb-1.5">Registration link</p>
-            <div className="flex items-center gap-2">
-              <code className="block flex-1 min-w-0 truncate bg-black/[0.05] rounded-lg px-3 py-2 text-xs text-ink2">
-                {publicUrl}/register
-              </code>
-              <CopyLinkButton path={`${publicUrl}/register`} />
-            </div>
+            <ShareRegistrationLink path={`${publicUrl}/apply`} />
           </div>
           <div className="min-w-0">
             <p className="text-sm font-semibold mb-1.5">Director</p>

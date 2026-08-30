@@ -12,6 +12,7 @@ import { TeamCard } from "@/components/TeamCard";
 import { TeamInline } from "@/components/TeamInline";
 import { FixtureList } from "@/components/FixtureList";
 import { TabPanel } from "@/components/TabPanel";
+import { FollowHeart, FollowBar, FieldMapCard } from "@/components/FollowTeam";
 import { getSportTheme } from "@/lib/sportTheme";
 
 export const revalidate = 5;
@@ -101,17 +102,33 @@ export default async function PublicTournamentPage({
       panel: (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {teams.map((t) => (
-            <TeamCard
-              key={t.id}
-              team={t}
-              sport={tournament.sport}
-              href={`/t/${tournament.slug}/teams/${t.id}`}
-              standing={standingByTeamId.get(t.id)}
-            />
+            <div key={t.id} className="relative">
+              <TeamCard
+                team={t}
+                sport={tournament.sport}
+                href={`/t/${tournament.slug}/teams/${t.id}`}
+                standing={standingByTeamId.get(t.id)}
+              />
+              {/* Overlaid rather than placed inside TeamCard: the card is a
+                  Link, and a button nested in an anchor is invalid markup
+                  that swallows the click on some browsers. */}
+              <div className="absolute top-3 right-3 z-10">
+                <FollowHeart teamId={t.id} teamName={t.name} />
+              </div>
+            </div>
           ))}
         </div>
       ),
     },
+    ...(matches.some((m) => m.field)
+      ? [
+          {
+            key: "map",
+            label: "Where to go",
+            panel: <FieldMapCard matches={matches} teams={teams} />,
+          },
+        ]
+      : []),
     ...(knockoutMatches.length > 0
       ? [
           {
@@ -134,7 +151,11 @@ export default async function PublicTournamentPage({
             <Link href="/tournaments" className="btn-ghost text-sm hidden sm:inline-flex">
               All tournaments
             </Link>
-            <Link href={`/t/${tournament.slug}/register`} className="btn-primary text-sm">
+            {/* Points at /apply, the reviewed two-stage flow, not the older
+                /register path that creates a team instantly. Left as-is this
+                was a bypass around the manager gate and the organizer's
+                acceptance step — the CTA everyone actually taps. */}
+            <Link href={`/t/${tournament.slug}/apply`} className="btn-primary text-sm">
               Register a team
             </Link>
           </div>
@@ -208,6 +229,8 @@ export default async function PublicTournamentPage({
           <div className="reveal card p-5 sm:p-6">
             <TabPanel tabs={tabs} />
           </div>
+
+          <FollowBar matches={matches} teams={teams} />
 
           {matches.length === 0 && (
             <div className="card p-10 text-center text-black/50">Schedule hasn&apos;t been published yet — check back soon.</div>
