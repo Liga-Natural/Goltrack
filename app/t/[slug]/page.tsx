@@ -10,6 +10,8 @@ import { PitchPattern } from "@/components/PitchPattern";
 import { CourtPattern } from "@/components/CourtPattern";
 import { TeamCard } from "@/components/TeamCard";
 import { TeamInline } from "@/components/TeamInline";
+import { FixtureList } from "@/components/FixtureList";
+import { TabPanel } from "@/components/TabPanel";
 import { getSportTheme } from "@/lib/sportTheme";
 
 export const revalidate = 5;
@@ -40,6 +42,86 @@ export default async function PublicTournamentPage({
   const motmPlayers = new Map(motmPlayerIds.map((id, i) => [id, motmPlayerRows[i]]));
   const overallStandings = computeStandings(teams, matches);
   const standingByTeamId = new Map(overallStandings.map((r) => [r.team.id, r]));
+
+  const upcoming = matches.filter((m) => m.status === "SCHEDULED");
+  const finished = matches.filter((m) => m.status === "FINAL");
+  const motmNames = new Map(
+    matches
+      .filter((m) => m.motmPlayerId && motmPlayers.get(m.motmPlayerId)?.name)
+      .map((m) => [m.id, motmPlayers.get(m.motmPlayerId as string)!.name as string])
+  );
+
+  const tabs = [
+    ...(groups.length > 0 && groupMatches.length > 0
+      ? [
+          {
+            key: "standings",
+            label: "Standings",
+            panel: (
+              <div className="grid lg:grid-cols-2 gap-8">
+                {groups.map((g) => (
+                  <StandingsTable key={g} rows={computeStandings(teams, matches, g)} title={`Group ${g}`} sport={tournament.sport} />
+                ))}
+              </div>
+            ),
+          },
+        ]
+      : []),
+    {
+      key: "schedule",
+      label: "Schedule",
+      count: upcoming.length,
+      panel: (
+        <FixtureList
+          matches={upcoming}
+          teamsById={teamsById}
+          sport={tournament.sport}
+          emptyLabel="No upcoming fixtures right now."
+        />
+      ),
+    },
+    {
+      key: "results",
+      label: "Results",
+      count: finished.length,
+      panel: (
+        <FixtureList
+          matches={finished}
+          teamsById={teamsById}
+          sport={tournament.sport}
+          motmNames={motmNames}
+          emptyLabel="No results yet — check back after the first whistle."
+        />
+      ),
+    },
+    {
+      key: "teams",
+      label: "Teams",
+      count: teams.length,
+      panel: (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {teams.map((t) => (
+            <TeamCard
+              key={t.id}
+              team={t}
+              sport={tournament.sport}
+              href={`/t/${tournament.slug}/teams/${t.id}`}
+              standing={standingByTeamId.get(t.id)}
+            />
+          ))}
+        </div>
+      ),
+    },
+    ...(knockoutMatches.length > 0
+      ? [
+          {
+            key: "bracket",
+            label: "Bracket",
+            panel: <BracketView matches={knockoutMatches} teams={teams} sport={tournament.sport} />,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <main className="min-h-screen">
@@ -72,8 +154,11 @@ export default async function PublicTournamentPage({
           )}
 
           <div className="mb-8">
-            <div className="flex items-center gap-2.5 mb-1.5">
-              <h1 className="text-display-sm">{tournament.name}</h1>
+            {/* Badge below the title rather than inline — a three-line
+                tournament name on a phone left it floating in the gap beside
+                the last line, overlapping the heading. */}
+            <h1 className="text-display-sm mb-2.5">{tournament.name}</h1>
+            <div className="flex flex-wrap items-center gap-2">
               <span className={`badge ${theme.soft}`}>
                 {theme.emoji} {theme.label}
               </span>
@@ -114,85 +199,15 @@ export default async function PublicTournamentPage({
             </div>
           )}
 
-          {teams.length > 0 && (
-            <section className="mb-8">
-              <h2 className="font-semibold mb-4">Teams</h2>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {teams.map((t, i) => (
-                  <div key={t.id} className="reveal" data-reveal-delay={Math.min(i % 6, 5) * 70}>
-                    <TeamCard
-                      team={t}
-                      sport={tournament.sport}
-                      href={`/t/${tournament.slug}/teams/${t.id}`}
-                      standing={standingByTeamId.get(t.id)}
-                    />
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {groups.length > 0 && groupMatches.length > 0 && (
-            <section className="reveal card p-6 mb-8">
-              <h2 className="font-semibold mb-4">Standings</h2>
-              {/* lg (not sm): two groups sharing a row at tablet widths left
-                  each table squeezed to ~half the card width — nowhere near
-                  enough for 9 columns, so GD/PTS ran off the visible edge.
-                  Now each group gets the full card width until there's
-                  actually room (1024px+) to split them side by side. */}
-              <div className="grid lg:grid-cols-2 gap-8">
-                {groups.map((g) => (
-                  <StandingsTable key={g} rows={computeStandings(teams, matches, g)} title={`Group ${g}`} sport={tournament.sport} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {groupMatches.length > 0 && (
-            <section className="reveal card p-6 mb-8">
-              <h2 className="font-semibold mb-4">Schedule & results</h2>
-              <div className="space-y-2">
-                {groupMatches.map((m) => {
-                  const motm = m.motmPlayerId ? motmPlayers.get(m.motmPlayerId) : null;
-                  return (
-                    <div
-                      key={m.id}
-                      className={`border-b border-black/5 pb-2 ${m.status === "LIVE" ? "border-l-4 border-l-volt-400 pl-3" : ""}`}
-                    >
-                      <div className="flex items-center justify-between text-sm">
-                        <div>
-                          <span className="text-black/40 text-xs mr-2">{m.round}</span>
-                          <TeamInline team={teamsById.get(m.homeTeamId || "")} sport={tournament.sport} />
-                          <span className="mx-1.5 text-black/30">vs</span>
-                          <TeamInline team={teamsById.get(m.awayTeamId || "")} sport={tournament.sport} />
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-black/40 text-xs hidden sm:inline">{m.field}</span>
-                          <span className="font-score text-sm">
-                            {m.homeScore ?? "-"} : {m.awayScore ?? "-"}
-                          </span>
-                          <MatchStatusBadge status={m.status} />
-                        </div>
-                      </div>
-                      {motm && (
-                        <p className="text-xs text-ink2 mt-1">
-                          <span className="text-warning-500">⭐</span> Man of the match:{" "}
-                          <span className="text-black/60">{motm.name}</span>
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          )}
-
-          {knockoutMatches.length > 0 && (
-            <section className="reveal card p-6">
-              <h2 className="font-semibold mb-4">Knockout bracket</h2>
-              <BracketView matches={knockoutMatches} teams={teams} sport={tournament.sport} />
-            </section>
-          )}
+          {/* One tabbed panel replacing four stacked sections. The page used
+              to be Teams, then Standings, then Schedule, then Bracket, all
+              expanded at once — on a phone that is roughly six screens of
+              scrolling before you reach a result, and the thing most
+              visitors open the page for (the score) was the furthest down.
+              Same data, one tap each. */}
+          <div className="reveal card p-5 sm:p-6">
+            <TabPanel tabs={tabs} />
+          </div>
 
           {matches.length === 0 && (
             <div className="card p-10 text-center text-black/50">Schedule hasn&apos;t been published yet — check back soon.</div>

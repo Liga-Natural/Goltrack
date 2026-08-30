@@ -25,7 +25,7 @@ export function StandingsTable({ rows, title, sport }: { rows: StandingRow[]; ti
             more to the right. A static edge fade is a cheap, JS-free hint
             that doesn't need to track scroll position to stay honest: the
             table is always wider than a mobile viewport here. */}
-        <div className="sm:hidden pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-surface to-transparent z-10" />
+        <div className="sm:hidden pointer-events-none absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10" />
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[420px]">
           <thead>
@@ -43,12 +43,12 @@ export function StandingsTable({ rows, title, sport }: { rows: StandingRow[]; ti
           </thead>
           <tbody>
             {rows.map((r, i) => (
-              // Solid white rows on a lineSoft rule, replacing the earlier
-              // alternating fill: on a white card the zebra stripe was
-              // adding a second horizontal rhythm competing with the
-              // divider lines, which is exactly the "visual overload" this
-              // pass is meant to strip out.
-              <tr key={r.team.id} className="bg-surface border-b border-lineSoft last:border-b-0">
+              // No row fill at all — just a lineSoft rule between rows.
+              // bg-surface here used to be an opaque panel colour, which on
+              // a frosted card painted a solid slab over the glass and made
+              // the table look pasted on. The edge-fade below is from-white
+              // (= --paper, the canvas) for the same reason.
+              <tr key={r.team.id} className="border-b border-lineSoft last:border-b-0">
                 <td className="py-3.5 pr-2 font-semibold">
                   <div className="flex items-center gap-2">
                     <span className="text-ink3 font-medium">{i + 1}</span>

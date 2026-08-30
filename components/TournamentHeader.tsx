@@ -12,8 +12,13 @@ export function TournamentHeader({ tournament }: { tournament: Tournament }) {
       <TournamentBreadcrumb tournamentId={tournament.id} tournamentName={tournament.name} />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2.5 mb-1.5">
-            <h1 className="text-3xl font-extrabold text-inkDisplay">{tournament.name}</h1>
+          {/* Badges on their own row below the title, not inline beside it.
+              Inline, a long tournament name wraps to three lines on a phone
+              and the badges get dragged into the gap beside the last line —
+              "Soccer 9v9" ended up sitting on top of the heading. They only
+              share a line once there is room for both (sm+). */}
+          <h1 className="text-3xl font-extrabold text-inkDisplay mb-2">{tournament.name}</h1>
+          <div className="flex flex-wrap items-center gap-2 mb-2">
             <span className={`badge ${theme.soft}`}>
               {theme.emoji} {theme.label} {tournament.teamFormat}
             </span>
