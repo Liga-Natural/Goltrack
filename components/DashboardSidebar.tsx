@@ -75,7 +75,15 @@ function NavItem({
   );
 }
 
-export function DashboardSidebar({ userName, children }: { userName: string; children: React.ReactNode }) {
+export function DashboardSidebar({
+  userName,
+  children,
+  topBar,
+}: {
+  userName: string;
+  children: React.ReactNode;
+  topBar?: React.ReactNode;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const match = pathname.match(/^\/dashboard\/tournaments\/([^/]+)/);
@@ -188,7 +196,14 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
         </div>
       </aside>
 
-      <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-10 py-6 lg:py-8 max-w-5xl">{children}</main>
+      {/* The bar sits inside the content column, not above the whole shell,
+          so it scrolls with the page it belongs to and the sidebar keeps its
+          own full height. print:hidden for the same reason as the rest of
+          the chrome. */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        <div className="hidden lg:block print:hidden">{topBar}</div>
+        <main className="px-4 sm:px-6 lg:px-10 py-6 lg:py-8 max-w-5xl w-full">{children}</main>
+      </div>
     </div>
   );
 }

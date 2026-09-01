@@ -3,7 +3,7 @@
 // tournament sub-page here updates both places at once.
 export const tournamentNav = [
   { href: "", label: "Overview" },
-  { href: "/applications", label: "Applications" },
+  { href: "/applications", label: "Communication" },
   { href: "/teams", label: "Teams" },
   { href: "/schedule", label: "Schedule & bracket" },
   { href: "/scores", label: "Live scores" },

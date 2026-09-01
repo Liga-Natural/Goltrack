@@ -7,6 +7,10 @@ import { FixtureList } from "@/components/FixtureList";
 import { TabPanel } from "@/components/TabPanel";
 import { TeamBadge } from "@/components/TeamBadge";
 import { ShareRegistrationLink } from "@/components/ShareRegistrationLink";
+import { KpiRow } from "@/components/KpiRow";
+import { ScheduleMatrix } from "@/components/ScheduleMatrix";
+import { Applications, Referees } from "@/lib/models";
+import { findConflicts } from "@/lib/conflicts";
 
 // A compact figure + label. Deliberately not the old .card-elevated tiles:
 // three big panels for three small numbers was most of the vertical space
@@ -30,6 +34,11 @@ export default async function TournamentOverviewPage({ params }: { params: { id:
   const teamsById = new Map(teams.map((t) => [t.id, t]));
   const matches = await Matches.listByTournament(tournament.id);
   const publicUrl = `/t/${tournament.slug}`;
+  const [applications, referees] = await Promise.all([
+    Applications.listByTournament(tournament.id),
+    Referees.listByTournament(tournament.id),
+  ]);
+  const conflicts = findConflicts(matches, teams);
 
   const groups = groupNames(teams);
   const played = matches.filter((m) => m.status === "FINAL").length;
@@ -121,6 +130,8 @@ export default async function TournamentOverviewPage({ params }: { params: { id:
 
   return (
     <div className="space-y-6">
+      <KpiRow teams={teams} applications={applications} feeCents={tournament.feeCents} />
+
       {/* Progress strip: the whole state of the event on one line. The bar
           is the only thing here that answers "how far through are we?", and
           it needs no chart library to do it. */}
@@ -147,6 +158,13 @@ export default async function TournamentOverviewPage({ params }: { params: { id:
             {live.length > 0 ? "Live now" : "Up next"}
           </h2>
           <FixtureList matches={nowMatches} teamsById={teamsById} sport={tournament.sport} />
+        </div>
+      )}
+
+      {matches.some((m) => m.field && m.scheduledAt) && (
+        <div className="card p-5 sm:p-6">
+          <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-ink2 mb-4">Field schedule</h2>
+          <ScheduleMatrix matches={matches} teams={teams} referees={referees} conflicts={conflicts} />
         </div>
       )}
 

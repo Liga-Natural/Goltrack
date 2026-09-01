@@ -90,10 +90,17 @@
      past the viewport and centred off-screen so only the soft falloff is
      ever visible, which is what reads as depth rather than a visible
      circle. */
+  /* Deep crimson ambient depth, pushed out to the left and right margins so
+     it pools *beside* the app window rather than under it. Sized far past
+     the viewport and centred off-screen: only the soft falloff is ever
+     visible, which is what reads as depth instead of a visible circle.
+     Kept low-alpha because every panel above is translucent — a saturated
+     wash here would tint the whole UI pink rather than sitting behind it. */
   [data-theme="dark"] body::before {
     background-image:
-      radial-gradient(70rem 70rem at 85% 5%, rgb(255 255 255 / 0.045), transparent 60%),
-      radial-gradient(65rem 65rem at 10% 95%, rgb(255 255 255 / 0.035), transparent 60%),
+      radial-gradient(60rem 80rem at -5% 35%, rgb(190 24 60 / 0.16), transparent 62%),
+      radial-gradient(60rem 80rem at 105% 55%, rgb(190 24 60 / 0.14), transparent 62%),
+      radial-gradient(70rem 70rem at 85% 5%, rgb(255 255 255 / 0.03), transparent 60%),
       url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><path d='M48 0H0V48' fill='none' stroke='rgba(255,255,255,0.02)' stroke-width='1'/></svg>");
     background-size: 100% 100%, 100% 100%, 48px 48px;
   }
