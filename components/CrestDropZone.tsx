@@ -6,15 +6,10 @@ import { useRef, useState } from "react";
 // preview and the same client-side guards the organizer-side upload applies
 // (type and size), so a manager finds out here rather than after submitting.
 //
-// IMPORTANT — the file is NOT persisted at application time. There is
-// nowhere to put it: a crest lives on the `teams` row, and no team row
-// exists until an organizer accepts the application. Storing it would mean
-// adding a column to `applications`, which this mandate puts out of bounds.
-// What already works end to end is the post-acceptance path: every accepted
-// team gets a `logoToken`, and /t/[slug]/crest/[token] lets its manager
-// upload the badge with no login. So this zone captures the intent and shows
-// the preview; the copy below says plainly when the badge is actually
-// attached, rather than implying an upload that silently goes nowhere.
+// The file is submitted with the form and stored on the application row, then
+// copied onto the team when an organizer accepts. The server re-validates by
+// sniffing the file's magic bytes — the checks below are a courtesy to save a
+// round trip, not the security boundary.
 const MAX_BYTES = 5 * 1024 * 1024;
 const OK_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
 
@@ -93,8 +88,7 @@ export function CrestDropZone() {
         <p className="text-xs text-warning-500 mt-2">{error}</p>
       ) : (
         <p className="text-xs text-ink3 mt-2">
-          Optional. Your badge is attached to the team once you&apos;re accepted — you&apos;ll get a private upload
-          link then.
+          Optional. Saved with your application and applied to your team the moment you&apos;re accepted.
         </p>
       )}
     </div>

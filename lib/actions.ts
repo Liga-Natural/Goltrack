@@ -24,6 +24,7 @@ import { generateGroupStage, generateRoundRobinOnly, generateKnockoutBracket } f
 import { computeStandings, groupNames } from "@/lib/standings";
 import { getSportTheme } from "@/lib/sportTheme";
 import { isValidHex } from "@/lib/colorRamp";
+import { sendBulkEmail } from "@/lib/mailer";
 import { groupLetters } from "@/lib/groups";
 
 // Crest uploads are validated by sniffing the file's actual bytes rather
@@ -171,6 +172,22 @@ export async function submitApplication(slug: string, formData: FormData) {
     paymentStatus,
   });
 
+  // Same byte-sniffing validator the organizer-side upload uses: it reads the
+  // file's magic bytes rather than trusting the browser's Content-Type, which
+  // is trivially spoofed by renaming a file. A bad or oversized image must not
+  // sink an otherwise valid application, so a failure here is swallowed — the
+  // team still gets in, just without a badge, and can add one after
+  // acceptance through the crest link.
+  const crest = formData.get("crest");
+  if (crest instanceof File && crest.size > 0) {
+    try {
+      const { bytes, mimeType } = await validateCrestFile(crest);
+      await Applications.setCrest(application.id, bytes, mimeType);
+    } catch {
+      // Ignored on purpose — see above.
+    }
+  }
+
   revalidatePath(`/dashboard/tournaments/${tournament.id}/applications`);
   redirect(`/t/${slug}/apply?submitted=${application.id}`);
 }
@@ -257,6 +274,11 @@ export async function acceptApplication(tournamentId: string, applicationId: str
       groupName,
     });
     teamId = team.id;
+    // Carry the badge the manager uploaded at application time onto the team
+    // that now exists, so an accepted club appears with its crest already set
+    // rather than being asked for it a second time.
+    const crest = await Applications.crestBytes(applicationId);
+    if (crest) await Teams.setCrest(team.id, crest.blob, crest.mimeType);
   } else if (groupName) {
     await Teams.setGroup(teamId, groupName);
   }
@@ -280,10 +302,11 @@ export async function setApplicationPayment(tournamentId: string, applicationId:
   revalidatePath(`/dashboard/tournaments/${tournamentId}/applications`);
 }
 
-// Records an outbound message. Nothing delivers it yet — this project has no
-// mail or SMS provider wired in — so the row is stored QUEUED rather than
-// SENT. Claiming delivery here would be worse than not sending: an organizer
-// would stop chasing a coach who never heard from them.
+// Records an outbound message and attempts delivery. The status it lands on
+// is the truth: SENT when the provider accepted it, FAILED when it rejected
+// it, and QUEUED when no provider is configured at all. Claiming delivery
+// that did not happen is the one outcome worth avoiding — an organizer would
+// stop chasing a coach who never heard from them.
 export async function queueApplicationMessage(tournamentId: string, formData: FormData) {
   const { tournament } = await requireOwnedTournament(tournamentId);
   const subject = String(formData.get("subject") || "").trim();
@@ -298,15 +321,28 @@ export async function queueApplicationMessage(tournamentId: string, formData: Fo
     return a.status === audience;
   });
 
-  await ApplicationMessages.create({
+  const recipients = targeted.map((a) => a.managerEmail);
+  const message = await ApplicationMessages.create({
     tournamentId: tournament.id,
     template: String(formData.get("template") || "") || null,
     audience,
     subject,
     body,
-    recipients: JSON.stringify(targeted.map((a) => a.managerEmail)),
-    recipientCount: targeted.length,
+    recipients: JSON.stringify(recipients),
+    recipientCount: recipients.length,
   });
+
+  // Recorded first, then sent. If the provider call throws or the process
+  // dies mid-flight, the intent survives as QUEUED — losing the record of a
+  // message an organizer believes they sent is the worse failure.
+  const result = await sendBulkEmail(recipients, subject, body);
+  if (result.ok) {
+    await ApplicationMessages.setStatus(message.id, "SENT");
+  } else if (result.configured) {
+    await ApplicationMessages.setStatus(message.id, "FAILED");
+  }
+  // Not configured: left QUEUED, which is exactly what it is.
+
   revalidatePath(`/dashboard/tournaments/${tournamentId}/applications`);
 }
 

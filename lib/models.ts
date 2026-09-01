@@ -640,11 +640,13 @@ export const Applications = {
     return a;
   },
   async byId(id: string): Promise<Application | undefined> {
-    return get<Application>(`SELECT * FROM applications WHERE id = $id`, { $id: id });
+    // Explicit columns, never SELECT * — crestBlob lives on this table and
+    // a wildcard would haul a full image into every read of every row.
+    return get<Application>(`SELECT id, tournamentId, teamName, clubName, division, managerName, managerEmail, managerPhone, rosterCount, notes, status, paymentStatus, teamId, createdAt, decidedAt FROM applications WHERE id = $id`, { $id: id });
   },
   async listByTournament(tournamentId: string): Promise<Application[]> {
     return all<Application>(
-      `SELECT * FROM applications WHERE tournamentId = $tournamentId ORDER BY createdAt DESC`,
+      `SELECT id, tournamentId, teamName, clubName, division, managerName, managerEmail, managerPhone, rosterCount, notes, status, paymentStatus, teamId, createdAt, decidedAt FROM applications WHERE tournamentId = $tournamentId ORDER BY createdAt DESC`,
       { $tournamentId: tournamentId }
     );
   },
@@ -653,6 +655,24 @@ export const Applications = {
       `UPDATE applications SET status = $status, decidedAt = $decidedAt, teamId = COALESCE($teamId, teamId) WHERE id = $id`,
       { $id: id, $status: status, $decidedAt: nowIso(), $teamId: teamId ?? null }
     );
+  },
+  async setCrest(id: string, bytes: Uint8Array, mimeType: string): Promise<void> {
+    await run(`UPDATE applications SET crestBlob = $blob, crestMimeType = $mimeType WHERE id = $id`, {
+      $id: id,
+      $blob: bytes,
+      $mimeType: mimeType,
+    } as any);
+  },
+  // Read back only at acceptance, to copy onto the new team row. Kept off the
+  // Application interface so listByTournament never drags a table's worth of
+  // image blobs into the applications screen.
+  async crestBytes(id: string): Promise<{ blob: Uint8Array; mimeType: string } | undefined> {
+    const row = await get<{ crestBlob: Uint8Array | null; crestMimeType: string | null }>(
+      `SELECT crestBlob, crestMimeType FROM applications WHERE id = $id`,
+      { $id: id }
+    );
+    if (!row?.crestBlob || !row.crestMimeType) return undefined;
+    return { blob: row.crestBlob, mimeType: row.crestMimeType };
   },
   async setPaymentStatus(id: string, paymentStatus: PaymentStatus): Promise<void> {
     await run(`UPDATE applications SET paymentStatus = $paymentStatus WHERE id = $id`, {
@@ -684,6 +704,9 @@ export const ApplicationMessages = {
       m as any
     );
     return m;
+  },
+  async setStatus(id: string, status: string): Promise<void> {
+    await run(`UPDATE application_messages SET status = $status WHERE id = $id`, { $id: id, $status: status } as any);
   },
   async listByTournament(tournamentId: string): Promise<ApplicationMessage[]> {
     return all<ApplicationMessage>(

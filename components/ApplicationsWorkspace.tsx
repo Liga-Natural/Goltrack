@@ -69,6 +69,7 @@ export function ApplicationsWorkspace({
   divisions,
   groups,
   teamGroupById,
+  mailConfigured,
 }: {
   tournamentId: string;
   applications: Application[];
@@ -76,6 +77,7 @@ export function ApplicationsWorkspace({
   divisions: string[];
   groups: string[];
   teamGroupById: Record<string, string | null>;
+  mailConfigured: boolean;
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
@@ -193,7 +195,7 @@ export function ApplicationsWorkspace({
                     {m.audience} · {m.recipientCount} recipient{m.recipientCount === 1 ? "" : "s"}
                   </p>
                 </div>
-                <Pill tone="warn">{m.status}</Pill>
+                <Pill tone={m.status === "SENT" ? "good" : "warn"}>{m.status}</Pill>
               </div>
             ))}
           </div>
@@ -395,7 +397,9 @@ export function ApplicationsWorkspace({
           >
             <h3 className="text-xl font-extrabold text-inkDisplay mb-1">Message applicants</h3>
             <p className="text-xs text-ink3 mb-5">
-              Queued for delivery. No mail provider is connected yet, so nothing sends until one is.
+              {mailConfigured
+                ? "Sent by email, blind-copied so managers don't see each other's addresses."
+                : "Recorded but not sent — no mail provider is configured. Set RESEND_API_KEY and MAIL_FROM to switch delivery on."}
             </p>
 
             <div className="flex flex-wrap gap-2 mb-5">

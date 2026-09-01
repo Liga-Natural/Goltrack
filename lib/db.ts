@@ -164,6 +164,10 @@ async function runMigrations(pool: Pool) {
   // creation wizard and only ever read back whole, so a join table would
   // buy nothing but an extra query on every applicant form render.
   await ensureColumn(pool, "tournaments", "divisions", "divisions TEXT");
+  // A club badge uploaded with the application, before any team row exists
+  // to hang it on. Copied onto the team at acceptance.
+  await ensureColumn(pool, "applications", "crestblob", "crestBlob BYTEA");
+  await ensureColumn(pool, "applications", "crestmimetype", "crestMimeType TEXT");
   // logoToken's inline UNIQUE in schema.sql only takes effect on a brand-new
   // CREATE TABLE; a database that already existed before this column was
   // added just got it via ALTER TABLE ADD COLUMN above, which can't attach

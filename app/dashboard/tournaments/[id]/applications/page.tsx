@@ -1,6 +1,7 @@
 import { Applications, ApplicationMessages, Tournaments, Teams } from "@/lib/models";
 import { ApplicationsWorkspace } from "@/components/ApplicationsWorkspace";
 import { groupLetters } from "@/lib/groups";
+import { mailerConfigured } from "@/lib/mailer";
 
 function parseDivisions(raw: string | null): string[] {
   if (!raw) return [];
@@ -34,6 +35,7 @@ export default async function ApplicationsPage({ params }: { params: { id: strin
       divisions={parseDivisions(tournament?.divisions ?? null)}
       groups={groups}
       teamGroupById={teamGroupById}
+      mailConfigured={mailerConfigured()}
     />
   );
 }

@@ -30,7 +30,7 @@ export default async function InviteClaimPage({ params }: { params: { slug: stri
             <p className="text-black/50 text-sm mb-4">
               Check with {tournament.name}&apos;s organizer for a new link, or register directly instead.
             </p>
-            <Link href={`/t/${tournament.slug}/register`} className="btn-primary">
+            <Link href={`/t/${tournament.slug}/apply`} className="btn-primary">
               Go to open registration
             </Link>
           </div>

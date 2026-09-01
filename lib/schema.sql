@@ -142,6 +142,8 @@ CREATE TABLE IF NOT EXISTS applications (
   status TEXT NOT NULL DEFAULT 'PENDING',
   paymentStatus TEXT NOT NULL DEFAULT 'UNPAID',
   teamId TEXT,
+  crestBlob BYTEA,
+  crestMimeType TEXT,
   createdAt TEXT NOT NULL,
   decidedAt TEXT
 );
