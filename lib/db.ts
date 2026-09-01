@@ -258,6 +258,7 @@ const CAMEL_CASE_COLUMNS: Record<string, string> = {
   teamname: "teamName",
   teamid: "teamId",
   tournamentid: "tournamentId",
+  tournamentname: "tournamentName",
   tournamenttype: "tournamentType",
   updatedat: "updatedAt",
   userid: "userId",

@@ -16,6 +16,7 @@ export const tournamentNav = [
 // links, rather than four bespoke layouts.
 export const adminNav = [
   { href: "/admin", label: "Overview" },
+  { href: "/admin/inbox", label: "Inbox" },
   { href: "/admin/tournaments", label: "All tournaments" },
 ];
 

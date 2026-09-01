@@ -589,6 +589,12 @@ export interface Inquiry {
 }
 
 export const Inquiries = {
+  // The contact form has been writing here since it shipped with nothing
+  // able to read it back — every enquiry landed in Postgres unseen. This is
+  // what the admin inbox reads.
+  async listAll(): Promise<Inquiry[]> {
+    return all<Inquiry>(`SELECT * FROM inquiries ORDER BY createdAt DESC`);
+  },
   async create(input: { name: string; email: string; phone?: string | null; tournamentType?: string | null; message: string }): Promise<Inquiry> {
     const i: Inquiry = {
       id: uid(),
@@ -656,6 +662,17 @@ export const Applications = {
       { $id: id, $status: status, $decidedAt: nowIso(), $teamId: teamId ?? null }
     );
   },
+  // Platform-wide, for the admin inbox. Joined to tournaments so a row can
+  // say which event it belongs to; still an explicit column list, because
+  // crestBlob lives on this table.
+  async listAllRecent(limit = 100): Promise<(Application & { tournamentName: string | null })[]> {
+    return all<Application & { tournamentName: string | null }>(
+      `SELECT a.id, a.tournamentId, a.teamName, a.clubName, a.division, a.managerName, a.managerEmail, a.managerPhone, a.rosterCount, a.notes, a.status, a.paymentStatus, a.teamId, a.createdAt, a.decidedAt, t.name AS tournamentName
+         FROM applications a LEFT JOIN tournaments t ON t.id = a.tournamentId
+        ORDER BY a.createdAt DESC LIMIT $limit`,
+      { $limit: limit }
+    );
+  },
   async setCrest(id: string, bytes: Uint8Array, mimeType: string): Promise<void> {
     await run(`UPDATE applications SET crestBlob = $blob, crestMimeType = $mimeType WHERE id = $id`, {
       $id: id,
@@ -704,6 +721,14 @@ export const ApplicationMessages = {
       m as any
     );
     return m;
+  },
+  async listAllRecent(limit = 100): Promise<(ApplicationMessage & { tournamentName: string | null })[]> {
+    return all<ApplicationMessage & { tournamentName: string | null }>(
+      `SELECT m.*, t.name AS tournamentName
+         FROM application_messages m LEFT JOIN tournaments t ON t.id = m.tournamentId
+        ORDER BY m.createdAt DESC LIMIT $limit`,
+      { $limit: limit }
+    );
   },
   async setStatus(id: string, status: string): Promise<void> {
     await run(`UPDATE application_messages SET status = $status WHERE id = $id`, { $id: id, $status: status } as any);
