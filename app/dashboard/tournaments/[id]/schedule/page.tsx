@@ -6,6 +6,8 @@ import { TeamInline } from "@/components/TeamInline";
 import { computeStandings, groupNames } from "@/lib/standings";
 import { findConflicts } from "@/lib/conflicts";
 import { VenueStatusBar } from "@/components/VenueStatusBar";
+import { ScheduleMatrix } from "@/components/ScheduleMatrix";
+import { Referees } from "@/lib/models";
 
 export default async function SchedulePage({ params }: { params: { id: string } }) {
   const tournament = (await Tournaments.byId(params.id))!;
@@ -16,10 +18,18 @@ export default async function SchedulePage({ params }: { params: { id: string } 
   const knockoutMatches = matches.filter((m) => m.stage === "KNOCKOUT");
   const groups = groupNames(teams);
   const conflicts = findConflicts(matches, teams);
+  const referees = await Referees.listByTournament(tournament.id);
 
   return (
     <div>
       <VenueStatusBar conflicts={conflicts} />
+
+      {matches.length > 0 && (
+        <div className="card p-5 sm:p-6 mb-6">
+          <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-ink2 mb-4">Master grid</h2>
+          <ScheduleMatrix matches={matches} teams={teams} referees={referees} conflicts={conflicts} />
+        </div>
+      )}
 
       {matches.length === 0 && (
         <div className="card p-8 text-center text-black/50">

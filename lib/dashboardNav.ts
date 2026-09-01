@@ -7,7 +7,9 @@ export const tournamentNav = [
   { href: "/teams", label: "Teams" },
   { href: "/schedule", label: "Schedule & bracket" },
   { href: "/scores", label: "Live scores" },
+  { href: "/finance", label: "Finance" },
   { href: "/referees", label: "Referees" },
+  { href: "/gamecards", label: "Game cards" },
   { href: "/checkin", label: "Check-in" },
 ];
 

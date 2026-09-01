@@ -9,7 +9,7 @@ import { tournamentStatusClass } from "@/lib/statusStyles";
 export function TournamentHeader({ tournament }: { tournament: Tournament }) {
   const theme = getSportTheme(tournament.sport);
   return (
-    <div className="mb-6 pb-6 border-b border-black/5">
+    <div className="mb-6 pb-6 border-b border-black/5 print:hidden">
       <TournamentBreadcrumb tournamentId={tournament.id} tournamentName={tournament.name} />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>

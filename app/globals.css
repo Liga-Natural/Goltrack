@@ -496,6 +496,40 @@
   }
 }
 
+
+/* ── Print ───────────────────────────────────────────────────────────────
+   The dashboard shell is navigation; on paper it is a wasted third of every
+   page, and the ambient canvas is a wasted toner cartridge. Printing any
+   dashboard page means printing its content column, so this is global
+   rather than scoped to the game-cards route.
+
+   Backgrounds are forced off and text to black because the glass palette
+   inverts under the dark theme: without this, a referee gets a sheet of
+   near-white ink on white paper. */
+@media print {
+  aside {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+  /* The fixed ambient layers cover the page in print, where "fixed" means
+     "repeated on every sheet". */
+  body::before,
+  body::after {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  * {
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
 /* ── Vibrant glass: status and tier accents ──────────────────────────────
    Literal colour values, not theme tokens. These are semantic — mint always
    means accepted, amber always means pending — so unlike a surface they must

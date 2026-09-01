@@ -18,6 +18,7 @@ import {
   IconX,
   IconPalette,
   IconClipboard,
+  IconMail,
 } from "./icons";
 import { tournamentNav as tournamentNavBase } from "@/lib/dashboardNav";
 
@@ -32,7 +33,9 @@ const navIcons: Record<string, any> = {
   "/teams": IconUsers,
   "/schedule": IconCalendar,
   "/scores": IconPulse,
+  "/finance": IconMail,
   "/referees": IconWhistle,
+  "/gamecards": IconClipboard,
   "/checkin": IconQr,
 };
 const tournamentNav = tournamentNavBase.map((item) => ({ ...item, icon: navIcons[item.href] ?? IconGrid }));
@@ -140,7 +143,7 @@ export function DashboardSidebar({ userName, children }: { userName: string; chi
           key is remapped onto --paper (the canvas) and `black` onto --ink, so
           writing bg-black/40 literally would render 40% *white* in dark mode,
           the exact inverse of the intended glass. */}
-      <div className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3.5 border-b border-line bg-white/40 backdrop-blur-xl">
+      <div className="lg:hidden print:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3.5 border-b border-line bg-white/40 backdrop-blur-xl">
         <Link href="/dashboard">
           <Logo wordmarkClassName="text-lg" />
         </Link>

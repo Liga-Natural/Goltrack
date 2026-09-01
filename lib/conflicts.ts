@@ -13,11 +13,11 @@ export interface Conflict {
 // Nominal length of a slot. generateGroupStage schedules on 45-minute
 // centres, so two fixtures on one field inside that window overlap in
 // practice even when their timestamps differ.
-const SLOT_MINUTES = 45;
+export const SLOT_MINUTES = 45;
 // A squad needs a real gap between kickoffs. Anything under this is
 // playable but brutal, and organizers want to see it before publishing
 // rather than hear about it from a coach on the day.
-const REST_MINUTES = 60;
+export const REST_MINUTES = 60;
 
 function minutesBetween(a: string, b: string): number {
   return Math.abs(new Date(a).getTime() - new Date(b).getTime()) / 60000;
