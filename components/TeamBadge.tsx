@@ -43,11 +43,18 @@ export function TeamBadge({
 
   const theme = getSportTheme(sport);
   return (
-    <div
+    // <span>, not <div>: a badge sits inline next to a team name, and one of
+    // those spots (the scores board) is inside a <p>. <p> may only hold
+    // phrasing content, so the parser closed the <p> the moment it met a
+    // <div> — leaving every fixture line's markup outside its own paragraph
+    // and handing React a DOM that could not match its tree (hydration
+    // error #418, once per badge). `flex` still sets display:flex here, so
+    // the badge renders identically; it is just legal where it's used.
+    <span
       className={`${dims} ${theme.badge} rounded-full flex items-center justify-center font-display shrink-0`}
       aria-label={`${name} (no crest)`}
     >
       {initials(name)}
-    </div>
+    </span>
   );
 }
