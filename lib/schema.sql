@@ -148,6 +148,38 @@ CREATE TABLE IF NOT EXISTS applications (
   decidedAt TEXT
 );
 
+-- A pending staff invitation. Deliberately not a users row with a blank
+-- password: an invitation is a claim on an email address that may never be
+-- taken up, and a half-made account would be able to sign in the moment
+-- anyone guessed a password reset. The users row is created on acceptance.
+CREATE TABLE IF NOT EXISTS user_invites (
+  id TEXT PRIMARY KEY,
+  email TEXT NOT NULL,
+  name TEXT NOT NULL,
+  phone TEXT,
+  organization TEXT,
+  role TEXT NOT NULL,
+  permissions TEXT,
+  token TEXT NOT NULL,
+  invitedByUserId TEXT NOT NULL,
+  invitedByName TEXT,
+  createdAt TEXT NOT NULL,
+  expiresAt TEXT NOT NULL,
+  acceptedAt TEXT,
+  revokedAt TEXT
+);
+
+-- Staff assigned onto a tournament they do not own. This is what lets an
+-- invited director actually work an event: without it, the ownership check in
+-- lib/actions.ts would refuse them everything.
+CREATE TABLE IF NOT EXISTS tournament_staff (
+  id TEXT PRIMARY KEY,
+  tournamentId TEXT NOT NULL,
+  userId TEXT NOT NULL,
+  createdAt TEXT NOT NULL,
+  UNIQUE(tournamentId, userId)
+);
+
 -- An invoice raised against one entrant. The billed party is snapshotted
 -- onto the row at issue time rather than joined from teams/applications on
 -- every read: an invoice is an accounting record, and it must still say who

@@ -1,7 +1,7 @@
 import { formatLabel } from "@/lib/formatLabel";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
-import { Tournaments } from "@/lib/models";
+import { Tournaments, TournamentStaff } from "@/lib/models";
 import { getSportTheme } from "@/lib/sportTheme";
 import { tournamentStatusClass } from "@/lib/statusStyles";
 import { RoleWorkspace } from "@/components/RoleWorkspace";
@@ -9,7 +9,16 @@ import { RoleWorkspace } from "@/components/RoleWorkspace";
 
 export default async function DashboardHome() {
   const user = await getCurrentUser();
-  const tournaments = user ? await Tournaments.listByOwner(user.id) : [];
+  // Owned plus assigned. Staff invited onto someone else's event can open it
+  // (see the tournament layout), so it has to be listed here too — access with
+  // no way to navigate to it is access in name only.
+  const owned = user ? await Tournaments.listByOwner(user.id) : [];
+  const assignedIds = user ? await TournamentStaff.listTournamentIdsForUser(user.id) : [];
+  const ownedIds = new Set(owned.map((t) => t.id));
+  const assigned = (
+    await Promise.all(assignedIds.filter((id) => !ownedIds.has(id)).map((id) => Tournaments.byId(id)))
+  ).filter((t): t is NonNullable<typeof t> => Boolean(t));
+  const tournaments = [...owned, ...assigned];
 
   // The organizer view is composed on the server and handed to the client
   // role switcher as a prop, so switching roles costs no round trip and the

@@ -18,10 +18,22 @@ import {
   InvoiceItems,
   InvoicePayments,
   InvoiceInstallments,
+  UserInvites,
+  TournamentStaff,
+  isRole,
   slugify,
   Format,
 } from "@/lib/models";
-import type { ApplicationStatus, PaymentStatus, PaymentMethod } from "@/lib/models";
+import type { ApplicationStatus, PaymentStatus, PaymentMethod, User, Role } from "@/lib/models";
+import { ROLE_LABELS } from "@/lib/permissions";
+import {
+  can,
+  isPermission,
+  serializePermissions,
+  effectivePermissions,
+  PERMISSION_LABELS,
+} from "@/lib/permissions";
+import type { Permission } from "@/lib/permissions";
 import { computeTotals, buildPaymentPlan, nextInvoiceNumber, money, formatDate } from "@/lib/invoices";
 import { cookies } from "next/headers";
 import { getCurrentUser, hashPassword, verifyPassword, createSessionToken, sessionCookieName } from "@/lib/auth";
@@ -67,12 +79,36 @@ async function validateCrestFile(file: File): Promise<{ bytes: Uint8Array; mimeT
   throw new Error("Unsupported image format — use PNG, JPG, WEBP, or SVG");
 }
 
+// Who may act on a tournament. Widened, never narrowed: the owner keeps
+// exactly the access they had, and two more cases are now allowed in — the
+// platform admin, and staff explicitly assigned onto this event. Without the
+// assignment case an invited director would be refused everything, which
+// would make the whole invitation flow decorative.
 async function requireOwnedTournament(tournamentId: string) {
   const user = await getCurrentUser();
   if (!user) throw new Error("Not authenticated");
   const tournament = await Tournaments.byId(tournamentId);
-  if (!tournament || tournament.ownerId !== user.id) throw new Error("Not found");
-  return { user, tournament };
+  if (!tournament) throw new Error("Not found");
+  if (tournament.ownerId === user.id) return { user, tournament };
+  if (user.role === "ADMIN") return { user, tournament };
+  if (await TournamentStaff.isAssigned(tournament.id, user.id)) return { user, tournament };
+  throw new Error("Not found");
+}
+
+// The permission gate. Kept separate from the tournament check above because
+// the two answer different questions: that one is "may you touch this event
+// at all", this one is "may you do this *kind* of thing anywhere".
+function requirePermission(user: User, permission: Permission) {
+  if (!can(user, permission)) {
+    throw new Error(`Your account does not have ${PERMISSION_LABELS[permission].label.toLowerCase()}.`);
+  }
+}
+
+async function requireAdmin() {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Not authenticated");
+  if (user.role !== "ADMIN") throw new Error("Not found");
+  return user;
 }
 
 export async function createTournament(formData: FormData) {
@@ -198,7 +234,8 @@ export async function submitApplication(slug: string, formData: FormData) {
 }
 
 export async function decideApplication(tournamentId: string, applicationId: string, status: ApplicationStatus) {
-  const { tournament } = await requireOwnedTournament(tournamentId);
+  const { user, tournament } = await requireOwnedTournament(tournamentId);
+  requirePermission(user, "ROSTER");
   const application = await Applications.byId(applicationId);
   if (!application || application.tournamentId !== tournament.id) throw new Error("Application not found");
 
@@ -234,7 +271,8 @@ export async function decideApplication(tournamentId: string, applicationId: str
 // also *places* a team: division, payment terms, and which group it lands
 // in are all settled here, and only then is the team row created.
 export async function acceptApplication(tournamentId: string, applicationId: string, formData: FormData) {
-  const { tournament } = await requireOwnedTournament(tournamentId);
+  const { user, tournament } = await requireOwnedTournament(tournamentId);
+  requirePermission(user, "ROSTER");
   const application = await Applications.byId(applicationId);
   if (!application || application.tournamentId !== tournament.id) throw new Error("Application not found");
 
@@ -302,7 +340,8 @@ export async function acceptApplication(tournamentId: string, applicationId: str
 }
 
 export async function setApplicationPayment(tournamentId: string, applicationId: string, paymentStatus: PaymentStatus) {
-  await requireOwnedTournament(tournamentId);
+  const { user } = await requireOwnedTournament(tournamentId);
+  requirePermission(user, "FINANCE");
   await Applications.setPaymentStatus(applicationId, paymentStatus);
   revalidatePath(`/dashboard/tournaments/${tournamentId}/applications`);
 }
@@ -313,7 +352,8 @@ export async function setApplicationPayment(tournamentId: string, applicationId:
 // that did not happen is the one outcome worth avoiding — an organizer would
 // stop chasing a coach who never heard from them.
 export async function queueApplicationMessage(tournamentId: string, formData: FormData) {
-  const { tournament } = await requireOwnedTournament(tournamentId);
+  const { user, tournament } = await requireOwnedTournament(tournamentId);
+  requirePermission(user, "COMMUNICATION");
   const subject = String(formData.get("subject") || "").trim();
   const body = String(formData.get("body") || "").trim();
   const audience = String(formData.get("audience") || "ALL");
@@ -418,7 +458,8 @@ export async function addPlayer(tournamentId: string, teamId: string, formData: 
 }
 
 export async function setTeamPaid(tournamentId: string, teamId: string, paid: boolean) {
-  await requireOwnedTournament(tournamentId);
+  const { user } = await requireOwnedTournament(tournamentId);
+  requirePermission(user, "FINANCE");
   await Teams.setPaid(teamId, paid);
   revalidatePath(`/dashboard/tournaments/${tournamentId}/teams`);
 }
@@ -490,7 +531,8 @@ export async function setMatchMotm(tournamentId: string, matchId: string, player
 }
 
 export async function generateSchedule(tournamentId: string) {
-  const { tournament } = await requireOwnedTournament(tournamentId);
+  const { user, tournament } = await requireOwnedTournament(tournamentId);
+  requirePermission(user, "SCHEDULE_OVERRIDE");
   const allTeams = await Teams.listByTournament(tournamentId);
   const teams = allTeams.filter((t) => t.name); // skip unclaimed invite slots
   if (teams.length < 2) throw new Error("Add at least two teams first");
@@ -553,7 +595,8 @@ export async function generateSchedule(tournamentId: string) {
 }
 
 export async function generateKnockout(tournamentId: string) {
-  const { tournament } = await requireOwnedTournament(tournamentId);
+  const { user, tournament } = await requireOwnedTournament(tournamentId);
+  requirePermission(user, "SCHEDULE_OVERRIDE");
   const teams = await Teams.listByTournament(tournamentId);
   const matches = await Matches.listByTournament(tournamentId);
 
@@ -848,8 +891,12 @@ async function guarded(fn: () => Promise<void>): Promise<ActionResult> {
   }
 }
 
+// Every caller of this touches money, so the finance gate lives here rather
+// than being repeated (and eventually forgotten) in each of the six actions
+// that record payments, refunds, discounts, plans and reminders.
 async function requireInvoice(tournamentId: string, invoiceId: string) {
   const { user, tournament } = await requireOwnedTournament(tournamentId);
+  requirePermission(user, "FINANCE");
   const invoice = await Invoices.byId(invoiceId);
   if (!invoice || invoice.tournamentId !== tournament.id) throw new Error("Invoice not found");
   return { user, tournament, invoice };
@@ -885,7 +932,8 @@ function invoicePaths(tournamentId: string, invoiceId: string): string[] {
 // design — an organizer who adds three teams next week presses the same
 // button again and gets three invoices, not a duplicate set.
 export async function generateInvoices(tournamentId: string) {
-  const { tournament } = await requireOwnedTournament(tournamentId);
+  const { user, tournament } = await requireOwnedTournament(tournamentId);
+  requirePermission(user, "FINANCE");
   const [teams, applications] = await Promise.all([
     Teams.listByTournament(tournament.id),
     Applications.listByTournament(tournament.id),
@@ -1160,4 +1208,206 @@ export async function saveBusinessIdentity(formData: FormData) {
     taxId: String(formData.get("taxId") || "").trim() || null,
   });
   revalidatePath("/dashboard/settings");
+}
+
+// ---------- Account administration (super admin only) ----------
+//
+// Every action here is gated on requireAdmin(). The /admin layout already
+// redirects non-admins away from the screen, but a screen is not a control:
+// server actions are callable directly by anyone who knows their id, so the
+// check has to live here too.
+
+function readPermissions(formData: FormData): string {
+  const picked = formData
+    .getAll("permissions")
+    .map((p) => String(p))
+    .filter(isPermission);
+  return serializePermissions(picked);
+}
+
+function readRole(raw: string, fallback: Role = "ORGANIZER"): Role {
+  return isRole(raw) ? raw : fallback;
+}
+
+export async function inviteUser(formData: FormData): Promise<ActionResult & { inviteUrl?: string }> {
+  let inviteUrl: string | undefined;
+  const result = await guarded(async () => {
+    const admin = await requireAdmin();
+    const email = String(formData.get("email") || "").trim().toLowerCase();
+    const name = String(formData.get("name") || "").trim();
+    if (!email || !email.includes("@")) throw new Error("Enter a valid email address");
+    if (!name) throw new Error("Enter the person's name");
+    if (await Users.byEmail(email)) throw new Error("An account with that email already exists.");
+
+    const role = readRole(String(formData.get("role") || "ORGANIZER"));
+    const invite = await UserInvites.create({
+      email,
+      name,
+      phone: String(formData.get("phone") || "").trim() || null,
+      organization: String(formData.get("organization") || "").trim() || null,
+      role,
+      permissions: readPermissions(formData),
+      invitedByUserId: admin.id,
+      invitedByName: admin.name,
+    });
+
+    inviteUrl = `/invite/${invite.token}`;
+
+    // Recorded in the same outbound log the admin inbox reads, and sent if a
+    // provider is configured. The link is returned either way so an admin can
+    // pass it on by hand when it is not — an invitation nobody can deliver is
+    // worse than one you copy into a message yourself.
+    const base = process.env.NEXT_PUBLIC_SITE_URL || "";
+    const subject = `You have been invited to Jogo as ${ROLE_LABELS[role]}`;
+    const body = [
+      `Hello ${name},`,
+      ``,
+      `${admin.name} has invited you to Jogo as ${ROLE_LABELS[role]}.`,
+      ``,
+      `Set your password to accept: ${base}${inviteUrl}`,
+      ``,
+      `This link expires on ${formatDate(invite.expiresAt)}.`,
+    ].join("\n");
+
+    const message = await ApplicationMessages.create({
+      tournamentId: "",
+      template: "STAFF_INVITE",
+      audience: `INVITE:${role}`,
+      subject,
+      body,
+      recipients: JSON.stringify([email]),
+      recipientCount: 1,
+    });
+    const sent = await sendBulkEmail([email], subject, body);
+    if (sent.ok) await ApplicationMessages.setStatus(message.id, "SENT");
+    else if (sent.configured) await ApplicationMessages.setStatus(message.id, "FAILED");
+
+    revalidatePath("/admin/users");
+  });
+  return { ...result, inviteUrl };
+}
+
+export async function revokeInvite(inviteId: string): Promise<ActionResult> {
+  return guarded(async () => {
+    await requireAdmin();
+    const invite = await UserInvites.byId(inviteId);
+    if (!invite) throw new Error("Invitation not found");
+    await UserInvites.revoke(inviteId);
+    revalidatePath("/admin/users");
+  });
+}
+
+export async function updateUserRole(userId: string, formData: FormData): Promise<ActionResult> {
+  return guarded(async () => {
+    const admin = await requireAdmin();
+    const target = await Users.byId(userId);
+    if (!target) throw new Error("Account not found");
+
+    const role = readRole(String(formData.get("role") || target.role), target.role);
+    // Demoting the last active admin would lock everyone out of this screen
+    // with no way back in, so it is refused rather than warned about.
+    if (target.role === "ADMIN" && role !== "ADMIN" && (await Users.countActiveAdmins(target.id)) === 0) {
+      throw new Error("This is the last active super admin — promote someone else first.");
+    }
+    if (target.id === admin.id && role !== "ADMIN") {
+      throw new Error("You cannot remove your own super admin role.");
+    }
+
+    await Users.setRoleAndPermissions(
+      userId,
+      role,
+      readPermissions(formData),
+      String(formData.get("organization") || "").trim() || null
+    );
+    revalidatePath("/admin/users");
+  });
+}
+
+export async function setUserStatus(userId: string, status: string): Promise<ActionResult> {
+  return guarded(async () => {
+    const admin = await requireAdmin();
+    if (status !== "ACTIVE" && status !== "SUSPENDED") throw new Error("Unknown status");
+    const target = await Users.byId(userId);
+    if (!target) throw new Error("Account not found");
+    if (target.id === admin.id) throw new Error("You cannot suspend your own account.");
+    if (status === "SUSPENDED" && target.role === "ADMIN" && (await Users.countActiveAdmins(target.id)) === 0) {
+      throw new Error("This is the last active super admin — promote someone else first.");
+    }
+    await Users.setStatus(userId, status);
+    revalidatePath("/admin/users");
+  });
+}
+
+// A handover: every tournament the outgoing staff member was assigned to
+// moves to the incoming one, and their permission grant is copied across.
+// This is what makes suspending someone safe — their events do not go dark.
+export async function transferPermissions(fromUserId: string, formData: FormData): Promise<ActionResult> {
+  return guarded(async () => {
+    await requireAdmin();
+    const toUserId = String(formData.get("toUserId") || "");
+    if (!toUserId) throw new Error("Choose who to transfer to");
+    if (toUserId === fromUserId) throw new Error("Pick a different account");
+
+    const [from, to] = await Promise.all([Users.byId(fromUserId), Users.byId(toUserId)]);
+    if (!from || !to) throw new Error("Account not found");
+
+    await TournamentStaff.transferAll(fromUserId, toUserId);
+    // The recipient ends up with the union of both grants: a handover must not
+    // quietly strip powers the recipient already had.
+    const merged = Array.from(
+      new Set([...effectivePermissions(from.role, from.permissions), ...effectivePermissions(to.role, to.permissions)])
+    );
+    await Users.setRoleAndPermissions(toUserId, to.role, serializePermissions(merged), to.organization);
+    revalidatePath("/admin/users");
+  });
+}
+
+export async function assignStaffToTournament(userId: string, formData: FormData): Promise<ActionResult> {
+  return guarded(async () => {
+    await requireAdmin();
+    const tournamentId = String(formData.get("tournamentId") || "");
+    if (!tournamentId) throw new Error("Choose a tournament");
+    if (!(await Tournaments.byId(tournamentId))) throw new Error("Tournament not found");
+    if (!(await Users.byId(userId))) throw new Error("Account not found");
+    await TournamentStaff.assign(tournamentId, userId);
+    revalidatePath("/admin/users");
+  });
+}
+
+// Public: the invited person setting their own password. Not admin-gated, and
+// deliberately so — the bearer token in the URL is the authorisation.
+export async function acceptInvite(token: string, formData: FormData): Promise<ActionResult> {
+  return guarded(async () => {
+    const invite = await UserInvites.byToken(token);
+    if (!invite) throw new Error("This invitation link is not valid.");
+    if (invite.revokedAt) throw new Error("This invitation has been revoked.");
+    if (invite.acceptedAt) throw new Error("This invitation has already been used.");
+    if (new Date(invite.expiresAt).getTime() < Date.now()) throw new Error("This invitation has expired.");
+
+    const password = String(formData.get("password") || "");
+    if (password.length < 8) throw new Error("Password must be at least 8 characters");
+
+    if (await Users.byEmail(invite.email)) throw new Error("An account with that email already exists.");
+
+    const user = await Users.create(invite.email, await hashPassword(password), invite.name, invite.role, {
+      status: "ACTIVE",
+      permissions: invite.permissions,
+      organization: invite.organization,
+      phone: invite.phone,
+      invitedByUserId: invite.invitedByUserId,
+    });
+    // Marked used only after the account exists, so a failure part-way leaves
+    // the invitation still claimable rather than burning it.
+    await UserInvites.markAccepted(invite.id);
+    await Users.touchSignIn(user.id);
+
+    cookies().set(sessionCookieName(), await createSessionToken(user.id), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+    revalidatePath("/admin/users");
+  });
 }

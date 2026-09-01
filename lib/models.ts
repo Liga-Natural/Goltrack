@@ -7,7 +7,17 @@ export type Format = "ROUND_ROBIN" | "GROUPS_KNOCKOUT" | "SINGLE_ELIM";
 export type TournamentStatus = "DRAFT" | "REGISTRATION_OPEN" | "SCHEDULED" | "LIVE" | "COMPLETED";
 export type Stage = "GROUP" | "KNOCKOUT";
 export type MatchStatus = "SCHEDULED" | "LIVE" | "FINAL";
-export type Role = "ADMIN" | "ORGANIZER" | "TEAM_MANAGER" | "PLAYER";
+// ADMIN is the platform owner (super admin), ORGANIZER runs tournaments
+// (director / staff admin), REFEREE works matchdays, TEAM_MANAGER runs one
+// club, PLAYER holds a passport. The stored strings are unchanged for the
+// four that already existed — renaming them would orphan every live account.
+export type Role = "ADMIN" | "ORGANIZER" | "REFEREE" | "TEAM_MANAGER" | "PLAYER";
+
+export const ALL_ROLES: Role[] = ["ADMIN", "ORGANIZER", "REFEREE", "TEAM_MANAGER", "PLAYER"];
+
+export function isRole(value: string): value is Role {
+  return (ALL_ROLES as string[]).includes(value);
+}
 
 export interface User {
   id: string;
@@ -15,7 +25,47 @@ export interface User {
   passwordHash: string;
   name: string;
   role: Role;
+  /** ACTIVE | INVITED | SUSPENDED — see lib/permissions.ts. */
+  status: string;
+  /** JSON array of Permission, or null meaning "this role's defaults". */
+  permissions: string | null;
+  organization: string | null;
+  phone: string | null;
+  lastSignInAt: string | null;
+  invitedByUserId: string | null;
   createdAt: string;
+}
+
+/** Everything about a user except the password hash. */
+export interface UserSummary {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
+  status: string;
+  permissions: string | null;
+  organization: string | null;
+  phone: string | null;
+  lastSignInAt: string | null;
+  invitedByUserId: string | null;
+  createdAt: string;
+}
+
+export interface UserInvite {
+  id: string;
+  email: string;
+  name: string;
+  phone: string | null;
+  organization: string | null;
+  role: Role;
+  permissions: string | null;
+  token: string;
+  invitedByUserId: string;
+  invitedByName: string | null;
+  createdAt: string;
+  expiresAt: string;
+  acceptedAt: string | null;
+  revokedAt: string | null;
 }
 
 export interface Tournament {
@@ -151,10 +201,30 @@ export const Users = {
   // setAccentColor/setTheme below): that default is baked in at CREATE
   // TABLE time and doesn't move just because schema.sql's text changes, so
   // every call site names the role it actually wants.
-  async create(email: string, passwordHash: string, name: string, role: Role): Promise<User> {
-    const user: User = { id: uid(), email, passwordHash, name, role, createdAt: nowIso() };
+  async create(
+    email: string,
+    passwordHash: string,
+    name: string,
+    role: Role,
+    extra: { status?: string; permissions?: string | null; organization?: string | null; phone?: string | null; invitedByUserId?: string | null } = {}
+  ): Promise<User> {
+    const user: User = {
+      id: uid(),
+      email,
+      passwordHash,
+      name,
+      role,
+      status: extra.status ?? "ACTIVE",
+      permissions: extra.permissions ?? null,
+      organization: extra.organization ?? null,
+      phone: extra.phone ?? null,
+      lastSignInAt: null,
+      invitedByUserId: extra.invitedByUserId ?? null,
+      createdAt: nowIso(),
+    };
     await run(
-      `INSERT INTO users (id, email, passwordHash, name, role, createdAt) VALUES ($id,$email,$passwordHash,$name,$role,$createdAt)`,
+      `INSERT INTO users (id, email, passwordHash, name, role, status, permissions, organization, phone, invitedByUserId, createdAt)
+       VALUES ($id,$email,$passwordHash,$name,$role,$status,$permissions,$organization,$phone,$invitedByUserId,$createdAt)`,
       user as any
     );
     return user;
@@ -170,9 +240,173 @@ export const Users = {
   // to count them.
   async countsByRole(): Promise<Record<Role, number>> {
     const rows = await all<{ role: Role; n: number }>(`SELECT role, COUNT(*) AS n FROM users GROUP BY role`);
-    const counts: Record<Role, number> = { ADMIN: 0, ORGANIZER: 0, TEAM_MANAGER: 0, PLAYER: 0 };
+    const counts: Record<Role, number> = { ADMIN: 0, ORGANIZER: 0, REFEREE: 0, TEAM_MANAGER: 0, PLAYER: 0 };
     for (const row of rows) counts[row.role] = Number(row.n);
     return counts;
+  },
+  // Explicit columns, never SELECT *: this feeds the admin user table, and a
+  // wildcard would pull every account's password hash across the process
+  // boundary to render a list of names.
+  async listAll(): Promise<UserSummary[]> {
+    return all<UserSummary>(
+      `SELECT id, email, name, role, status, permissions, organization, phone, lastSignInAt, invitedByUserId, createdAt
+         FROM users ORDER BY createdAt DESC`
+    );
+  },
+  async setRoleAndPermissions(
+    id: string,
+    role: Role,
+    permissions: string | null,
+    organization: string | null
+  ): Promise<void> {
+    await run(
+      `UPDATE users SET role = $role, permissions = $permissions, organization = $organization WHERE id = $id`,
+      { $id: id, $role: role, $permissions: permissions, $organization: organization } as any
+    );
+  },
+  async setStatus(id: string, status: string): Promise<void> {
+    await run(`UPDATE users SET status = $status WHERE id = $id`, { $id: id, $status: status } as any);
+  },
+  async touchSignIn(id: string): Promise<void> {
+    await run(`UPDATE users SET lastSignInAt = $at WHERE id = $id`, { $id: id, $at: nowIso() } as any);
+  },
+  async countActiveAdmins(excludeId?: string): Promise<number> {
+    const row = await get<{ n: number }>(
+      // The ::text casts are load-bearing: Postgres cannot infer a bare
+      // parameter's type inside IS NULL, and without them this throws
+      // "could not determine data type of parameter $1" — which surfaced to
+      // the admin as a database error where a plain refusal belonged.
+      `SELECT COUNT(*) AS n FROM users WHERE role = 'ADMIN' AND status = 'ACTIVE' AND ($exclude::text IS NULL OR id <> $exclude::text)`,
+      { $exclude: excludeId ?? null } as any
+    );
+    return Number(row?.n ?? 0);
+  },
+};
+
+// ---------- Staff invitations ----------
+
+const INVITE_COLUMNS = `id, email, name, phone, organization, role, permissions, token, invitedByUserId, invitedByName, createdAt, expiresAt, acceptedAt, revokedAt`;
+
+export const UserInvites = {
+  async create(input: {
+    email: string;
+    name: string;
+    phone?: string | null;
+    organization?: string | null;
+    role: Role;
+    permissions: string | null;
+    invitedByUserId: string;
+    invitedByName: string | null;
+    ttlDays?: number;
+  }): Promise<UserInvite> {
+    // A longer token than generateToken()'s 10 chars. That one guards a crest
+    // upload; this one can mint an account with a role attached, so it gets
+    // ~190 bits instead of ~59 — the cost is a longer URL and nothing else.
+    const mint = () => {
+      const bytes = randomBytes(32);
+      let out = "";
+      for (const byte of bytes) out += BASE62[byte % BASE62.length];
+      return out;
+    };
+    let token = mint();
+    while (await UserInvites.byToken(token)) token = mint();
+    const now = new Date();
+    const expires = new Date(now);
+    expires.setDate(expires.getDate() + (input.ttlDays ?? 14));
+    const invite: UserInvite = {
+      id: uid(),
+      email: input.email,
+      name: input.name,
+      phone: input.phone ?? null,
+      organization: input.organization ?? null,
+      role: input.role,
+      permissions: input.permissions,
+      token,
+      invitedByUserId: input.invitedByUserId,
+      invitedByName: input.invitedByName,
+      createdAt: now.toISOString(),
+      expiresAt: expires.toISOString(),
+      acceptedAt: null,
+      revokedAt: null,
+    };
+    await run(
+      `INSERT INTO user_invites (${INVITE_COLUMNS})
+       VALUES ($id,$email,$name,$phone,$organization,$role,$permissions,$token,$invitedByUserId,$invitedByName,$createdAt,$expiresAt,NULL,NULL)`,
+      invite as any
+    );
+    return invite;
+  },
+  async byToken(token: string): Promise<UserInvite | undefined> {
+    return get<UserInvite>(`SELECT ${INVITE_COLUMNS} FROM user_invites WHERE token = $token`, { $token: token } as any);
+  },
+  async byId(id: string): Promise<UserInvite | undefined> {
+    return get<UserInvite>(`SELECT ${INVITE_COLUMNS} FROM user_invites WHERE id = $id`, { $id: id } as any);
+  },
+  /** Still claimable: not accepted, not revoked, not expired. */
+  async listPending(): Promise<UserInvite[]> {
+    return all<UserInvite>(
+      `SELECT ${INVITE_COLUMNS} FROM user_invites
+        WHERE acceptedAt IS NULL AND revokedAt IS NULL AND expiresAt > $now
+        ORDER BY createdAt DESC`,
+      { $now: nowIso() } as any
+    );
+  },
+  async listAll(limit = 200): Promise<UserInvite[]> {
+    return all<UserInvite>(`SELECT ${INVITE_COLUMNS} FROM user_invites ORDER BY createdAt DESC LIMIT $limit`, {
+      $limit: limit,
+    } as any);
+  },
+  async markAccepted(id: string): Promise<void> {
+    await run(`UPDATE user_invites SET acceptedAt = $at WHERE id = $id`, { $id: id, $at: nowIso() } as any);
+  },
+  async revoke(id: string): Promise<void> {
+    await run(`UPDATE user_invites SET revokedAt = $at WHERE id = $id`, { $id: id, $at: nowIso() } as any);
+  },
+};
+
+// ---------- Tournament staff assignment ----------
+
+export const TournamentStaff = {
+  async assign(tournamentId: string, userId: string): Promise<void> {
+    await run(
+      `INSERT INTO tournament_staff (id, tournamentId, userId, createdAt)
+       VALUES ($id,$tournamentId,$userId,$createdAt)
+       ON CONFLICT (tournamentId, userId) DO NOTHING`,
+      { $id: uid(), $tournamentId: tournamentId, $userId: userId, $createdAt: nowIso() } as any
+    );
+  },
+  async unassign(tournamentId: string, userId: string): Promise<void> {
+    await run(`DELETE FROM tournament_staff WHERE tournamentId = $tournamentId AND userId = $userId`, {
+      $tournamentId: tournamentId,
+      $userId: userId,
+    } as any);
+  },
+  async isAssigned(tournamentId: string, userId: string): Promise<boolean> {
+    const row = await get<{ id: string }>(
+      `SELECT id FROM tournament_staff WHERE tournamentId = $tournamentId AND userId = $userId`,
+      { $tournamentId: tournamentId, $userId: userId } as any
+    );
+    return Boolean(row);
+  },
+  async listTournamentIdsForUser(userId: string): Promise<string[]> {
+    const rows = await all<{ tournamentId: string }>(
+      `SELECT tournamentId FROM tournament_staff WHERE userId = $userId`,
+      { $userId: userId } as any
+    );
+    return rows.map((r) => r.tournamentId);
+  },
+  async countsByUser(): Promise<Map<string, number>> {
+    const rows = await all<{ userId: string; n: number }>(
+      `SELECT userId, COUNT(*) AS n FROM tournament_staff GROUP BY userId`
+    );
+    return new Map(rows.map((r) => [r.userId, Number(r.n)]));
+  },
+  /** Moves every assignment from one staff member to another — a handover. */
+  async transferAll(fromUserId: string, toUserId: string): Promise<number> {
+    const ids = await TournamentStaff.listTournamentIdsForUser(fromUserId);
+    for (const tournamentId of ids) await TournamentStaff.assign(tournamentId, toUserId);
+    await run(`DELETE FROM tournament_staff WHERE userId = $userId`, { $userId: fromUserId } as any);
+    return ids.length;
   },
 };
 

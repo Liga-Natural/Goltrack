@@ -608,6 +608,98 @@
   border-width: 1px;
   border-style: solid;
 }
+/* Role tags. One hue per role, held constant across both themes so a row in
+   a long user table is identifiable by colour before it is read. Literal
+   values for the same reason the status badges above are: these are semantic,
+   so they must not invert with the theme — only lift or deepen for contrast.
+   Declared as a closed set rather than assembled inline, so adding a sixth
+   role is a deliberate edit here (see lib/permissions.ts). */
+.role-admin,
+.role-director,
+.role-referee,
+.role-manager,
+.role-player {
+  border-width: 1px;
+  border-style: solid;
+}
+.role-admin {
+  background-color: rgb(244 63 94 / 0.12);
+  border-color: rgb(244 63 94 / 0.35);
+  color: rgb(190 18 60);
+}
+[data-theme="dark"] .role-admin {
+  color: rgb(253 164 175);
+  box-shadow: 0 0 15px rgb(244 63 94 / 0.18);
+}
+.role-director {
+  background-color: rgb(139 92 246 / 0.12);
+  border-color: rgb(139 92 246 / 0.35);
+  color: rgb(109 40 217);
+}
+[data-theme="dark"] .role-director {
+  color: rgb(196 181 253);
+  box-shadow: 0 0 15px rgb(139 92 246 / 0.18);
+}
+.role-referee {
+  background-color: rgb(245 158 11 / 0.12);
+  border-color: rgb(245 158 11 / 0.35);
+  color: rgb(180 83 9);
+}
+[data-theme="dark"] .role-referee {
+  color: rgb(252 211 77);
+  box-shadow: 0 0 15px rgb(245 158 11 / 0.18);
+}
+.role-manager {
+  background-color: rgb(14 165 233 / 0.12);
+  border-color: rgb(14 165 233 / 0.35);
+  color: rgb(3 105 161);
+}
+[data-theme="dark"] .role-manager {
+  color: rgb(125 211 252);
+  box-shadow: 0 0 15px rgb(14 165 233 / 0.18);
+}
+/* Deliberately the quiet one: players are the bulk of the table, and five
+   glowing colours competing at once makes none of them scannable. */
+.role-player {
+  background-color: rgb(113 113 122 / 0.12);
+  border-color: rgb(113 113 122 / 0.3);
+  color: rgb(82 82 91);
+}
+[data-theme="dark"] .role-player {
+  color: rgb(212 212 216);
+}
+
+/* Opting back in on the light theme, exactly as .badge-live has to above.
+   `[data-theme="light"] .badge` sets a flat white pill at specificity (0,2,0),
+   which outranks a bare `.role-admin` at (0,1,0) — so without these the tags
+   render as identical grey pills on paper-white and the colour coding, which
+   is the whole point of them, silently disappears in one theme. */
+[data-theme="light"] .role-admin {
+  background-color: rgb(244 63 94 / 0.12);
+  border-color: rgb(244 63 94 / 0.35);
+  color: rgb(190 18 60);
+}
+[data-theme="light"] .role-director {
+  background-color: rgb(139 92 246 / 0.12);
+  border-color: rgb(139 92 246 / 0.35);
+  color: rgb(109 40 217);
+}
+[data-theme="light"] .role-referee {
+  background-color: rgb(245 158 11 / 0.14);
+  border-color: rgb(245 158 11 / 0.4);
+  color: rgb(146 64 14);
+}
+[data-theme="light"] .role-manager {
+  background-color: rgb(14 165 233 / 0.12);
+  border-color: rgb(14 165 233 / 0.35);
+  color: rgb(3 105 161);
+}
+[data-theme="light"] .role-player {
+  background-color: rgb(113 113 122 / 0.12);
+  border-color: rgb(113 113 122 / 0.3);
+  color: rgb(82 82 91);
+}
+
 .badge-accepted {
   background-color: rgb(16 185 129 / 0.1);
   border-color: rgb(16 185 129 / 0.3);

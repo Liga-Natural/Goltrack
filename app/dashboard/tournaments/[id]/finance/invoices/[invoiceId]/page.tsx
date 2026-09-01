@@ -23,12 +23,20 @@ import { InvoiceActions } from "@/components/InvoiceActions";
 import { InvoicePaper } from "@/components/InvoicePaper";
 import { InvoiceDocument } from "@/components/InvoiceDocument";
 import { setInstallmentPaid, setTeamWaiverReceived } from "@/lib/actions";
+import { getCurrentUser } from "@/lib/auth";
+import { can } from "@/lib/permissions";
 
 export default async function InvoiceDetailPage({
   params,
 }: {
   params: { id: string; invoiceId: string };
 }) {
+  const viewer = await getCurrentUser();
+  // The server refuses these actions regardless (see requireInvoice in
+  // lib/actions.ts). Hiding them here just stops the UI offering a staff
+  // member buttons that can only fail.
+  const canFinance = can(viewer, "FINANCE");
+
   const tournament = await Tournaments.byId(params.id);
   if (!tournament) notFound();
 
@@ -110,6 +118,7 @@ export default async function InvoiceDetailPage({
         </div>
       </div>
 
+      {canFinance ? (
       <div className="card p-5 sm:p-6 no-print">
         <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-ink2 mb-4">Actions</h2>
         <InvoiceActions
@@ -119,6 +128,14 @@ export default async function InvoiceDetailPage({
           suggestedAmount={(Math.max(0, totals.balanceCents) / 100).toFixed(2)}
         />
       </div>
+      ) : (
+        <div className="card p-5 sm:p-6 no-print">
+          <p className="text-sm text-ink2">
+            Your account has read-only access to this invoice. Recording payments, discounts and refunds needs
+            financial access, which a super admin grants from Accounts.
+          </p>
+        </div>
+      )}
 
       {/* Billed party + event */}
       <div className="grid sm:grid-cols-2 gap-4 no-print">

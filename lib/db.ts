@@ -191,6 +191,21 @@ async function runMigrations(pool: Pool) {
   // untidiness. The index is what enforces it: lib/invoices.ts only proposes
   // the next number, and a collision between two simultaneous issuers has to
   // fail loudly here instead of producing a duplicate.
+  // Account administration. status defaults to ACTIVE so every account that
+  // predates this column keeps working exactly as it did; permissions stays
+  // NULL, which lib/permissions.ts reads as "this role's defaults" rather
+  // than as an empty grant.
+  await ensureColumn(pool, "users", "status", "status TEXT NOT NULL DEFAULT 'ACTIVE'");
+  await ensureColumn(pool, "users", "permissions", "permissions TEXT");
+  await ensureColumn(pool, "users", "organization", "organization TEXT");
+  await ensureColumn(pool, "users", "phone", "phone TEXT");
+  await ensureColumn(pool, "users", "lastsigninat", "lastSignInAt TEXT");
+  await ensureColumn(pool, "users", "invitedbyuserid", "invitedByUserId TEXT");
+  // An invite token is a bearer credential — two invites sharing one would let
+  // the wrong person claim the wrong role.
+  await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_user_invites_token ON user_invites(token);`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_tournament_staff_user ON tournament_staff(userId);`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_tournament_staff_tournament ON tournament_staff(tournamentId);`);
   await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_invoices_number ON invoices(number);`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_invoices_tournament ON invoices(tournamentId);`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice ON invoice_items(invoiceId);`);
@@ -229,8 +244,14 @@ export function nowIso(): string {
 const CAMEL_CASE_COLUMNS: Record<string, string> = {
   accentcolor: "accentColor",
   advancepergroup: "advancePerGroup",
+  acceptedat: "acceptedAt",
   amountcents: "amountCents",
   applicationid: "applicationId",
+  expiresat: "expiresAt",
+  invitedbyname: "invitedByName",
+  invitedbyuserid: "invitedByUserId",
+  lastsigninat: "lastSignInAt",
+  revokedat: "revokedAt",
   billtoclub: "billToClub",
   billtocontact: "billToContact",
   billtoemail: "billToEmail",

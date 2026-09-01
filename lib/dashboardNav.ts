@@ -19,6 +19,7 @@ export const tournamentNav = [
 export const adminNav = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/inbox", label: "Inbox" },
+  { href: "/admin/users", label: "Accounts" },
   { href: "/admin/tournaments", label: "All tournaments" },
 ];
 

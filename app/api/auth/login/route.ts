@@ -19,6 +19,15 @@ export async function POST(req: NextRequest) {
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
     return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
   }
+  // Checked only after the password verifies, so this cannot be used to probe
+  // which addresses belong to suspended accounts.
+  if (user.status === "SUSPENDED") {
+    return NextResponse.json(
+      { error: "This account has been suspended. Contact your administrator." },
+      { status: 403 }
+    );
+  }
+  await Users.touchSignIn(user.id);
   const token = await createSessionToken(user.id);
   const res = NextResponse.json({ ok: true, role: user.role });
   res.cookies.set(sessionCookieName(), token, {
