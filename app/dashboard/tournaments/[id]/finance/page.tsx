@@ -1,5 +1,8 @@
-import { Tournaments, Teams, Applications } from "@/lib/models";
+import Link from "next/link";
+import { Tournaments, Teams, Applications, Invoices } from "@/lib/models";
 import { TeamBadge } from "@/components/TeamBadge";
+import { deriveStatus, invoiceStatusClass, money as fullMoney, formatDate } from "@/lib/invoices";
+import { generateInvoices, setTeamWaiverReceived } from "@/lib/actions";
 
 const money = (cents: number) =>
   `$${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
@@ -15,9 +18,13 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: str
 
 export default async function FinancePage({ params }: { params: { id: string } }) {
   const tournament = (await Tournaments.byId(params.id))!;
-  const [allTeams, applications] = await Promise.all([
+  const [allTeams, applications, invoices, invoiceTotals] = await Promise.all([
     Teams.listByTournament(params.id),
     Applications.listByTournament(params.id),
+    Invoices.listByTournament(params.id),
+    // One grouped query per figure rather than three queries per invoice —
+    // a 40-team event would otherwise open 120 round trips to render a list.
+    Invoices.totalsByTournament(params.id),
   ]);
   const teams = allTeams.filter((t) => t.name);
 
@@ -108,15 +115,108 @@ export default async function FinancePage({ params }: { params: { id: string } }
         )}
       </div>
 
-      {/* Named rather than mocked. Waivers are a real PlayMetrics feature and
-          a real gap here: there is no forms or documents table, so any
-          "collected vs missing" tracker would be decoration with nothing
-          behind it. */}
+      {/* Invoices */}
       <div className="card p-5 sm:p-6">
-        <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-ink2 mb-2">Waivers &amp; forms</h2>
-        <p className="text-sm text-ink2">
-          Not built. Tracking club waivers needs a documents table and a per-registration checklist — there is nothing
-          in the schema to read, so this is left empty rather than shown as a tracker that always says zero.
+        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-ink2">Invoices</h2>
+          <form action={generateInvoices.bind(null, tournament.id)}>
+            <button type="submit" className="btn-secondary text-xs">
+              {invoices.length === 0 ? "Raise invoices" : "Raise any missing"}
+            </button>
+          </form>
+        </div>
+
+        {invoices.length === 0 ? (
+          <p className="text-sm text-ink2 py-6 text-center">
+            No invoices raised yet. Raising them creates one per entrant at the {money(fee)} entry fee, numbered
+            INV-{new Date().getFullYear()}-0001 onward.
+          </p>
+        ) : (
+          <div className="divide-y divide-lineSoft">
+            {invoices.map((inv) => {
+              const roll = invoiceTotals.get(inv.id) ?? { chargedCents: 0, paidCents: 0 };
+              // Same shape computeTotals returns, built from the grouped
+              // query so the badge here agrees with the invoice page.
+              const grand = Math.max(0, roll.chargedCents - inv.discountCents + inv.processingFeeCents);
+              const totals = {
+                subtotalCents: roll.chargedCents,
+                lineDiscountCents: 0,
+                invoiceDiscountCents: inv.discountCents,
+                discountCents: inv.discountCents,
+                processingFeeCents: inv.processingFeeCents,
+                grandTotalCents: grand,
+                netPaidCents: roll.paidCents,
+                paymentsInCents: roll.paidCents,
+                refundsCents: 0,
+                balanceCents: grand - roll.paidCents,
+              };
+              const status = deriveStatus(totals, inv.dueAt);
+              return (
+                <Link
+                  key={inv.id}
+                  href={`/dashboard/tournaments/${tournament.id}/finance/invoices/${inv.id}`}
+                  className="flex items-center gap-3 py-3 hover:opacity-80 transition-opacity"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold truncate">
+                      <span className="font-score text-ink2 mr-2">{inv.number}</span>
+                      {inv.billToClub}
+                    </p>
+                    <p className="text-xs text-ink3 truncate">
+                      Due {formatDate(inv.dueAt)}
+                      {inv.division ? ` · ${inv.division}` : ""}
+                    </p>
+                  </div>
+                  <span className="font-score text-sm text-inkDisplay shrink-0">
+                    {fullMoney(totals.balanceCents)}
+                  </span>
+                  <span className={`badge ${invoiceStatusClass[status]} text-[10px] shrink-0`}>{status}</span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Was "not built" until this release: waivers now have somewhere to
+          live (teams.waiverReceivedAt). What is tracked is deliberately
+          narrow — the organizer confirming they hold the paperwork — because
+          Jogo still stores no documents and collects no signatures. */}
+      <div className="card p-5 sm:p-6">
+        <div className="flex items-baseline justify-between gap-3 mb-4 flex-wrap">
+          <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-ink2">Waivers &amp; forms</h2>
+          <p className="text-xs text-ink2">
+            <span className="text-inkDisplay font-score">{teams.filter((t) => t.waiverReceivedAt).length}</span> of{" "}
+            {teams.length} on file
+          </p>
+        </div>
+        {teams.length === 0 ? (
+          <p className="text-sm text-ink2 py-6 text-center">No entrants yet.</p>
+        ) : (
+          <div className="divide-y divide-lineSoft">
+            {teams.map((t) => (
+              <div key={t.id} className="flex items-center gap-3 py-2.5">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold truncate">{t.name}</p>
+                  <p className="text-xs text-ink3">
+                    {t.waiverReceivedAt ? `Received ${formatDate(t.waiverReceivedAt)}` : "Not received"}
+                  </p>
+                </div>
+                <form action={setTeamWaiverReceived.bind(null, tournament.id, t.id, !t.waiverReceivedAt)}>
+                  <button
+                    type="submit"
+                    className={`text-[11px] px-2.5 py-1.5 ${t.waiverReceivedAt ? "btn-ghost" : "btn-secondary"}`}
+                  >
+                    {t.waiverReceivedAt ? "Clear" : "Mark received"}
+                  </button>
+                </form>
+              </div>
+            ))}
+          </div>
+        )}
+        <p className="text-[11px] text-ink3 mt-4 pt-4 border-t border-lineSoft">
+          This records that you hold a club’s paperwork and when you confirmed it. Jogo does not store the documents
+          themselves or capture signatures — collecting those needs a document store this app does not have.
         </p>
       </div>
     </div>

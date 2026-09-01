@@ -94,6 +94,7 @@ export interface Team {
   inviteToken: string | null; // set while the slot is an unclaimed invite link, cleared on claim
   invitedAt: string | null;
   userId: string | null; // the team manager account, if the team registered with a password
+  waiverReceivedAt: string | null; // organizer-recorded "paperwork is on file"; Jogo does not collect signatures
   createdAt: string;
 }
 
@@ -236,13 +237,13 @@ function generateToken(): string {
 // disk for a team list or lookup that only needs metadata. hasCrest is a
 // cheap computed flag; the actual bytes are only ever fetched by
 // Teams.crestBytes(), used solely by the image-serving API route.
-const TEAM_COLUMNS = `id, tournamentId, name, contactName, contactEmail, groupName, logoUrl, crestMimeType, crestUpdatedAt, (crestBlob IS NOT NULL) AS hasCrest, logoToken, paid, checkedIn, inviteToken, invitedAt, userId, createdAt`;
+const TEAM_COLUMNS = `id, tournamentId, name, contactName, contactEmail, groupName, logoUrl, crestMimeType, crestUpdatedAt, (crestBlob IS NOT NULL) AS hasCrest, logoToken, paid, checkedIn, inviteToken, invitedAt, userId, waiverReceivedAt, createdAt`;
 
 export const Teams = {
   async create(
     input: Omit<
       Team,
-      "id" | "createdAt" | "paid" | "checkedIn" | "groupName" | "logoUrl" | "crestMimeType" | "crestUpdatedAt" | "hasCrest" | "logoToken" | "inviteToken" | "invitedAt" | "userId"
+      "id" | "createdAt" | "paid" | "checkedIn" | "groupName" | "logoUrl" | "crestMimeType" | "crestUpdatedAt" | "hasCrest" | "logoToken" | "inviteToken" | "invitedAt" | "userId" | "waiverReceivedAt"
     > & {
       paid?: boolean;
       groupName?: string | null;
@@ -335,6 +336,15 @@ export const Teams = {
   },
   async setCheckedIn(id: string, checkedIn: boolean): Promise<void> {
     await run(`UPDATE teams SET checkedIn = $checkedIn WHERE id = $id`, { $id: id, $checkedIn: checkedIn ? 1 : 0 } as any);
+  },
+  // Stores the moment the organizer confirmed the club's paperwork, not a
+  // boolean: "received on 3 Feb" is what makes the record worth anything if
+  // it is ever questioned. Clearing sets it back to NULL.
+  async setWaiverReceived(id: string, received: boolean): Promise<void> {
+    await run(`UPDATE teams SET waiverReceivedAt = $at WHERE id = $id`, {
+      $id: id,
+      $at: received ? nowIso() : null,
+    } as any);
   },
   // Retrofits a logoToken onto a team that predates this feature (created
   // before the migration, or seeded via demo-seed.ts's raw INSERT). Called
@@ -539,7 +549,49 @@ export const SiteSettings = {
       { $id: SITE_SETTINGS_ID, $theme: theme, $accentColor: DEFAULT_ACCENT_COLOR, $updatedAt: nowIso() } as any
     );
   },
+  // The legal identity printed on an invoice. Nulls are meaningful and are
+  // never papered over with a plausible-looking placeholder: an invoice
+  // showing an invented address or tax ID would be a document someone files
+  // with their accounts, so the print view says the field is unset instead.
+  async getBusiness(): Promise<BusinessIdentity> {
+    try {
+      const row = await get<BusinessIdentity>(
+        `SELECT businessName, businessAddress, taxId FROM site_settings WHERE id = $id`,
+        { $id: SITE_SETTINGS_ID } as any
+      );
+      return {
+        businessName: row?.businessName || null,
+        businessAddress: row?.businessAddress || null,
+        taxId: row?.taxId || null,
+      };
+    } catch {
+      return { businessName: null, businessAddress: null, taxId: null };
+    }
+  },
+  async setBusiness(input: BusinessIdentity): Promise<void> {
+    await run(
+      `INSERT INTO site_settings (id, businessName, businessAddress, taxId, accentColor, theme, updatedAt)
+       VALUES ($id,$businessName,$businessAddress,$taxId,$accentColor,$theme,$updatedAt)
+       ON CONFLICT(id) DO UPDATE SET businessName = excluded.businessName, businessAddress = excluded.businessAddress,
+                                     taxId = excluded.taxId, updatedAt = excluded.updatedAt`,
+      {
+        $id: SITE_SETTINGS_ID,
+        $businessName: input.businessName,
+        $businessAddress: input.businessAddress,
+        $taxId: input.taxId,
+        $accentColor: DEFAULT_ACCENT_COLOR,
+        $theme: DEFAULT_THEME,
+        $updatedAt: nowIso(),
+      } as any
+    );
+  },
 };
+
+export interface BusinessIdentity {
+  businessName: string | null;
+  businessAddress: string | null;
+  taxId: string | null;
+}
 
 // ---------- Referees ----------
 
@@ -698,6 +750,254 @@ export const Applications = {
     });
   },
 };
+
+// ---------- Invoices ----------
+
+export interface Invoice {
+  id: string;
+  number: string;
+  tournamentId: string;
+  teamId: string | null;
+  applicationId: string | null;
+  // Snapshotted at issue time. An invoice has to keep saying who was billed
+  // even after the club renames itself or the manager's email changes.
+  billToClub: string;
+  billToContact: string;
+  billToEmail: string;
+  billToPhone: string | null;
+  division: string | null;
+  teamCount: number;
+  issuedAt: string;
+  dueAt: string;
+  discountCode: string | null;
+  discountCents: number;
+  processingFeeCents: number;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface InvoiceItem {
+  id: string;
+  invoiceId: string;
+  description: string;
+  quantity: number;
+  unitPriceCents: number;
+  discountCents: number;
+  orderIndex: number;
+}
+
+export type PaymentMethod = "CASH" | "CHECK" | "TRANSFER" | "CARD" | "OTHER" | "REFUND" | "ADJUSTMENT";
+
+export interface InvoicePayment {
+  id: string;
+  invoiceId: string;
+  /** Negative for refunds and write-off adjustments — see schema.sql. */
+  amountCents: number;
+  method: PaymentMethod;
+  reference: string | null;
+  note: string | null;
+  recordedByName: string | null;
+  recordedAt: string;
+}
+
+export interface InvoiceInstallment {
+  id: string;
+  invoiceId: string;
+  label: string;
+  amountCents: number;
+  dueAt: string;
+  paidAt: string | null;
+  orderIndex: number;
+}
+
+const INVOICE_COLUMNS = `id, number, tournamentId, teamId, applicationId, billToClub, billToContact, billToEmail, billToPhone, division, teamCount, issuedAt, dueAt, discountCode, discountCents, processingFeeCents, notes, createdAt`;
+
+export const Invoices = {
+  async create(
+    input: Omit<Invoice, "id" | "createdAt" | "discountCode" | "discountCents" | "processingFeeCents" | "notes"> & {
+      discountCode?: string | null;
+      discountCents?: number;
+      processingFeeCents?: number;
+      notes?: string | null;
+    }
+  ): Promise<Invoice> {
+    const id = uid();
+    await run(
+      `INSERT INTO invoices (id, number, tournamentId, teamId, applicationId, billToClub, billToContact, billToEmail, billToPhone, division, teamCount, issuedAt, dueAt, discountCode, discountCents, processingFeeCents, notes, createdAt)
+       VALUES ($id,$number,$tournamentId,$teamId,$applicationId,$billToClub,$billToContact,$billToEmail,$billToPhone,$division,$teamCount,$issuedAt,$dueAt,$discountCode,$discountCents,$processingFeeCents,$notes,$createdAt)`,
+      {
+        $id: id,
+        $number: input.number,
+        $tournamentId: input.tournamentId,
+        $teamId: input.teamId ?? null,
+        $applicationId: input.applicationId ?? null,
+        $billToClub: input.billToClub,
+        $billToContact: input.billToContact,
+        $billToEmail: input.billToEmail,
+        $billToPhone: input.billToPhone ?? null,
+        $division: input.division ?? null,
+        $teamCount: input.teamCount ?? 1,
+        $issuedAt: input.issuedAt,
+        $dueAt: input.dueAt,
+        $discountCode: input.discountCode ?? null,
+        $discountCents: input.discountCents ?? 0,
+        $processingFeeCents: input.processingFeeCents ?? 0,
+        $notes: input.notes ?? null,
+        $createdAt: nowIso(),
+      } as any
+    );
+    return (await Invoices.byId(id))!;
+  },
+  async byId(id: string): Promise<Invoice | undefined> {
+    return get<Invoice>(`SELECT ${INVOICE_COLUMNS} FROM invoices WHERE id = $id`, { $id: id } as any);
+  },
+  async byTeamId(teamId: string): Promise<Invoice | undefined> {
+    return get<Invoice>(`SELECT ${INVOICE_COLUMNS} FROM invoices WHERE teamId = $teamId ORDER BY createdAt DESC`, {
+      $teamId: teamId,
+    } as any);
+  },
+  async listByTournament(tournamentId: string): Promise<Invoice[]> {
+    return all<Invoice>(
+      `SELECT ${INVOICE_COLUMNS} FROM invoices WHERE tournamentId = $tournamentId ORDER BY issuedAt DESC`,
+      { $tournamentId: tournamentId } as any
+    );
+  },
+  async numbersForYear(year: number): Promise<string[]> {
+    const rows = await all<{ number: string }>(`SELECT number FROM invoices WHERE number LIKE $prefix`, {
+      $prefix: `INV-${year}-%`,
+    } as any);
+    return rows.map((r) => r.number);
+  },
+  async setDiscount(id: string, code: string | null, discountCents: number): Promise<void> {
+    await run(`UPDATE invoices SET discountCode = $code, discountCents = $cents WHERE id = $id`, {
+      $id: id,
+      $code: code,
+      $cents: discountCents,
+    } as any);
+  },
+  async setDue(id: string, dueAt: string): Promise<void> {
+    await run(`UPDATE invoices SET dueAt = $dueAt WHERE id = $id`, { $id: id, $dueAt: dueAt } as any);
+  },
+  // Roll-ups for the finance index, so listing N invoices is three queries
+  // rather than three per invoice. Keyed by invoiceId at the call site.
+  async totalsByTournament(
+    tournamentId: string
+  ): Promise<Map<string, { chargedCents: number; paidCents: number }>> {
+    const charged = await all<{ invoiceId: string; chargedCents: number }>(
+      `SELECT i.id AS invoiceId,
+              COALESCE(SUM(it.quantity * it.unitPriceCents - it.discountCents), 0) AS chargedCents
+         FROM invoices i LEFT JOIN invoice_items it ON it.invoiceId = i.id
+        WHERE i.tournamentId = $tournamentId GROUP BY i.id`,
+      { $tournamentId: tournamentId } as any
+    );
+    const paid = await all<{ invoiceId: string; paidCents: number }>(
+      `SELECT i.id AS invoiceId, COALESCE(SUM(p.amountCents), 0) AS paidCents
+         FROM invoices i LEFT JOIN invoice_payments p ON p.invoiceId = i.id
+        WHERE i.tournamentId = $tournamentId GROUP BY i.id`,
+      { $tournamentId: tournamentId } as any
+    );
+    const paidById = new Map(paid.map((r) => [r.invoiceId, Number(r.paidCents)]));
+    return new Map(
+      charged.map((r) => [
+        r.invoiceId,
+        { chargedCents: Number(r.chargedCents), paidCents: paidById.get(r.invoiceId) ?? 0 },
+      ])
+    );
+  },
+};
+
+export const InvoiceItems = {
+  async create(input: Omit<InvoiceItem, "id">): Promise<InvoiceItem> {
+    const id = uid();
+    await run(
+      `INSERT INTO invoice_items (id, invoiceId, description, quantity, unitPriceCents, discountCents, orderIndex)
+       VALUES ($id,$invoiceId,$description,$quantity,$unitPriceCents,$discountCents,$orderIndex)`,
+      { $id: id, ...prefixed(input) } as any
+    );
+    return { id, ...input };
+  },
+  async listByInvoice(invoiceId: string): Promise<InvoiceItem[]> {
+    return all<InvoiceItem>(
+      `SELECT id, invoiceId, description, quantity, unitPriceCents, discountCents, orderIndex
+         FROM invoice_items WHERE invoiceId = $invoiceId ORDER BY orderIndex ASC`,
+      { $invoiceId: invoiceId } as any
+    );
+  },
+};
+
+export const InvoicePayments = {
+  async create(input: Omit<InvoicePayment, "id" | "recordedAt">): Promise<InvoicePayment> {
+    const id = uid();
+    const recordedAt = nowIso();
+    await run(
+      `INSERT INTO invoice_payments (id, invoiceId, amountCents, method, reference, note, recordedByName, recordedAt)
+       VALUES ($id,$invoiceId,$amountCents,$method,$reference,$note,$recordedByName,$recordedAt)`,
+      {
+        $id: id,
+        $invoiceId: input.invoiceId,
+        $amountCents: input.amountCents,
+        $method: input.method,
+        $reference: input.reference ?? null,
+        $note: input.note ?? null,
+        $recordedByName: input.recordedByName ?? null,
+        $recordedAt: recordedAt,
+      } as any
+    );
+    return { id, recordedAt, ...input };
+  },
+  async listByInvoice(invoiceId: string): Promise<InvoicePayment[]> {
+    return all<InvoicePayment>(
+      `SELECT id, invoiceId, amountCents, method, reference, note, recordedByName, recordedAt
+         FROM invoice_payments WHERE invoiceId = $invoiceId ORDER BY recordedAt ASC`,
+      { $invoiceId: invoiceId } as any
+    );
+  },
+};
+
+export const InvoiceInstallments = {
+  async replaceForInvoice(
+    invoiceId: string,
+    plan: { label: string; amountCents: number; dueAt: string }[]
+  ): Promise<void> {
+    // A payment plan is rebuilt whole rather than diffed: the schedule is
+    // meaningless in halves, and a failed diff would leave an invoice whose
+    // instalments no longer sum to its total.
+    await run(`DELETE FROM invoice_installments WHERE invoiceId = $invoiceId`, { $invoiceId: invoiceId } as any);
+    for (let i = 0; i < plan.length; i++) {
+      await run(
+        `INSERT INTO invoice_installments (id, invoiceId, label, amountCents, dueAt, paidAt, orderIndex)
+         VALUES ($id,$invoiceId,$label,$amountCents,$dueAt,NULL,$orderIndex)`,
+        {
+          $id: uid(),
+          $invoiceId: invoiceId,
+          $label: plan[i].label,
+          $amountCents: plan[i].amountCents,
+          $dueAt: plan[i].dueAt,
+          $orderIndex: i,
+        } as any
+      );
+    }
+  },
+  async listByInvoice(invoiceId: string): Promise<InvoiceInstallment[]> {
+    return all<InvoiceInstallment>(
+      `SELECT id, invoiceId, label, amountCents, dueAt, paidAt, orderIndex
+         FROM invoice_installments WHERE invoiceId = $invoiceId ORDER BY orderIndex ASC`,
+      { $invoiceId: invoiceId } as any
+    );
+  },
+  async setPaid(id: string, paid: boolean): Promise<void> {
+    await run(`UPDATE invoice_installments SET paidAt = $at WHERE id = $id`, {
+      $id: id,
+      $at: paid ? nowIso() : null,
+    } as any);
+  },
+};
+
+// The $-prefixed params object the db layer expects, built from a plain
+// record so an insert doesn't have to restate every field twice.
+function prefixed(input: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(input).map(([k, v]) => [`$${k}`, v ?? null]));
+}
 
 export const ApplicationMessages = {
   async create(input: Omit<ApplicationMessage, "id" | "createdAt" | "status">): Promise<ApplicationMessage> {

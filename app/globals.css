@@ -513,7 +513,58 @@
    Backgrounds are forced off and text to black because the glass palette
    inverts under the dark theme: without this, a referee gets a sheet of
    near-white ink on white paper. */
+/* The paper invoice is mounted in the page but hidden on screen: printing is
+   what reveals it, and the preview modal renders the very same markup on a
+   white sheet so what you check is what comes out. */
+.invoice-paper {
+  display: none;
+}
+
 @media print {
+  /* The sheet's own margin. The document drops its screen padding below and
+     relies on this instead, so the text sits inside the printer's usable area
+     rather than in the strip most hardware physically cannot reach. */
+  @page {
+    margin: 14mm;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .invoice-paper {
+    display: block !important;
+  }
+  /* Everything that is not the document gets out of the way. The preview
+     modal drops its scrim and its fixed positioning so the sheet flows onto
+     the page instead of being pinned to one viewport-sized frame. */
+  .invoice-preview {
+    position: static !important;
+    overflow: visible !important;
+    background: none !important;
+  }
+  .invoice-sheet {
+    box-shadow: none !important;
+    max-width: none !important;
+  }
+  .invoice-doc {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+  /* Colour is forced through: a table rule that a browser helpfully drops in
+     print turns an itemised invoice into an unreadable column of numbers. */
+  .invoice-doc,
+  .invoice-doc * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .invoice-doc table {
+    page-break-inside: auto;
+  }
+  .invoice-doc tr {
+    page-break-inside: avoid;
+  }
+  .invoice-doc thead {
+    display: table-header-group;
+  }
   aside {
     display: none !important;
   }

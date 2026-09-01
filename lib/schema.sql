@@ -148,6 +148,73 @@ CREATE TABLE IF NOT EXISTS applications (
   decidedAt TEXT
 );
 
+-- An invoice raised against one entrant. The billed party is snapshotted
+-- onto the row at issue time rather than joined from teams/applications on
+-- every read: an invoice is an accounting record, and it must still say who
+-- was billed and at what address after the club renames itself or the
+-- manager's email changes. Money that can be derived is never stored --
+-- there is no total column here, because a stored total can disagree with
+-- its own line items (see lib/invoices.ts).
+CREATE TABLE IF NOT EXISTS invoices (
+  id TEXT PRIMARY KEY,
+  number TEXT NOT NULL,
+  tournamentId TEXT NOT NULL,
+  teamId TEXT,
+  applicationId TEXT,
+  billToClub TEXT NOT NULL,
+  billToContact TEXT NOT NULL,
+  billToEmail TEXT NOT NULL,
+  billToPhone TEXT,
+  division TEXT,
+  teamCount INTEGER NOT NULL DEFAULT 1,
+  issuedAt TEXT NOT NULL,
+  dueAt TEXT NOT NULL,
+  discountCode TEXT,
+  discountCents INTEGER NOT NULL DEFAULT 0,
+  processingFeeCents INTEGER NOT NULL DEFAULT 0,
+  notes TEXT,
+  createdAt TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS invoice_items (
+  id TEXT PRIMARY KEY,
+  invoiceId TEXT NOT NULL,
+  description TEXT NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  unitPriceCents INTEGER NOT NULL DEFAULT 0,
+  discountCents INTEGER NOT NULL DEFAULT 0,
+  orderIndex INTEGER NOT NULL DEFAULT 0
+);
+
+-- The audit trail. Refunds and write-off adjustments are stored as negative
+-- amounts in this same table rather than as their own kind of record, so the
+-- balance is always one sum over one list and a refund can never be silently
+-- left out of it.
+CREATE TABLE IF NOT EXISTS invoice_payments (
+  id TEXT PRIMARY KEY,
+  invoiceId TEXT NOT NULL,
+  amountCents INTEGER NOT NULL,
+  method TEXT NOT NULL,
+  reference TEXT,
+  note TEXT,
+  recordedByName TEXT,
+  recordedAt TEXT NOT NULL
+);
+
+-- A split-payment schedule. These are amounts due on dates, recorded so an
+-- organizer can chase them; nothing here debits anybody, because Jogo has no
+-- payment gateway connected (see the finance UI, which says so plainly
+-- rather than implying a card is on file).
+CREATE TABLE IF NOT EXISTS invoice_installments (
+  id TEXT PRIMARY KEY,
+  invoiceId TEXT NOT NULL,
+  label TEXT NOT NULL,
+  amountCents INTEGER NOT NULL,
+  dueAt TEXT NOT NULL,
+  paidAt TEXT,
+  orderIndex INTEGER NOT NULL DEFAULT 0
+);
+
 -- Outbound messages to applicants. Persisted even though nothing sends
 -- them yet: the record of what an organizer intended to send, to whom, and
 -- when is the part that has to survive: wiring a provider in later only

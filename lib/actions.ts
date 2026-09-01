@@ -14,10 +14,15 @@ import {
   Users,
   Applications,
   ApplicationMessages,
+  Invoices,
+  InvoiceItems,
+  InvoicePayments,
+  InvoiceInstallments,
   slugify,
   Format,
 } from "@/lib/models";
-import type { ApplicationStatus, PaymentStatus } from "@/lib/models";
+import type { ApplicationStatus, PaymentStatus, PaymentMethod } from "@/lib/models";
+import { computeTotals, buildPaymentPlan, nextInvoiceNumber, money, formatDate } from "@/lib/invoices";
 import { cookies } from "next/headers";
 import { getCurrentUser, hashPassword, verifyPassword, createSessionToken, sessionCookieName } from "@/lib/auth";
 import { generateGroupStage, generateRoundRobinOnly, generateKnockoutBracket } from "@/lib/bracket";
@@ -806,4 +811,353 @@ export async function markTeamPaidDemo(teamId: string) {
   await Teams.setPaid(teamId, true);
   const tournament = await Tournaments.byId(team.tournamentId);
   redirect(`/t/${tournament?.slug}?paid=1`);
+}
+
+// ---------- Invoicing ----------
+//
+// Every figure an organizer can change lands in the ledger as a row: a
+// discount edits the invoice, a payment or a refund appends to
+// invoice_payments, and the totals are recomputed from those rows on read.
+// Nothing here writes a cached total, so an invoice can never end up
+// disagreeing with its own line items.
+
+// Accepts what a person actually types into a money field — "1,250", "$150",
+// "150.5" — and refuses what it cannot read rather than silently banking a 0.
+function parseMoneyToCents(raw: string): number {
+  const cleaned = raw.replace(/[$,\s]/g, "");
+  if (!cleaned || !/^-?\d*\.?\d*$/.test(cleaned)) throw new Error("Enter an amount like 150.00");
+  const value = Number(cleaned);
+  if (!Number.isFinite(value)) throw new Error("Enter an amount like 150.00");
+  return Math.round(value * 100);
+}
+
+// What a form action hands back. Bad input is a returned message, never a
+// thrown error: Next masks a thrown server-action error in production behind
+// a generic string, so throwing would turn "Enter an amount like 150.00" into
+// "an error occurred" exactly where the organizer needs to read it. Auth and
+// not-found still throw — those are not something the user can retype their
+// way out of.
+export type ActionResult = { error?: string };
+
+async function guarded(fn: () => Promise<void>): Promise<ActionResult> {
+  try {
+    await fn();
+    return {};
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Something went wrong." };
+  }
+}
+
+async function requireInvoice(tournamentId: string, invoiceId: string) {
+  const { user, tournament } = await requireOwnedTournament(tournamentId);
+  const invoice = await Invoices.byId(invoiceId);
+  if (!invoice || invoice.tournamentId !== tournament.id) throw new Error("Invoice not found");
+  return { user, tournament, invoice };
+}
+
+// Keeps the team's `paid` flag — which predates invoicing and is what the
+// entrants list, the check-in desk and the public page all read — in step
+// with the ledger, so settling an invoice doesn't leave the rest of the app
+// still calling the club a debtor. Derived from the rows every time rather
+// than toggled, so a refund correctly un-settles a team too.
+async function syncTeamPaidFromLedger(invoiceId: string, teamId: string | null) {
+  if (!teamId) return;
+  const [invoice, items, payments] = await Promise.all([
+    Invoices.byId(invoiceId),
+    InvoiceItems.listByInvoice(invoiceId),
+    InvoicePayments.listByInvoice(invoiceId),
+  ]);
+  if (!invoice) return;
+  const totals = computeTotals(invoice, items, payments);
+  await Teams.setPaid(teamId, totals.balanceCents <= 0 && totals.grandTotalCents > 0);
+}
+
+function invoicePaths(tournamentId: string, invoiceId: string): string[] {
+  return [
+    `/dashboard/tournaments/${tournamentId}/finance`,
+    `/dashboard/tournaments/${tournamentId}/finance/invoices/${invoiceId}`,
+    `/dashboard/tournaments/${tournamentId}/teams`,
+    `/dashboard/tournaments/${tournamentId}`,
+  ];
+}
+
+// Raises one invoice per entrant that doesn't already have one. Idempotent by
+// design — an organizer who adds three teams next week presses the same
+// button again and gets three invoices, not a duplicate set.
+export async function generateInvoices(tournamentId: string) {
+  const { tournament } = await requireOwnedTournament(tournamentId);
+  const [teams, applications] = await Promise.all([
+    Teams.listByTournament(tournament.id),
+    Applications.listByTournament(tournament.id),
+  ]);
+  const entrants = teams.filter((t) => t.name);
+  const appByTeamId = new Map(applications.filter((a) => a.teamId).map((a) => [a.teamId as string, a]));
+
+  const year = new Date().getFullYear();
+  const issued = new Set(await Invoices.numbersForYear(year));
+
+  for (const team of entrants) {
+    if (await Invoices.byTeamId(team.id)) continue;
+    const application = appByTeamId.get(team.id);
+    const number = nextInvoiceNumber([...issued], year);
+    issued.add(number);
+
+    const issuedAt = new Date();
+    const dueAt = new Date(issuedAt);
+    dueAt.setDate(dueAt.getDate() + 30); // net 30, the default terms; editable per invoice
+
+    const invoice = await Invoices.create({
+      number,
+      tournamentId: tournament.id,
+      teamId: team.id,
+      applicationId: application?.id ?? null,
+      billToClub: application?.clubName || team.name,
+      billToContact: team.contactName || application?.managerName || "",
+      billToEmail: team.contactEmail || application?.managerEmail || "",
+      billToPhone: application?.managerPhone ?? null,
+      division: application?.division ?? null,
+      teamCount: 1,
+      issuedAt: issuedAt.toISOString(),
+      dueAt: dueAt.toISOString(),
+    });
+
+    await InvoiceItems.create({
+      invoiceId: invoice.id,
+      description: `Tournament registration fee — ${tournament.name}${application?.division ? ` (${application.division})` : ""}`,
+      quantity: 1,
+      unitPriceCents: tournament.feeCents,
+      discountCents: 0,
+      orderIndex: 0,
+    });
+
+    // A team already flagged paid before invoicing existed keeps that truth:
+    // the ledger opens with a matching recorded payment rather than showing a
+    // settled club as newly in arrears.
+    if (team.paid && tournament.feeCents > 0) {
+      await InvoicePayments.create({
+        invoiceId: invoice.id,
+        amountCents: tournament.feeCents,
+        method: "OTHER",
+        reference: null,
+        note: "Opening balance — recorded as paid before invoicing was enabled.",
+        recordedByName: null,
+      });
+    }
+  }
+
+  revalidatePath(`/dashboard/tournaments/${tournamentId}/finance`);
+}
+
+export async function recordInvoicePayment(
+  tournamentId: string,
+  invoiceId: string,
+  formData: FormData
+): Promise<ActionResult> {
+  return guarded(async () => {
+    const { user, invoice } = await requireInvoice(tournamentId, invoiceId);
+    const amountCents = parseMoneyToCents(String(formData.get("amount") || ""));
+    if (amountCents <= 0) throw new Error("A payment must be greater than zero");
+    const methodRaw = String(formData.get("method") || "OTHER");
+    const method = (["CASH", "CHECK", "TRANSFER", "CARD", "OTHER"].includes(methodRaw)
+      ? methodRaw
+      : "OTHER") as PaymentMethod;
+
+    await InvoicePayments.create({
+      invoiceId: invoice.id,
+      amountCents,
+      method,
+      reference: String(formData.get("reference") || "").trim() || null,
+      note: String(formData.get("note") || "").trim() || null,
+      recordedByName: user.name,
+    });
+    await syncTeamPaidFromLedger(invoice.id, invoice.teamId);
+    invoicePaths(tournamentId, invoiceId).forEach((path) => revalidatePath(path));
+  });
+}
+
+// Refunds and write-offs are the same operation with opposite intent, and
+// both are stored as a negative payment so the balance stays one sum over one
+// list. Nothing is deleted: the original payment stays in the audit trail
+// beside the refund that reversed it.
+export async function issueInvoiceRefund(
+  tournamentId: string,
+  invoiceId: string,
+  formData: FormData
+): Promise<ActionResult> {
+  return guarded(async () => {
+    const { user, invoice } = await requireInvoice(tournamentId, invoiceId);
+    const amountCents = parseMoneyToCents(String(formData.get("amount") || ""));
+    if (amountCents <= 0) throw new Error("A refund must be greater than zero");
+    const kind = String(formData.get("kind") || "REFUND") === "ADJUSTMENT" ? "ADJUSTMENT" : "REFUND";
+
+    await InvoicePayments.create({
+      invoiceId: invoice.id,
+      amountCents: -amountCents,
+      method: kind as PaymentMethod,
+      reference: String(formData.get("reference") || "").trim() || null,
+      note: String(formData.get("note") || "").trim() || null,
+      recordedByName: user.name,
+    });
+    await syncTeamPaidFromLedger(invoice.id, invoice.teamId);
+    invoicePaths(tournamentId, invoiceId).forEach((path) => revalidatePath(path));
+  });
+}
+
+export async function applyInvoiceDiscount(
+  tournamentId: string,
+  invoiceId: string,
+  formData: FormData
+): Promise<ActionResult> {
+  return guarded(async () => {
+    const { invoice } = await requireInvoice(tournamentId, invoiceId);
+    const code = String(formData.get("code") || "").trim().toUpperCase() || null;
+    const mode = String(formData.get("mode") || "AMOUNT");
+
+    let discountCents: number;
+    if (mode === "PERCENT") {
+      const percent = Number(String(formData.get("percent") || "0"));
+      if (!Number.isFinite(percent) || percent < 0 || percent > 100) throw new Error("Enter a percentage between 0 and 100");
+      const items = await InvoiceItems.listByInvoice(invoice.id);
+      const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPriceCents, 0);
+      discountCents = Math.round((subtotal * percent) / 100);
+    } else {
+      discountCents = parseMoneyToCents(String(formData.get("amount") || "0"));
+    }
+    if (discountCents < 0) throw new Error("A discount cannot be negative");
+
+    await Invoices.setDiscount(invoice.id, code, discountCents);
+    await syncTeamPaidFromLedger(invoice.id, invoice.teamId);
+    invoicePaths(tournamentId, invoiceId).forEach((path) => revalidatePath(path));
+  });
+}
+
+// Splits the balance into a deposit plus monthly instalments. These are dates
+// and amounts to chase, not debits: Jogo has no payment gateway connected, so
+// nothing here can take money and the UI says as much rather than implying a
+// card is on file.
+export async function createInvoicePaymentPlan(
+  tournamentId: string,
+  invoiceId: string,
+  formData: FormData
+): Promise<ActionResult> {
+  return guarded(async () => {
+    const { invoice } = await requireInvoice(tournamentId, invoiceId);
+    const [items, payments] = await Promise.all([
+      InvoiceItems.listByInvoice(invoice.id),
+      InvoicePayments.listByInvoice(invoice.id),
+    ]);
+    const totals = computeTotals(invoice, items, payments);
+
+    const depositCents = parseMoneyToCents(String(formData.get("deposit") || "0"));
+    const count = Number(String(formData.get("installments") || "3"));
+    if (!Number.isFinite(count) || count < 1) throw new Error("Choose at least one instalment");
+
+    const firstDueRaw = String(formData.get("firstDue") || "");
+    const firstDue = firstDueRaw ? new Date(firstDueRaw) : new Date();
+    if (Number.isNaN(firstDue.getTime())) throw new Error("Enter a valid first due date");
+
+    // Built from the outstanding balance, not the grand total: money already
+    // banked is not something to schedule again, and a plan whose instalments
+    // sum past what is actually owed is a plan an organizer has to mentally
+    // correct every time they look at it.
+    const plan = buildPaymentPlan(totals.balanceCents, depositCents, count, firstDue);
+    await InvoiceInstallments.replaceForInvoice(invoice.id, plan);
+    invoicePaths(tournamentId, invoiceId).forEach((path) => revalidatePath(path));
+  });
+}
+
+export async function setInstallmentPaid(
+  tournamentId: string,
+  invoiceId: string,
+  installmentId: string,
+  paid: boolean
+) {
+  const { invoice } = await requireInvoice(tournamentId, invoiceId);
+  const installments = await InvoiceInstallments.listByInvoice(invoice.id);
+  if (!installments.some((i) => i.id === installmentId)) throw new Error("Instalment not found");
+  await InvoiceInstallments.setPaid(installmentId, paid);
+  invoicePaths(tournamentId, invoiceId).forEach((path) => revalidatePath(path));
+}
+
+// Emails the club its outstanding balance and records the attempt in the same
+// message log the admin inbox already reads, so a reminder is auditable
+// alongside every other outbound message. Status is the truth: SENT, FAILED,
+// or QUEUED when no provider is configured.
+export async function sendInvoiceReminder(
+  tournamentId: string,
+  invoiceId: string
+): Promise<{ status: "SENT" | "QUEUED" | "FAILED"; detail: string }> {
+  const { tournament, invoice } = await requireInvoice(tournamentId, invoiceId);
+  const [items, payments] = await Promise.all([
+    InvoiceItems.listByInvoice(invoice.id),
+    InvoicePayments.listByInvoice(invoice.id),
+  ]);
+  const totals = computeTotals(invoice, items, payments);
+
+  const subject = `${invoice.number} — payment due for ${tournament.name}`;
+  const body = [
+    `Hello ${invoice.billToContact || invoice.billToClub},`,
+    ``,
+    `This is a reminder about invoice ${invoice.number} for ${tournament.name}.`,
+    ``,
+    `Total: ${money(totals.grandTotalCents)}`,
+    `Paid to date: ${money(totals.netPaidCents)}`,
+    `Balance outstanding: ${money(totals.balanceCents)}`,
+    `Due: ${formatDate(invoice.dueAt)}`,
+    ``,
+    `Please get in touch if you have already sent payment.`,
+  ].join("\n");
+
+  const message = await ApplicationMessages.create({
+    tournamentId: tournament.id,
+    template: "INVOICE_REMINDER",
+    audience: `INVOICE:${invoice.number}`,
+    subject,
+    body,
+    recipients: JSON.stringify([invoice.billToEmail]),
+    recipientCount: invoice.billToEmail ? 1 : 0,
+  });
+
+  const result = await sendBulkEmail([invoice.billToEmail], subject, body);
+  if (result.ok) await ApplicationMessages.setStatus(message.id, "SENT");
+  else if (result.configured) await ApplicationMessages.setStatus(message.id, "FAILED");
+
+  invoicePaths(tournamentId, invoiceId).forEach((path) => revalidatePath(path));
+  revalidatePath("/admin/inbox");
+
+  // The caller is told what actually happened, not that a button was pressed.
+  // "Queued" is the honest word when no provider is configured: the reminder
+  // is recorded and nothing left the building.
+  if (result.ok) return { status: "SENT", detail: `Reminder emailed to ${invoice.billToEmail}.` };
+  if (!result.configured) {
+    return {
+      status: "QUEUED",
+      detail: "Recorded, but not sent — no mail provider is configured (set RESEND_API_KEY and MAIL_FROM).",
+    };
+  }
+  return { status: "FAILED", detail: result.reason };
+}
+
+// Records that the organizer has the club's paperwork. Jogo does not collect
+// or store signed documents, so this is a date-stamped confirmation by a
+// named human, not an e-signature — the UI labels it that way.
+export async function setTeamWaiverReceived(tournamentId: string, teamId: string, received: boolean) {
+  const { tournament } = await requireOwnedTournament(tournamentId);
+  const team = await Teams.byId(teamId);
+  if (!team || team.tournamentId !== tournament.id) throw new Error("Team not found");
+  await Teams.setWaiverReceived(teamId, received);
+  revalidatePath(`/dashboard/tournaments/${tournamentId}/finance`);
+  const invoice = await Invoices.byTeamId(teamId);
+  if (invoice) revalidatePath(`/dashboard/tournaments/${tournamentId}/finance/invoices/${invoice.id}`);
+}
+
+export async function saveBusinessIdentity(formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Not authenticated");
+  await SiteSettings.setBusiness({
+    businessName: String(formData.get("businessName") || "").trim() || null,
+    businessAddress: String(formData.get("businessAddress") || "").trim() || null,
+    taxId: String(formData.get("taxId") || "").trim() || null,
+  });
+  revalidatePath("/dashboard/settings");
 }

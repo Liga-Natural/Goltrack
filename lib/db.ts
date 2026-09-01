@@ -176,6 +176,26 @@ async function runMigrations(pool: Pool) {
   // run after the column above is guaranteed to exist. IF NOT EXISTS makes
   // it a no-op afterward.
   await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_teams_logoToken ON teams(logoToken) WHERE logoToken IS NOT NULL;`);
+  // Waivers, recorded by the organizer rather than collected by Jogo: this is
+  // a date-stamped "we have this club's paperwork on file", not an e-signature
+  // (there is no document store, and the finance UI says so where it shows).
+  await ensureColumn(pool, "teams", "waiverreceivedat", "waiverReceivedAt TEXT");
+  // The legal identity that has to appear on a printed invoice for it to be
+  // usable as an accounting record. Site-wide, on the same single-row table as
+  // the other branding settings, and edited from /dashboard/settings.
+  await ensureColumn(pool, "site_settings", "businessname", "businessName TEXT");
+  await ensureColumn(pool, "site_settings", "businessaddress", "businessAddress TEXT");
+  await ensureColumn(pool, "site_settings", "taxid", "taxId TEXT");
+  // Invoice numbers are quoted to clubs and cited in accounts, so two
+  // invoices sharing one is a genuine correctness problem rather than an
+  // untidiness. The index is what enforces it: lib/invoices.ts only proposes
+  // the next number, and a collision between two simultaneous issuers has to
+  // fail loudly here instead of producing a duplicate.
+  await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_invoices_number ON invoices(number);`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_invoices_tournament ON invoices(tournamentId);`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice ON invoice_items(invoiceId);`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_invoice_payments_invoice ON invoice_payments(invoiceId);`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_invoice_installments_invoice ON invoice_installments(invoiceId);`);
   // One-time backfill: on any database seeded before roles existed, the demo
   // account (the only user this app creates for you automatically) should
   // be the platform admin rather than falling through to the ORGANIZER
@@ -209,6 +229,30 @@ export function nowIso(): string {
 const CAMEL_CASE_COLUMNS: Record<string, string> = {
   accentcolor: "accentColor",
   advancepergroup: "advancePerGroup",
+  amountcents: "amountCents",
+  applicationid: "applicationId",
+  billtoclub: "billToClub",
+  billtocontact: "billToContact",
+  billtoemail: "billToEmail",
+  billtophone: "billToPhone",
+  businessaddress: "businessAddress",
+  businessname: "businessName",
+  discountcents: "discountCents",
+  discountcode: "discountCode",
+  dueat: "dueAt",
+  installmentcount: "installmentCount",
+  invoiceid: "invoiceId",
+  issuedat: "issuedAt",
+  itemcount: "itemCount",
+  paidat: "paidAt",
+  paidcents: "paidCents",
+  processingfeecents: "processingFeeCents",
+  recordedat: "recordedAt",
+  recordedbyname: "recordedByName",
+  taxid: "taxId",
+  teamcount: "teamCount",
+  unitpricecents: "unitPriceCents",
+  waiverreceivedat: "waiverReceivedAt",
   awaylabel: "awayLabel",
   awayscore: "awayScore",
   awayteamid: "awayTeamId",
