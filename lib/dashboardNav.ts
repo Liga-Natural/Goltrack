@@ -8,6 +8,7 @@ export const tournamentNav = [
   { href: "/schedule", label: "Schedule & bracket" },
   { href: "/scores", label: "Live scores" },
   { href: "/finance", label: "Finance" },
+  { href: "/payments", label: "Payment rules" },
   { href: "/referees", label: "Referees" },
   { href: "/gamecards", label: "Game cards" },
   { href: "/checkin", label: "Check-in" },
@@ -20,6 +21,7 @@ export const adminNav = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/inbox", label: "Inbox" },
   { href: "/admin/users", label: "Accounts" },
+  { href: "/admin/finance/platform", label: "Platform finance" },
   { href: "/admin/tournaments", label: "All tournaments" },
 ];
 

@@ -55,7 +55,7 @@ export default async function SettingsPage() {
           <textarea
             name="businessAddress"
             rows={3}
-            className="input w-full"
+            className="input w-full min-h-[90px] h-auto py-3"
             defaultValue={business.businessAddress ?? ""}
             placeholder={"Street\nCity, State ZIP"}
           />

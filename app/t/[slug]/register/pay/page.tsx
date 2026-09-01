@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Tournaments, Teams, Players } from "@/lib/models";
+import { Tournaments, Teams, Players, PaymentSettings, PlatformFees } from "@/lib/models";
+import { quoteRegistration, acceptedOfflineMethods } from "@/lib/pricing";
+import { money, formatDate } from "@/lib/invoices";
 import { Logo } from "@/components/Logo";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { markTeamPaidDemo } from "@/lib/actions";
@@ -19,6 +21,14 @@ export default async function PayPage({
   const players = await Players.listByTeam(team.id);
   const logoToken = team.logoToken || (await Teams.ensureLogoToken(team.id));
 
+  const [rules, platform] = await Promise.all([
+    PaymentSettings.forTournament(tournament.id),
+    PlatformFees.get(),
+  ]);
+  // Priced by the same function that generates this club's invoice, so the
+  // figure quoted at checkout is the figure they are billed.
+  const quote = quoteRegistration({ feeCents: tournament.feeCents, rules, platform });
+  const offlineMethods = acceptedOfflineMethods(rules);
   const stripeConfigured = !!process.env.STRIPE_SECRET_KEY;
 
   return (
@@ -38,22 +48,71 @@ export default async function PayPage({
         </p>
 
         <div className="card p-6">
-          <div className="flex items-center justify-between border-b border-black/10 pb-4 mb-4">
-            <span className="text-black/60">Tournament entry fee</span>
-            <span className="text-2xl font-semibold">${(tournament.feeCents / 100).toFixed(2)}</span>
-          </div>
+          <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-ink2 mb-3">Fee summary</h2>
+          <dl className="space-y-1.5 text-sm">
+            {quote.lines.map((line, i) => (
+              <div key={i} className="flex items-baseline justify-between gap-3">
+                <dt className="text-ink2">{line.label}</dt>
+                <dd className={`font-score ${line.kind === "discount" ? "text-emerald-500" : "text-ink2"}`}>
+                  {line.kind === "discount" ? "−" : ""}
+                  {money(line.amountCents)}
+                </dd>
+              </div>
+            ))}
+            <div className="pt-2.5 mt-1 border-t border-line flex items-baseline justify-between gap-3">
+              <dt className="font-semibold text-inkDisplay">Total</dt>
+              <dd className="font-score text-inkDisplay text-lg">{money(quote.totalCents)}</dd>
+            </div>
+          </dl>
 
-          {stripeConfigured ? (
-            <p className="text-sm text-black/50 mb-4">You&apos;ll be redirected to a secure Stripe checkout.</p>
+          {quote.balanceCents > 0 ? (
+            <div className="mt-4 rounded-xl border border-line p-4">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-sm font-semibold text-inkDisplay">Due now (deposit)</span>
+                <span className="font-score text-xl text-inkDisplay">{money(quote.dueNowCents)}</span>
+              </div>
+              <div className="flex items-baseline justify-between gap-3 mt-1.5">
+                <span className="text-xs text-ink2">
+                  Balance due {quote.balanceDueAt ? formatDate(quote.balanceDueAt) : "later"}
+                </span>
+                <span className="font-score text-sm text-warning-500">{money(quote.balanceCents)}</span>
+              </div>
+            </div>
           ) : (
-            <p className="text-sm text-black/40 mb-4">
-              Demo mode: no payment processor is connected yet, so this simulates a successful payment. Add a{" "}
-              <code className="text-black/60">STRIPE_SECRET_KEY</code> to go live with real payments.
-            </p>
+            <div className="mt-4 rounded-xl border border-line p-4 flex items-baseline justify-between gap-3">
+              <span className="text-sm font-semibold text-inkDisplay">Due now</span>
+              <span className="font-score text-xl text-inkDisplay">{money(quote.dueNowCents)}</span>
+            </div>
           )}
 
-          <form action={markTeamPaidDemo.bind(null, team.id)}>
-            <button className="btn-primary w-full">{stripeConfigured ? "Pay now" : "Pay now (demo)"}</button>
+          {/* No card is taken and none is stored. Offering an "authorise
+              future charges" checkbox with no vault behind it would be asking
+              for consent to something that cannot happen. */}
+          <p className="text-xs text-ink3 mt-4">
+            {stripeConfigured
+              ? "A STRIPE_SECRET_KEY is set, but no checkout is wired to it yet — this records the registration rather than taking a card."
+              : "No card is taken here. Jogo has no payment processor connected, so no card is stored and future instalments are not auto-debited."}
+          </p>
+
+          {offlineMethods.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-lineSoft">
+              <p className="text-[11px] uppercase tracking-wide text-ink2 font-semibold mb-1.5">How to pay</p>
+              <p className="text-xs text-ink2">{offlineMethods.join(" · ")}</p>
+              {rules.offlineInstructions && (
+                <p className="text-xs text-ink3 mt-2 whitespace-pre-line">{rules.offlineInstructions}</p>
+              )}
+            </div>
+          )}
+
+          <form action={markTeamPaidDemo.bind(null, team.id)} className="mt-5">
+            <button className="btn-primary w-full">
+              {rules.manualApproval ? "Confirm registration" : "Mark as paid (demo)"}
+            </button>
+            <p className="text-[11px] text-ink3 mt-2 text-center">
+              {rules.manualApproval
+                ? "The organizer verifies your payment before this team is marked paid."
+                : "No processor is connected, so this records the team as paid without taking money."}
+            </p>
           </form>
         </div>
 

@@ -1,5 +1,10 @@
 import { randomBytes } from "node:crypto";
 import { all, get, run, uid, nowIso } from "./db";
+import {
+  DEFAULT_PAYMENT_RULES,
+  DEFAULT_PLATFORM_FEE,
+} from "./pricing";
+import type { PaymentRules, PlatformFeeConfig } from "./pricing";
 
 // ---------- Types ----------
 
@@ -282,6 +287,185 @@ export const Users = {
     return Number(row?.n ?? 0);
   },
 };
+
+// ---------- Payment configuration ----------
+
+const PAYMENT_SETTINGS_COLUMNS = `tournamentId, depositMode, depositBasis, depositCents, depositPercent, balanceDueDays, earlyBirdUntil, earlyBirdDiscountCents, lateFeeAfter, lateFeeCents, multiTeamMinTeams, multiTeamPercent, acceptCheck, acceptCash, acceptZelle, acceptWire, offlineInstructions, manualApproval, reminderDaysBefore, reminderOnDueDate, reminderDaysAfter`;
+
+// Postgres hands integer flags back as numbers; PaymentRules wants booleans.
+// Converting at the boundary means nothing downstream has to remember that
+// `acceptCheck` is sometimes 0 and sometimes false.
+function toRules(row: Record<string, any>): PaymentRules {
+  const bool = (v: unknown) => v === 1 || v === true || v === "1";
+  return {
+    depositMode: row.depositMode === "DEPOSIT" ? "DEPOSIT" : "FULL",
+    depositBasis: row.depositBasis === "PERCENT" ? "PERCENT" : "FLAT",
+    depositCents: Number(row.depositCents ?? 0),
+    depositPercent: Number(row.depositPercent ?? 50),
+    balanceDueDays: Number(row.balanceDueDays ?? 30),
+    earlyBirdUntil: row.earlyBirdUntil ?? null,
+    earlyBirdDiscountCents: Number(row.earlyBirdDiscountCents ?? 0),
+    lateFeeAfter: row.lateFeeAfter ?? null,
+    lateFeeCents: Number(row.lateFeeCents ?? 0),
+    multiTeamMinTeams: Number(row.multiTeamMinTeams ?? 0),
+    multiTeamPercent: Number(row.multiTeamPercent ?? 0),
+    acceptCheck: bool(row.acceptCheck),
+    acceptCash: bool(row.acceptCash),
+    acceptZelle: bool(row.acceptZelle),
+    acceptWire: bool(row.acceptWire),
+    offlineInstructions: row.offlineInstructions ?? null,
+    manualApproval: bool(row.manualApproval),
+    reminderDaysBefore: Number(row.reminderDaysBefore ?? 7),
+    reminderOnDueDate: bool(row.reminderOnDueDate),
+    reminderDaysAfter: Number(row.reminderDaysAfter ?? 3),
+  };
+}
+
+export const PaymentSettings = {
+  /** An absent row means the documented defaults, never a half-filled object. */
+  async forTournament(tournamentId: string): Promise<PaymentRules> {
+    const row = await get<Record<string, any>>(
+      `SELECT ${PAYMENT_SETTINGS_COLUMNS} FROM tournament_payment_settings WHERE tournamentId = $id`,
+      { $id: tournamentId } as any
+    );
+    return row ? toRules(row) : { ...DEFAULT_PAYMENT_RULES };
+  },
+  async save(tournamentId: string, rules: PaymentRules): Promise<void> {
+    await run(
+      `INSERT INTO tournament_payment_settings (${PAYMENT_SETTINGS_COLUMNS}, updatedAt)
+       VALUES ($tournamentId,$depositMode,$depositBasis,$depositCents,$depositPercent,$balanceDueDays,$earlyBirdUntil,$earlyBirdDiscountCents,$lateFeeAfter,$lateFeeCents,$multiTeamMinTeams,$multiTeamPercent,$acceptCheck,$acceptCash,$acceptZelle,$acceptWire,$offlineInstructions,$manualApproval,$reminderDaysBefore,$reminderOnDueDate,$reminderDaysAfter,$updatedAt)
+       ON CONFLICT(tournamentId) DO UPDATE SET
+         depositMode=excluded.depositMode, depositBasis=excluded.depositBasis, depositCents=excluded.depositCents,
+         depositPercent=excluded.depositPercent, balanceDueDays=excluded.balanceDueDays,
+         earlyBirdUntil=excluded.earlyBirdUntil, earlyBirdDiscountCents=excluded.earlyBirdDiscountCents,
+         lateFeeAfter=excluded.lateFeeAfter, lateFeeCents=excluded.lateFeeCents,
+         multiTeamMinTeams=excluded.multiTeamMinTeams, multiTeamPercent=excluded.multiTeamPercent,
+         acceptCheck=excluded.acceptCheck, acceptCash=excluded.acceptCash, acceptZelle=excluded.acceptZelle,
+         acceptWire=excluded.acceptWire, offlineInstructions=excluded.offlineInstructions,
+         manualApproval=excluded.manualApproval, reminderDaysBefore=excluded.reminderDaysBefore,
+         reminderOnDueDate=excluded.reminderOnDueDate, reminderDaysAfter=excluded.reminderDaysAfter,
+         updatedAt=excluded.updatedAt`,
+      {
+        $tournamentId: tournamentId,
+        $depositMode: rules.depositMode,
+        $depositBasis: rules.depositBasis,
+        $depositCents: rules.depositCents,
+        $depositPercent: rules.depositPercent,
+        $balanceDueDays: rules.balanceDueDays,
+        $earlyBirdUntil: rules.earlyBirdUntil,
+        $earlyBirdDiscountCents: rules.earlyBirdDiscountCents,
+        $lateFeeAfter: rules.lateFeeAfter,
+        $lateFeeCents: rules.lateFeeCents,
+        $multiTeamMinTeams: rules.multiTeamMinTeams,
+        $multiTeamPercent: rules.multiTeamPercent,
+        $acceptCheck: rules.acceptCheck ? 1 : 0,
+        $acceptCash: rules.acceptCash ? 1 : 0,
+        $acceptZelle: rules.acceptZelle ? 1 : 0,
+        $acceptWire: rules.acceptWire ? 1 : 0,
+        $offlineInstructions: rules.offlineInstructions,
+        $manualApproval: rules.manualApproval ? 1 : 0,
+        $reminderDaysBefore: rules.reminderDaysBefore,
+        $reminderOnDueDate: rules.reminderOnDueDate ? 1 : 0,
+        $reminderDaysAfter: rules.reminderDaysAfter,
+        $updatedAt: nowIso(),
+      } as any
+    );
+  },
+};
+
+const PLATFORM_FEE_ID = "singleton";
+
+export const PlatformFees = {
+  async get(): Promise<PlatformFeeConfig> {
+    try {
+      const row = await get<Record<string, any>>(
+        `SELECT mode, percentBps, flatCents, tierName, tierMonthlyCents, passThrough FROM platform_fee_settings WHERE id = $id`,
+        { $id: PLATFORM_FEE_ID } as any
+      );
+      if (!row) return { ...DEFAULT_PLATFORM_FEE };
+      return {
+        mode: row.mode === "FLAT" || row.mode === "TIERED" ? row.mode : "PERCENT",
+        percentBps: Number(row.percentBps ?? 250),
+        flatCents: Number(row.flatCents ?? 99),
+        tierName: row.tierName || "Starter",
+        tierMonthlyCents: Number(row.tierMonthlyCents ?? 0),
+        passThrough: row.passThrough === 1 || row.passThrough === true,
+      };
+    } catch {
+      // Read from the public checkout on every registration; a hiccup here
+      // must not take down the page over a fee line.
+      return { ...DEFAULT_PLATFORM_FEE };
+    }
+  },
+  async save(config: PlatformFeeConfig): Promise<void> {
+    await run(
+      `INSERT INTO platform_fee_settings (id, mode, percentBps, flatCents, tierName, tierMonthlyCents, passThrough, updatedAt)
+       VALUES ($id,$mode,$percentBps,$flatCents,$tierName,$tierMonthlyCents,$passThrough,$updatedAt)
+       ON CONFLICT(id) DO UPDATE SET mode=excluded.mode, percentBps=excluded.percentBps, flatCents=excluded.flatCents,
+         tierName=excluded.tierName, tierMonthlyCents=excluded.tierMonthlyCents, passThrough=excluded.passThrough,
+         updatedAt=excluded.updatedAt`,
+      {
+        $id: PLATFORM_FEE_ID,
+        $mode: config.mode,
+        $percentBps: config.percentBps,
+        $flatCents: config.flatCents,
+        $tierName: config.tierName,
+        $tierMonthlyCents: config.tierMonthlyCents,
+        $passThrough: config.passThrough ? 1 : 0,
+        $updatedAt: nowIso(),
+      } as any
+    );
+  },
+};
+
+export interface PlatformPayout {
+  id: string;
+  tournamentId: string;
+  amountCents: number;
+  reference: string | null;
+  note: string | null;
+  recordedByName: string | null;
+  recordedAt: string;
+}
+
+export const PlatformPayouts = {
+  async create(input: Omit<PlatformPayout, "id" | "recordedAt">): Promise<PlatformPayout> {
+    const payout: PlatformPayout = { id: uid(), recordedAt: nowIso(), ...input };
+    await run(
+      `INSERT INTO platform_payouts (id, tournamentId, amountCents, reference, note, recordedByName, recordedAt)
+       VALUES ($id,$tournamentId,$amountCents,$reference,$note,$recordedByName,$recordedAt)`,
+      payout as any
+    );
+    return payout;
+  },
+  async totalsByTournament(): Promise<Map<string, number>> {
+    const rows = await all<{ tournamentId: string; payoutCents: number }>(
+      `SELECT tournamentId, COALESCE(SUM(amountCents),0) AS payoutCents FROM platform_payouts GROUP BY tournamentId`
+    );
+    return new Map(rows.map((r) => [r.tournamentId, Number(r.payoutCents)]));
+  },
+  async listAll(limit = 200): Promise<PlatformPayout[]> {
+    return all<PlatformPayout>(
+      `SELECT id, tournamentId, amountCents, reference, note, recordedByName, recordedAt
+         FROM platform_payouts ORDER BY recordedAt DESC LIMIT $limit`,
+      { $limit: limit } as any
+    );
+  },
+};
+
+/**
+ * Money actually recorded against invoices, per tournament — payments in,
+ * less refunds. This is collected cash, not billed amounts: an invoice nobody
+ * has paid contributes nothing, which is what makes it usable as gross volume.
+ */
+export async function collectedByTournament(): Promise<Map<string, number>> {
+  const rows = await all<{ tournamentId: string; amountCents: number }>(
+    `SELECT i.tournamentId AS tournamentId, COALESCE(SUM(p.amountCents),0) AS amountCents
+       FROM invoices i JOIN invoice_payments p ON p.invoiceId = i.id
+      GROUP BY i.tournamentId`
+  );
+  return new Map(rows.map((r) => [r.tournamentId, Number(r.amountCents)]));
+}
 
 // ---------- Staff invitations ----------
 

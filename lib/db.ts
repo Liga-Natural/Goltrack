@@ -203,6 +203,7 @@ async function runMigrations(pool: Pool) {
   await ensureColumn(pool, "users", "invitedbyuserid", "invitedByUserId TEXT");
   // An invite token is a bearer credential — two invites sharing one would let
   // the wrong person claim the wrong role.
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_platform_payouts_tournament ON platform_payouts(tournamentId);`);
   await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_user_invites_token ON user_invites(token);`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_tournament_staff_user ON tournament_staff(userId);`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_tournament_staff_tournament ON tournament_staff(tournamentId);`);
@@ -244,8 +245,34 @@ export function nowIso(): string {
 const CAMEL_CASE_COLUMNS: Record<string, string> = {
   accentcolor: "accentColor",
   advancepergroup: "advancePerGroup",
+  acceptcash: "acceptCash",
+  acceptcheck: "acceptCheck",
   acceptedat: "acceptedAt",
+  acceptwire: "acceptWire",
+  acceptzelle: "acceptZelle",
   amountcents: "amountCents",
+  balanceduedays: "balanceDueDays",
+  depositbasis: "depositBasis",
+  depositcents: "depositCents",
+  depositmode: "depositMode",
+  depositpercent: "depositPercent",
+  earlybirddiscountcents: "earlyBirdDiscountCents",
+  earlybirduntil: "earlyBirdUntil",
+  flatcents: "flatCents",
+  latefeeafter: "lateFeeAfter",
+  latefeecents: "lateFeeCents",
+  manualapproval: "manualApproval",
+  multiteamminteams: "multiTeamMinTeams",
+  multiteampercent: "multiTeamPercent",
+  offlineinstructions: "offlineInstructions",
+  passthrough: "passThrough",
+  payoutcents: "payoutCents",
+  percentbps: "percentBps",
+  reminderdaysafter: "reminderDaysAfter",
+  reminderdaysbefore: "reminderDaysBefore",
+  reminderonduedate: "reminderOnDueDate",
+  tiermonthlycents: "tierMonthlyCents",
+  tiername: "tierName",
   applicationid: "applicationId",
   expiresat: "expiresAt",
   invitedbyname: "invitedByName",

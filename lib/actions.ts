@@ -20,6 +20,9 @@ import {
   InvoiceInstallments,
   UserInvites,
   TournamentStaff,
+  PaymentSettings,
+  PlatformFees,
+  PlatformPayouts,
   isRole,
   slugify,
   Format,
@@ -35,13 +38,14 @@ import {
 } from "@/lib/permissions";
 import type { Permission } from "@/lib/permissions";
 import { computeTotals, buildPaymentPlan, nextInvoiceNumber, money, formatDate } from "@/lib/invoices";
+import { quoteRegistration, dueReminders } from "@/lib/pricing";
 import { cookies } from "next/headers";
 import { getCurrentUser, hashPassword, verifyPassword, createSessionToken, sessionCookieName } from "@/lib/auth";
 import { generateGroupStage, generateRoundRobinOnly, generateKnockoutBracket } from "@/lib/bracket";
 import { computeStandings, groupNames } from "@/lib/standings";
 import { getSportTheme } from "@/lib/sportTheme";
 import { isValidHex } from "@/lib/colorRamp";
-import { sendBulkEmail } from "@/lib/mailer";
+import { sendBulkEmail, mailerConfigured } from "@/lib/mailer";
 import { groupLetters } from "@/lib/groups";
 
 // Crest uploads are validated by sniffing the file's actual bytes rather
@@ -934,12 +938,26 @@ function invoicePaths(tournamentId: string, invoiceId: string): string[] {
 export async function generateInvoices(tournamentId: string) {
   const { user, tournament } = await requireOwnedTournament(tournamentId);
   requirePermission(user, "FINANCE");
-  const [teams, applications] = await Promise.all([
+  const [teams, applications, rules, platform] = await Promise.all([
     Teams.listByTournament(tournament.id),
     Applications.listByTournament(tournament.id),
+    PaymentSettings.forTournament(tournament.id),
+    PlatformFees.get(),
   ]);
   const entrants = teams.filter((t) => t.name);
   const appByTeamId = new Map(applications.filter((a) => a.teamId).map((a) => [a.teamId as string, a]));
+
+  // How many teams each club has entered. The multi-team discount belongs to
+  // the club, not the event, so it cannot be read off the entrant count —
+  // clubs are matched on the name they applied under, falling back to the
+  // team's own name when there is no application behind it.
+  const clubOf = (teamId: string, teamName: string) =>
+    (appByTeamId.get(teamId)?.clubName || teamName).trim().toLowerCase();
+  const teamsPerClub = new Map<string, number>();
+  for (const team of entrants) {
+    const club = clubOf(team.id, team.name);
+    teamsPerClub.set(club, (teamsPerClub.get(club) ?? 0) + 1);
+  }
 
   const year = new Date().getFullYear();
   const issued = new Set(await Invoices.numbersForYear(year));
@@ -951,8 +969,20 @@ export async function generateInvoices(tournamentId: string) {
     issued.add(number);
 
     const issuedAt = new Date();
+    const clubTeams = teamsPerClub.get(clubOf(team.id, team.name)) ?? 1;
+    // One invoice per team, so the club discount is evaluated on the club's
+    // full entry count but priced against this team's single fee.
+    const quote = quoteRegistration({
+      feeCents: tournament.feeCents,
+      teamCount: clubTeams,
+      rules,
+      platform,
+      at: issuedAt,
+    });
+    const perTeam = (cents: number) => Math.round(cents / clubTeams);
+
     const dueAt = new Date(issuedAt);
-    dueAt.setDate(dueAt.getDate() + 30); // net 30, the default terms; editable per invoice
+    dueAt.setDate(dueAt.getDate() + Math.max(0, rules.balanceDueDays));
 
     const invoice = await Invoices.create({
       number,
@@ -967,6 +997,9 @@ export async function generateInvoices(tournamentId: string) {
       teamCount: 1,
       issuedAt: issuedAt.toISOString(),
       dueAt: dueAt.toISOString(),
+      discountCode: quote.earlyBirdApplied ? "EARLYBIRD" : quote.multiTeamApplied ? "CLUB" : null,
+      discountCents: perTeam(quote.discountCents),
+      processingFeeCents: perTeam(quote.platformFeeCents),
     });
 
     await InvoiceItems.create({
@@ -977,6 +1010,29 @@ export async function generateInvoices(tournamentId: string) {
       discountCents: 0,
       orderIndex: 0,
     });
+    if (quote.lateFeeApplied) {
+      await InvoiceItems.create({
+        invoiceId: invoice.id,
+        description: "Late registration fee",
+        quantity: 1,
+        unitPriceCents: perTeam(quote.lateFeeCents),
+        discountCents: 0,
+        orderIndex: 1,
+      });
+    }
+
+    // A deposit rule becomes a real schedule on the invoice rather than a note
+    // about one, so the payment-plan panel and the printed copy both show it.
+    if (rules.depositMode === "DEPOSIT" && quote.balanceCents > 0) {
+      await InvoiceInstallments.replaceForInvoice(invoice.id, [
+        { label: "Deposit", amountCents: quote.dueNowCents, dueAt: issuedAt.toISOString() },
+        {
+          label: "Balance",
+          amountCents: quote.balanceCents,
+          dueAt: quote.balanceDueAt || dueAt.toISOString(),
+        },
+      ]);
+    }
 
     // A team already flagged paid before invoicing existed keeps that truth:
     // the ledger opens with a matching recorded payment rather than showing a
@@ -1410,4 +1466,179 @@ export async function acceptInvite(token: string, formData: FormData): Promise<A
     });
     revalidatePath("/admin/users");
   });
+}
+
+// ---------- Payment configuration ----------
+
+function readBool(formData: FormData, name: string): boolean {
+  return formData.get(name) != null;
+}
+
+function readInt(formData: FormData, name: string, fallback: number): number {
+  const n = Number(String(formData.get(name) ?? ""));
+  return Number.isFinite(n) ? Math.trunc(n) : fallback;
+}
+
+// A date input gives "2026-10-01" with no timezone. Stored as an ISO instant
+// at local midnight so lib/pricing.ts's day-granularity comparisons line up
+// with what the organizer typed rather than landing a day early west of UTC.
+function readDate(formData: FormData, name: string): string | null {
+  const raw = String(formData.get(name) || "").trim();
+  if (!raw) return null;
+  const d = new Date(`${raw}T00:00:00`);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+export async function saveTournamentPaymentSettings(
+  tournamentId: string,
+  formData: FormData
+): Promise<ActionResult> {
+  return guarded(async () => {
+    const { user, tournament } = await requireOwnedTournament(tournamentId);
+    requirePermission(user, "FINANCE");
+
+    const depositPercent = readInt(formData, "depositPercent", 50);
+    if (depositPercent < 1 || depositPercent > 100) throw new Error("Deposit percentage must be between 1 and 100");
+    const multiTeamPercent = readInt(formData, "multiTeamPercent", 0);
+    if (multiTeamPercent < 0 || multiTeamPercent > 100) throw new Error("Club discount must be between 0 and 100");
+
+    await PaymentSettings.save(tournament.id, {
+      depositMode: String(formData.get("depositMode")) === "DEPOSIT" ? "DEPOSIT" : "FULL",
+      depositBasis: String(formData.get("depositBasis")) === "PERCENT" ? "PERCENT" : "FLAT",
+      depositCents: parseMoneyToCents(String(formData.get("depositAmount") || "0")),
+      depositPercent,
+      balanceDueDays: Math.max(0, readInt(formData, "balanceDueDays", 30)),
+      earlyBirdUntil: readDate(formData, "earlyBirdUntil"),
+      earlyBirdDiscountCents: parseMoneyToCents(String(formData.get("earlyBirdDiscount") || "0")),
+      lateFeeAfter: readDate(formData, "lateFeeAfter"),
+      lateFeeCents: parseMoneyToCents(String(formData.get("lateFee") || "0")),
+      multiTeamMinTeams: Math.max(0, readInt(formData, "multiTeamMinTeams", 0)),
+      multiTeamPercent,
+      acceptCheck: readBool(formData, "acceptCheck"),
+      acceptCash: readBool(formData, "acceptCash"),
+      acceptZelle: readBool(formData, "acceptZelle"),
+      acceptWire: readBool(formData, "acceptWire"),
+      offlineInstructions: String(formData.get("offlineInstructions") || "").trim() || null,
+      manualApproval: readBool(formData, "manualApproval"),
+      reminderDaysBefore: Math.max(0, readInt(formData, "reminderDaysBefore", 7)),
+      reminderOnDueDate: readBool(formData, "reminderOnDueDate"),
+      reminderDaysAfter: Math.max(0, readInt(formData, "reminderDaysAfter", 3)),
+    });
+
+    revalidatePath(`/dashboard/tournaments/${tournamentId}/payments`);
+    revalidatePath(`/dashboard/tournaments/${tournamentId}/finance`);
+    revalidatePath(`/t/${tournament.slug}/register/pay`);
+  });
+}
+
+export async function savePlatformFeeSettings(formData: FormData): Promise<ActionResult> {
+  return guarded(async () => {
+    await requireAdmin();
+    const modeRaw = String(formData.get("mode") || "PERCENT");
+    const mode = modeRaw === "FLAT" || modeRaw === "TIERED" ? modeRaw : "PERCENT";
+
+    // Entered as a percentage, stored as basis points: 2.5 -> 250. Keeping it
+    // an integer means a fee calculation never picks up float drift.
+    const percent = Number(String(formData.get("percent") || "0"));
+    if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
+      throw new Error("Enter a percentage between 0 and 100");
+    }
+
+    await PlatformFees.save({
+      mode,
+      percentBps: Math.round(percent * 100),
+      flatCents: parseMoneyToCents(String(formData.get("flat") || "0")),
+      tierName: String(formData.get("tierName") || "Starter").trim() || "Starter",
+      tierMonthlyCents: parseMoneyToCents(String(formData.get("tierMonthly") || "0")),
+      passThrough: readBool(formData, "passThrough"),
+    });
+    revalidatePath("/admin/finance/platform");
+  });
+}
+
+export async function recordPlatformPayout(tournamentId: string, formData: FormData): Promise<ActionResult> {
+  return guarded(async () => {
+    const admin = await requireAdmin();
+    if (!(await Tournaments.byId(tournamentId))) throw new Error("Tournament not found");
+    const amountCents = parseMoneyToCents(String(formData.get("amount") || ""));
+    if (amountCents <= 0) throw new Error("A payout must be greater than zero");
+    await PlatformPayouts.create({
+      tournamentId,
+      amountCents,
+      reference: String(formData.get("reference") || "").trim() || null,
+      note: String(formData.get("note") || "").trim() || null,
+      recordedByName: admin.name,
+    });
+    revalidatePath("/admin/finance/platform");
+  });
+}
+
+/**
+ * Sends the reminders that are due today under this tournament's schedule.
+ *
+ * Nothing runs this on a timer — Jogo has no scheduler or background worker —
+ * so it is a button an organizer presses, and the UI says so rather than
+ * implying a cron is quietly working the overdue list.
+ */
+export async function sendDueReminders(
+  tournamentId: string
+): Promise<{ error?: string; checked: number; sent: number; detail: string }> {
+  try {
+    const { user, tournament } = await requireOwnedTournament(tournamentId);
+    requirePermission(user, "FINANCE");
+    const [rules, invoices, totals] = await Promise.all([
+      PaymentSettings.forTournament(tournament.id),
+      Invoices.listByTournament(tournament.id),
+      Invoices.totalsByTournament(tournament.id),
+    ]);
+
+    let sent = 0;
+    const notes: string[] = [];
+    for (const invoice of invoices) {
+      const roll = totals.get(invoice.id) ?? { chargedCents: 0, paidCents: 0 };
+      const balance = Math.max(0, roll.chargedCents - invoice.discountCents + invoice.processingFeeCents) - roll.paidCents;
+      if (balance <= 0) continue; // settled invoices are not chased
+      const due = dueReminders(invoice.dueAt, rules);
+      if (due.length === 0) continue;
+
+      const subject = `${invoice.number} — payment reminder for ${tournament.name}`;
+      const body = [
+        `Hello ${invoice.billToContact || invoice.billToClub},`,
+        ``,
+        `A reminder that ${money(balance)} is outstanding on invoice ${invoice.number}.`,
+        `Due ${formatDate(invoice.dueAt)} (${due.map((d) => d.label).join(", ")}).`,
+      ].join("\n");
+
+      const message = await ApplicationMessages.create({
+        tournamentId: tournament.id,
+        template: "PAYMENT_REMINDER",
+        audience: `INVOICE:${invoice.number}`,
+        subject,
+        body,
+        recipients: JSON.stringify([invoice.billToEmail]),
+        recipientCount: invoice.billToEmail ? 1 : 0,
+      });
+      const result = await sendBulkEmail([invoice.billToEmail], subject, body);
+      if (result.ok) await ApplicationMessages.setStatus(message.id, "SENT");
+      else if (result.configured) await ApplicationMessages.setStatus(message.id, "FAILED");
+      sent++;
+      notes.push(`${invoice.number} (${due.map((d) => d.label).join(", ")})`);
+    }
+
+    revalidatePath(`/dashboard/tournaments/${tournamentId}/payments`);
+    revalidatePath("/admin/inbox");
+
+    if (sent === 0) {
+      return { checked: invoices.length, sent: 0, detail: "No invoice falls on a reminder date today." };
+    }
+    return {
+      checked: invoices.length,
+      sent,
+      detail: mailerConfigured()
+        ? `Emailed ${sent} reminder${sent === 1 ? "" : "s"}: ${notes.join(", ")}.`
+        : `Recorded ${sent} reminder${sent === 1 ? "" : "s"} but sent nothing — no mail provider is configured.`,
+    };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Something went wrong.", checked: 0, sent: 0, detail: "" };
+  }
 }

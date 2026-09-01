@@ -148,6 +148,62 @@ CREATE TABLE IF NOT EXISTS applications (
   decidedAt TEXT
 );
 
+-- How one tournament takes money. One row per event, created on first save;
+-- an absent row means lib/pricing.ts's documented defaults, so an organizer
+-- who never opens the settings screen still has coherent, stated rules rather
+-- than nulls that each call site guesses at differently.
+CREATE TABLE IF NOT EXISTS tournament_payment_settings (
+  tournamentId TEXT PRIMARY KEY,
+  depositMode TEXT NOT NULL DEFAULT 'FULL',
+  depositBasis TEXT NOT NULL DEFAULT 'FLAT',
+  depositCents INTEGER NOT NULL DEFAULT 0,
+  depositPercent INTEGER NOT NULL DEFAULT 50,
+  balanceDueDays INTEGER NOT NULL DEFAULT 30,
+  earlyBirdUntil TEXT,
+  earlyBirdDiscountCents INTEGER NOT NULL DEFAULT 0,
+  lateFeeAfter TEXT,
+  lateFeeCents INTEGER NOT NULL DEFAULT 0,
+  multiTeamMinTeams INTEGER NOT NULL DEFAULT 0,
+  multiTeamPercent INTEGER NOT NULL DEFAULT 0,
+  acceptCheck INTEGER NOT NULL DEFAULT 1,
+  acceptCash INTEGER NOT NULL DEFAULT 1,
+  acceptZelle INTEGER NOT NULL DEFAULT 0,
+  acceptWire INTEGER NOT NULL DEFAULT 0,
+  offlineInstructions TEXT,
+  manualApproval INTEGER NOT NULL DEFAULT 1,
+  reminderDaysBefore INTEGER NOT NULL DEFAULT 7,
+  reminderOnDueDate INTEGER NOT NULL DEFAULT 1,
+  reminderDaysAfter INTEGER NOT NULL DEFAULT 3,
+  updatedAt TEXT NOT NULL
+);
+
+-- Platform monetization, site-wide. Single row, same "singleton" id pattern
+-- as site_settings.
+CREATE TABLE IF NOT EXISTS platform_fee_settings (
+  id TEXT PRIMARY KEY,
+  mode TEXT NOT NULL DEFAULT 'PERCENT',
+  percentBps INTEGER NOT NULL DEFAULT 250,
+  flatCents INTEGER NOT NULL DEFAULT 99,
+  tierName TEXT NOT NULL DEFAULT 'Starter',
+  tierMonthlyCents INTEGER NOT NULL DEFAULT 0,
+  passThrough INTEGER NOT NULL DEFAULT 0,
+  updatedAt TEXT NOT NULL
+);
+
+-- Payouts to organizers, recorded by hand. Jogo has no payout rail and never
+-- holds anyone's money — organizers collect directly — so this is a register
+-- of transfers made elsewhere, exactly like invoice_payments. It is not an
+-- instruction to move funds and nothing here can move any.
+CREATE TABLE IF NOT EXISTS platform_payouts (
+  id TEXT PRIMARY KEY,
+  tournamentId TEXT NOT NULL,
+  amountCents INTEGER NOT NULL,
+  reference TEXT,
+  note TEXT,
+  recordedByName TEXT,
+  recordedAt TEXT NOT NULL
+);
+
 -- A pending staff invitation. Deliberately not a users row with a blank
 -- password: an invitation is a claim on an email address that may never be
 -- taken up, and a half-made account would be able to sign in the moment
