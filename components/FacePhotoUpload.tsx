@@ -127,9 +127,10 @@ export function FacePhotoUpload({
           handleFiles(e.dataTransfer.files);
         }}
         onClick={() => inputRef.current?.click()}
-        className={`cursor-pointer rounded-2xl border-2 border-dashed p-6 text-center transition-colors ${
-          dragging ? "border-pitch-400 bg-pitch-400/10" : "border-line hover:border-black/25"
+        className={`cursor-pointer rounded-3xl border-2 border-dashed p-7 text-center transition-[background-color,border-color,box-shadow] ${
+          dragging ? "border-pitch-400 bg-pitch-400/10" : "border-line bg-surface2 hover:border-pitch-400/60"
         }`}
+        style={{ boxShadow: "var(--clay-field)" }}
       >
         <input
           ref={inputRef}

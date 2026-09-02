@@ -115,11 +115,13 @@ export function ScheduleMatrix({
   const at = (field: string, slot: string) => visible.find((m) => m.field === field && m.scheduledAt === slot);
   let lastDay = "";
 
+  // Clay pills: a raised lozenge that presses in when it is the selected
+  // one, which is the same physics as every other control in the system.
   const pill = (active: boolean) =>
-    `shrink-0 whitespace-nowrap text-xs px-3 py-1.5 rounded-full border transition-colors ${
+    `shrink-0 whitespace-nowrap text-xs px-4 py-2 rounded-full transition-[box-shadow,background-color,color] ${
       active
-        ? "border-pitch-400 bg-pitch-400/10 text-inkDisplay font-semibold"
-        : "border-line text-ink2 hover:border-black/25"
+        ? "clay-pill-active bg-pitch-400/15 text-inkDisplay font-semibold"
+        : "bg-surface2 text-ink2 hover:text-inkDisplay clay-pill-raised"
     }`;
 
   return (
@@ -175,12 +177,14 @@ export function ScheduleMatrix({
           <table className="w-full text-sm border-separate border-spacing-0 min-w-[44rem]">
             <thead>
               <tr>
-                <th className="sticky left-0 z-10 bg-white text-left text-[11px] uppercase tracking-wide text-ink2 font-semibold py-2 pr-3">
+                <th className="sticky left-0 z-10 bg-surface text-left text-[11px] uppercase tracking-wide text-ink2 font-semibold py-2 pr-3">
                   Time
                 </th>
                 {fields.map((f) => (
-                  <th key={f} className="text-left text-[11px] uppercase tracking-wide text-ink2 font-semibold py-2 px-3">
-                    {f}
+                  <th key={f} className="text-left py-2 px-1.5">
+                    <span className="inline-block rounded-full bg-surface2 px-3.5 py-1.5 text-[11px] uppercase tracking-wide text-ink2 font-semibold clay-pill-raised">
+                      {f}
+                    </span>
                   </th>
                 ))}
               </tr>
@@ -192,7 +196,7 @@ export function ScheduleMatrix({
                 lastDay = day;
                 return (
                   <tr key={slot}>
-                    <th className="sticky left-0 z-10 bg-white text-left align-top py-3 pr-3 border-t border-lineSoft whitespace-nowrap">
+                    <th className="sticky left-0 z-10 bg-surface text-left align-top py-3 pr-3 border-t border-lineSoft whitespace-nowrap">
                       <span className="font-score text-sm text-inkDisplay">{slotLabel(slot)}</span>
                       {/* The date only prints when it changes, so a two-day
                           tournament reads as two blocks instead of repeating
@@ -217,12 +221,12 @@ export function ScheduleMatrix({
                           <button
                             type="button"
                             onClick={() => setSelected(isSelected ? null : m.id)}
-                            className={`w-full text-left rounded-lg p-2.5 border transition-shadow ${
+                            className={`w-full text-left rounded-2xl p-3 bg-surface2 transition-[box-shadow,transform] active:translate-y-[1px] ${
                               isSelected
-                                ? "border-red-500/80 shadow-[0_0_15px_rgba(239,68,68,0.3)]"
+                                ? "border border-red-500/80 shadow-[0_0_15px_rgba(239,68,68,0.3)]"
                                 : issues.length > 0
-                                  ? "badge-danger"
-                                  : "border-line hover:border-black/25"
+                                  ? "badge-danger clay-tile"
+                                  : "clay-tile"
                             }`}
                           >
                             <div className="flex items-center justify-between gap-1.5 mb-1">

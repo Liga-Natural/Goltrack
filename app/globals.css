@@ -12,6 +12,40 @@
    Every value below is numerically identical to that system's light-mode
    defaults, so this is a real, kept-in-sync reference layer, not a
    duplicate source of truth that can drift unnoticed. */
+/* ── Clay depth tokens ──────────────────────────────────────────────────
+   Claymorphism is one physical idea expressed twice on every surface: an
+   outer drop shadow that lifts the shape off the canvas, and an inner pair
+   — a highlight on the lit edge, a shade on the far one — that rounds its
+   volume. Split into variables because the two themes need genuinely
+   different physics, not a recolour: on cream the highlight is near-white
+   and the shade is soft grey, while on charcoal the highlight has to drop
+   to a few percent of white or every card looks frosted rather than
+   moulded, and the drop shadow has to get much darker to be visible at all.
+
+   The light theme's inner highlight is what does the real work there, and
+   the dark theme's outer shadow is what does it here — which is why the
+   values are not mirror images of each other. */
+:root {
+  --clay-radius: 1.25rem;
+  --clay-radius-lg: 1.75rem;
+  /* Light: lifted off sand, lit from the top-left. */
+  --clay-shadow: 8px 8px 18px rgb(120 100 80 / 0.16), -6px -6px 16px rgb(255 255 255 / 0.75);
+  --clay-inner: inset -4px -4px 8px rgb(120 100 80 / 0.06), inset 4px 4px 8px rgb(255 255 255 / 0.6);
+  --clay-shadow-hover: 10px 12px 24px rgb(120 100 80 / 0.2), -8px -8px 20px rgb(255 255 255 / 0.85);
+  /* Pressed: the outer shadow collapses and the inner pair inverts, which
+     is what makes a button feel like it went down rather than dimmed. */
+  --clay-pressed: inset 4px 4px 10px rgb(120 100 80 / 0.18), inset -3px -3px 8px rgb(255 255 255 / 0.55);
+  --clay-field: inset 4px 4px 9px rgb(120 100 80 / 0.12), inset -3px -3px 8px rgb(255 255 255 / 0.7);
+}
+
+[data-theme="dark"] {
+  --clay-shadow: 8px 8px 16px rgb(0 0 0 / 0.55), -5px -5px 14px rgb(255 255 255 / 0.03);
+  --clay-inner: inset -4px -4px 8px rgb(0 0 0 / 0.35), inset 4px 4px 8px rgb(255 255 255 / 0.06);
+  --clay-shadow-hover: 10px 12px 24px rgb(0 0 0 / 0.6), -6px -6px 18px rgb(255 255 255 / 0.045);
+  --clay-pressed: inset 5px 5px 12px rgb(0 0 0 / 0.55), inset -3px -3px 8px rgb(255 255 255 / 0.04);
+  --clay-field: inset 5px 5px 11px rgb(0 0 0 / 0.45), inset -3px -3px 8px rgb(255 255 255 / 0.035);
+}
+
 :root {
   --color-canvas-cream: #F7F6F2;
   --color-surface-white: #FFFFFF;
@@ -98,11 +132,11 @@
      wash here would tint the whole UI pink rather than sitting behind it. */
   [data-theme="dark"] body::before {
     background-image:
-      radial-gradient(60rem 80rem at -5% 35%, rgb(190 24 60 / 0.16), transparent 62%),
-      radial-gradient(60rem 80rem at 105% 55%, rgb(190 24 60 / 0.14), transparent 62%),
-      radial-gradient(70rem 70rem at 85% 5%, rgb(255 255 255 / 0.03), transparent 60%),
+      radial-gradient(65rem 80rem at -8% 30%, rgb(224 86 56 / 0.16), transparent 62%),
+      radial-gradient(60rem 75rem at 108% 58%, rgb(159 44 40 / 0.18), transparent 62%),
+      radial-gradient(70rem 70rem at 82% 2%, rgb(198 106 66 / 0.1), transparent 60%),
       url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><path d='M48 0H0V48' fill='none' stroke='rgba(255,255,255,0.02)' stroke-width='1'/></svg>");
-    background-size: 100% 100%, 100% 100%, 48px 48px;
+    background-size: 100% 100%, 100% 100%, 100% 100%, 48px 48px;
   }
 
   /* Floating orb field — the depth layer the frosted panels actually
@@ -151,26 +185,26 @@
   [data-theme="dark"] body::after {
     background-image:
       /* top-left, large */
-      radial-gradient(7rem 7rem at 10.5% 7.5%, rgb(255 255 255 / 0.2) 0%, rgb(255 255 255 / 0.12) 45%, transparent 72%),
-      radial-gradient(16rem 16rem at 14% 12%, rgb(255 255 255 / 0.1) 0%, rgb(255 255 255 / 0.095) 48%, rgb(255 255 255 / 0.07) 66%, transparent 79%),
+      radial-gradient(7rem 7rem at 10.5% 7.5%, rgb(242 186 150 / 0.16) 0%, rgb(224 118 74 / 0.12) 45%, transparent 72%),
+      radial-gradient(16rem 16rem at 14% 12%, rgb(196 74 52 / 0.13) 0%, rgb(196 74 52 / 0.12) 48%, rgb(159 44 40 / 0.09) 66%, transparent 79%),
       /* top-centre, clipped by the top edge */
-      radial-gradient(6rem 6rem at 57% 0%, rgb(255 255 255 / 0.18) 0%, rgb(255 255 255 / 0.11) 45%, transparent 72%),
-      radial-gradient(13rem 13rem at 60% 4%, rgb(255 255 255 / 0.095) 0%, rgb(255 255 255 / 0.09) 48%, rgb(255 255 255 / 0.065) 66%, transparent 79%),
+      radial-gradient(6rem 6rem at 57% 0%, rgb(242 186 150 / 0.14) 0%, rgb(224 118 74 / 0.11) 45%, transparent 72%),
+      radial-gradient(13rem 13rem at 60% 4%, rgb(196 74 52 / 0.12) 0%, rgb(196 74 52 / 0.11) 48%, rgb(159 44 40 / 0.085) 66%, transparent 79%),
       /* top-right, small */
-      radial-gradient(3rem 3rem at 93.5% 8.5%, rgb(255 255 255 / 0.2) 0%, rgb(255 255 255 / 0.12) 45%, transparent 72%),
-      radial-gradient(6.5rem 6.5rem at 95% 11%, rgb(255 255 255 / 0.1) 0%, rgb(255 255 255 / 0.095) 48%, rgb(255 255 255 / 0.07) 66%, transparent 79%),
+      radial-gradient(3rem 3rem at 93.5% 8.5%, rgb(242 186 150 / 0.16) 0%, rgb(224 118 74 / 0.12) 45%, transparent 72%),
+      radial-gradient(6.5rem 6.5rem at 95% 11%, rgb(196 74 52 / 0.13) 0%, rgb(196 74 52 / 0.12) 48%, rgb(159 44 40 / 0.09) 66%, transparent 79%),
       /* right, largest */
-      radial-gradient(7.5rem 7.5rem at 86% 42%, rgb(255 255 255 / 0.18) 0%, rgb(255 255 255 / 0.11) 45%, transparent 72%),
-      radial-gradient(17rem 17rem at 90% 48%, rgb(255 255 255 / 0.095) 0%, rgb(255 255 255 / 0.09) 48%, rgb(255 255 255 / 0.065) 66%, transparent 79%),
+      radial-gradient(7.5rem 7.5rem at 86% 42%, rgb(242 186 150 / 0.14) 0%, rgb(224 118 74 / 0.11) 45%, transparent 72%),
+      radial-gradient(17rem 17rem at 90% 48%, rgb(196 74 52 / 0.12) 0%, rgb(196 74 52 / 0.11) 48%, rgb(159 44 40 / 0.085) 66%, transparent 79%),
       /* left, small */
-      radial-gradient(3rem 3rem at 3.5% 63%, rgb(255 255 255 / 0.2) 0%, rgb(255 255 255 / 0.12) 45%, transparent 72%),
-      radial-gradient(6.5rem 6.5rem at 5% 66%, rgb(255 255 255 / 0.1) 0%, rgb(255 255 255 / 0.095) 48%, rgb(255 255 255 / 0.07) 66%, transparent 79%),
+      radial-gradient(3rem 3rem at 3.5% 63%, rgb(242 186 150 / 0.16) 0%, rgb(224 118 74 / 0.12) 45%, transparent 72%),
+      radial-gradient(6.5rem 6.5rem at 5% 66%, rgb(196 74 52 / 0.13) 0%, rgb(196 74 52 / 0.12) 48%, rgb(159 44 40 / 0.09) 66%, transparent 79%),
       /* bottom-centre, clipped by the bottom edge */
-      radial-gradient(6rem 6rem at 39% 90%, rgb(255 255 255 / 0.18) 0%, rgb(255 255 255 / 0.11) 45%, transparent 72%),
-      radial-gradient(14rem 14rem at 42% 95%, rgb(255 255 255 / 0.095) 0%, rgb(255 255 255 / 0.09) 48%, rgb(255 255 255 / 0.065) 66%, transparent 79%),
+      radial-gradient(6rem 6rem at 39% 90%, rgb(242 186 150 / 0.14) 0%, rgb(224 118 74 / 0.11) 45%, transparent 72%),
+      radial-gradient(14rem 14rem at 42% 95%, rgb(196 74 52 / 0.12) 0%, rgb(196 74 52 / 0.11) 48%, rgb(159 44 40 / 0.085) 66%, transparent 79%),
       /* bottom, small */
-      radial-gradient(3.5rem 3.5rem at 55.5% 82%, rgb(255 255 255 / 0.18) 0%, rgb(255 255 255 / 0.11) 45%, transparent 72%),
-      radial-gradient(8rem 8rem at 58% 86%, rgb(255 255 255 / 0.095) 0%, rgb(255 255 255 / 0.09) 48%, rgb(255 255 255 / 0.065) 66%, transparent 79%);
+      radial-gradient(3.5rem 3.5rem at 55.5% 82%, rgb(242 186 150 / 0.14) 0%, rgb(224 118 74 / 0.11) 45%, transparent 72%),
+      radial-gradient(8rem 8rem at 58% 86%, rgb(196 74 52 / 0.12) 0%, rgb(196 74 52 / 0.11) 48%, rgb(159 44 40 / 0.085) 66%, transparent 79%);
   }
   /* Light theme: the same seven spheres with the lighting model inverted.
      On black an orb is *lighter* than the canvas and its lit cap is
@@ -178,12 +212,11 @@
      with the cap running back toward white — otherwise a light-on-light
      sphere has nothing to be seen against.
 
-     The body colour is a cool slate (148 154 172), not neutral grey. A
-     straight black-at-opacity disc on cream reads as a dirty smudge (the
-     same reason .input above is pure white rather than a grey ink-tint
-     fill); pulling the mix slightly blue keeps it reading as shadow and
-     glass rather than as grime, and it's what makes the white sheen on top
-     look like light rather than a gap in the fill.
+     The body colour is a terracotta (193 129 96), not a neutral grey. A
+     straight black-at-opacity disc on sand reads as a dirty smudge; pulling
+     the mix toward the clay accents keeps it reading as a warm shadow, and
+     it is what makes the white sheen on top look like light falling on a
+     rounded body rather than a gap in the fill.
 
      Alpha runs roughly 1.3x the dark theme's because these sit on a
      high-key canvas where the eye has far less headroom to detect a
@@ -192,25 +225,25 @@
     background-image:
       /* top-left, large */
       radial-gradient(7rem 7rem at 10.5% 7.5%, rgb(255 255 255 / 0.85) 0%, rgb(255 255 255 / 0.45) 45%, transparent 72%),
-      radial-gradient(16rem 16rem at 14% 12%, rgb(148 154 172 / 0.15) 0%, rgb(148 154 172 / 0.14) 48%, rgb(148 154 172 / 0.1) 66%, transparent 79%),
+      radial-gradient(16rem 16rem at 14% 12%, rgb(193 129 96 / 0.15) 0%, rgb(193 129 96 / 0.14) 48%, rgb(193 129 96 / 0.1) 66%, transparent 79%),
       /* top-centre, clipped by the top edge */
       radial-gradient(6rem 6rem at 57% 0%, rgb(255 255 255 / 0.8) 0%, rgb(255 255 255 / 0.4) 45%, transparent 72%),
-      radial-gradient(13rem 13rem at 60% 4%, rgb(148 154 172 / 0.13) 0%, rgb(148 154 172 / 0.12) 48%, rgb(148 154 172 / 0.09) 66%, transparent 79%),
+      radial-gradient(13rem 13rem at 60% 4%, rgb(193 129 96 / 0.13) 0%, rgb(193 129 96 / 0.12) 48%, rgb(193 129 96 / 0.09) 66%, transparent 79%),
       /* top-right, small */
       radial-gradient(3rem 3rem at 93.5% 8.5%, rgb(255 255 255 / 0.85) 0%, rgb(255 255 255 / 0.45) 45%, transparent 72%),
-      radial-gradient(6.5rem 6.5rem at 95% 11%, rgb(148 154 172 / 0.15) 0%, rgb(148 154 172 / 0.14) 48%, rgb(148 154 172 / 0.1) 66%, transparent 79%),
+      radial-gradient(6.5rem 6.5rem at 95% 11%, rgb(193 129 96 / 0.15) 0%, rgb(193 129 96 / 0.14) 48%, rgb(193 129 96 / 0.1) 66%, transparent 79%),
       /* right, largest */
       radial-gradient(7.5rem 7.5rem at 86% 42%, rgb(255 255 255 / 0.8) 0%, rgb(255 255 255 / 0.4) 45%, transparent 72%),
-      radial-gradient(17rem 17rem at 90% 48%, rgb(148 154 172 / 0.13) 0%, rgb(148 154 172 / 0.12) 48%, rgb(148 154 172 / 0.09) 66%, transparent 79%),
+      radial-gradient(17rem 17rem at 90% 48%, rgb(193 129 96 / 0.13) 0%, rgb(193 129 96 / 0.12) 48%, rgb(193 129 96 / 0.09) 66%, transparent 79%),
       /* left, small */
       radial-gradient(3rem 3rem at 3.5% 63%, rgb(255 255 255 / 0.85) 0%, rgb(255 255 255 / 0.45) 45%, transparent 72%),
-      radial-gradient(6.5rem 6.5rem at 5% 66%, rgb(148 154 172 / 0.15) 0%, rgb(148 154 172 / 0.14) 48%, rgb(148 154 172 / 0.1) 66%, transparent 79%),
+      radial-gradient(6.5rem 6.5rem at 5% 66%, rgb(193 129 96 / 0.15) 0%, rgb(193 129 96 / 0.14) 48%, rgb(193 129 96 / 0.1) 66%, transparent 79%),
       /* bottom-centre, clipped by the bottom edge */
       radial-gradient(6rem 6rem at 39% 90%, rgb(255 255 255 / 0.8) 0%, rgb(255 255 255 / 0.4) 45%, transparent 72%),
-      radial-gradient(14rem 14rem at 42% 95%, rgb(148 154 172 / 0.13) 0%, rgb(148 154 172 / 0.12) 48%, rgb(148 154 172 / 0.09) 66%, transparent 79%),
+      radial-gradient(14rem 14rem at 42% 95%, rgb(193 129 96 / 0.13) 0%, rgb(193 129 96 / 0.12) 48%, rgb(193 129 96 / 0.09) 66%, transparent 79%),
       /* bottom, small */
       radial-gradient(3.5rem 3.5rem at 55.5% 82%, rgb(255 255 255 / 0.8) 0%, rgb(255 255 255 / 0.4) 45%, transparent 72%),
-      radial-gradient(8rem 8rem at 58% 86%, rgb(148 154 172 / 0.13) 0%, rgb(148 154 172 / 0.12) 48%, rgb(148 154 172 / 0.09) 66%, transparent 79%);
+      radial-gradient(8rem 8rem at 58% 86%, rgb(193 129 96 / 0.13) 0%, rgb(193 129 96 / 0.12) 48%, rgb(193 129 96 / 0.09) 66%, transparent 79%);
   }
   /* h1/h2 get the "Pro Max" pass's own tighter -0.03em — they're the
      anchor headings the polish pass called out as reading weak — while
@@ -241,20 +274,52 @@
 }
 
 @layer components {
+  /* A clay button is a raised lozenge that physically goes down when
+     pressed: the outer shadow collapses into an inset one and the button
+     moves 2px along the light direction. The old scale-down is gone —
+     shrinking reads as a UI trick, sinking reads as a material. */
   .btn {
-    /* transition-transform (not just -colors) plus active:scale is what
-       makes a click actually feel like a click instead of a color swap —
-       every button gets real press feedback for free. */
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-[background-color,color,transform] duration-150 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold transition-[background-color,color,box-shadow,transform] duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+    border-radius: 999px;
+    box-shadow: var(--clay-shadow), var(--clay-inner);
   }
+  .btn:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: var(--clay-pressed);
+  }
+  .btn:disabled {
+    box-shadow: var(--clay-inner);
+  }
+  /* The one saturated surface in the system: the athletic red, moulded like
+     everything else and carrying its own inner glow so it reads as a solid
+     lump of colour rather than a flat fill. */
   .btn-primary {
-    @apply btn bg-pitch-400 text-white hover:bg-brandHover;
+    @apply btn text-white;
+    background-color: rgb(var(--pitch-400));
+    box-shadow: var(--clay-shadow), inset -4px -4px 10px rgb(120 30 20 / 0.35), inset 4px 4px 10px rgb(255 255 255 / 0.25);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-color: rgb(var(--brand-hover));
   }
   .btn-secondary {
-    @apply btn bg-black text-white hover:bg-black/80;
+    @apply btn text-inkDisplay;
+    background-color: rgb(var(--surface));
   }
+  .btn-secondary:hover:not(:disabled) {
+    background-color: rgb(var(--surface-2));
+  }
+  /* Ghost is the one flat control — a recessed pill rather than a raised
+     one, so a row of three buttons still has a clear hierarchy without
+     three competing shadows. */
   .btn-ghost {
-    @apply btn bg-transparent text-black hover:bg-black/5 border border-black;
+    @apply btn text-ink2;
+    background-color: transparent;
+    box-shadow: none;
+    border: 1px solid rgb(var(--line));
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background-color: rgb(var(--surface-2));
+    color: rgb(var(--ink-display));
   }
   /* Default card: flat list rows, secondary content — no hover behavior of
      its own, on purpose (see .card-interactive below for anything clickable).
@@ -262,19 +327,34 @@
      the whole point of "Premium Cream & Ink" is that a card only reads as
      physically floating if the page behind it isn't the same color. */
   .card {
-    @apply rounded-2xl bg-surface border border-hairline shadow-card;
+    @apply bg-surface;
+    border-radius: var(--clay-radius);
+    box-shadow: var(--clay-shadow), var(--clay-inner);
   }
   /* For clickable cards (links to a tournament/team/etc.) — a real lift on
      hover rather than the old bare hover:shadow-lg with no other change.
      -translate-y-0.5 is exactly the spec's 2px lift; shadow-cardHover is
      the matching deeper elevation tier. */
   .card-interactive {
-    @apply card transition-[transform,box-shadow,border-color] duration-200 hover:-translate-y-0.5 hover:shadow-cardHover hover:border-black/25;
+    @apply card transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5;
+  }
+  .card-interactive:hover {
+    box-shadow: var(--clay-shadow-hover), var(--clay-inner);
+  }
+  /* Pressing a card sinks it the same way a button does — the whole system
+     shares one press. */
+  .card-interactive:active {
+    transform: translateY(1px);
+    box-shadow: var(--clay-pressed);
   }
   /* Higher-hierarchy content: stat panels, the live-score card, anything
      that should visibly sit above the page rather than blend into the list. */
+  /* The tallest tier: same clay, more of it. A larger radius reads as a
+     thicker slab rather than as a different component. */
   .card-elevated {
-    @apply rounded-2xl bg-surface border border-hairline shadow-elevated;
+    @apply bg-surface;
+    border-radius: var(--clay-radius-lg);
+    box-shadow: var(--clay-shadow-hover), var(--clay-inner);
   }
   /* SaaS-grade field: pure white (bg-surface), not a grey ink-tint fill —
      the grey fill was the single biggest contributor to the dashboard
@@ -298,13 +378,48 @@
        but InquiryForm's <textarea> also wears .input — there min-h wins
        over h-12 and the padding is what keeps its first line off the top
        edge. Both cases work off one rule. */
-    @apply w-full h-12 rounded-lg bg-surface border border-line shadow-[inset_0_2px_4px_rgba(0,0,0,0.01)] px-4 py-3 text-sm text-black placeholder:text-ink3 transition-[color,background-color,border-color,box-shadow] duration-200 ease-in-out focus:outline-none focus:bg-surface focus:border-pitch-400 focus:ring-4 focus:ring-pitch-400/15;
+    /* Clay fields are the inverse of clay cards: pressed *into* the surface
+       rather than extruded out of it, which is the whole reason the inner
+       shadow pair exists. No border — the recess is the edge. */
+    @apply w-full h-12 bg-surface2 px-4 py-3 text-sm text-black placeholder:text-ink3 transition-[color,background-color,box-shadow] duration-200 ease-in-out focus:outline-none;
+    border-radius: 0.9rem;
+    border: none;
+    box-shadow: var(--clay-field);
+  }
+  .input:focus {
+    box-shadow: var(--clay-field), 0 0 0 3px rgb(var(--pitch-400) / 0.28);
   }
   .label {
     @apply block text-xs font-semibold uppercase tracking-wide text-ink2 mb-1.5;
   }
+  /* Thicker, softer pills than the old flat tags — a badge is a small piece
+     of the same clay, so it gets the same rounded volume at a smaller
+     amplitude. Padding goes up because a moulded pill needs room around its
+     label or the inner shadow eats the text. */
   .badge {
-    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold leading-none;
+    @apply inline-flex items-center rounded-full px-3.5 py-1.5 text-xs font-semibold leading-none;
+    background-color: rgb(var(--neutral-badge));
+    color: rgb(var(--ink-2));
+    box-shadow: var(--clay-inner);
+  }
+  /* A pill that is the selected one in a tab bar reads as pressed in, the
+     same physics as a field. */
+  .clay-pill-active {
+    box-shadow: var(--clay-pressed);
+  }
+  /* An unselected pill and a matchday tile are the same moulded lozenge at
+     two sizes — one rule so a tab bar and a fixture card cannot drift apart. */
+  .clay-pill-raised {
+    box-shadow: var(--clay-shadow), var(--clay-inner);
+  }
+  .clay-pill-raised:hover {
+    box-shadow: var(--clay-shadow-hover), var(--clay-inner);
+  }
+  .clay-tile {
+    box-shadow: var(--clay-shadow), var(--clay-inner);
+  }
+  .clay-tile:hover {
+    box-shadow: var(--clay-shadow-hover), var(--clay-inner);
   }
   /* Scores, stat figures, countdowns — tabular figures so digits don't
      jitter the layout as they update, paired with a heavy display weight
@@ -323,186 +438,36 @@
   }
 }
 
-/* ── "Obsidian Glass" — dark-theme-only surface treatments ──────────────
-   These are scoped to [data-theme="dark"] rather than folded into the base
-   component classes because they are genuinely theme-specific, not just
-   recoloured: translucency plus a heavy backdrop blur reads as premium
-   frosted glass floating over a carbon canvas, and as smeared haze over a
-   light one. The light theme (still reachable from /dashboard/settings)
-   keeps its solid, opaque cards. */
-/* IMPORTANT — why these rules use literal colors instead of Tailwind
-   utilities: this codebase remaps Tailwind's own `white` and `black` keys
-   onto the --paper / --ink variables so the theme toggle works
-   (see tailwind.config.ts). That means inside dark mode `text-white`
-   resolves to --paper, which is the #09090B canvas — so `border-white/10`
-   is a near-black border that's invisible on carbon, and `text-white` is
-   near-black text. Writing `rgb(255 255 255 / …)` literally is the only
-   way to actually get white here. These blocks are already scoped to the
-   dark theme, so hardcoding is safe — there's no other theme for them to
-   leak into. (--pitch-400 is still used as a variable, because the accent
-   color stays user-configurable in both themes.) */
+/* ── Theme-specific clay ────────────────────────────────────────────────
+   Almost nothing needs to live here any more. The clay treatment is carried
+   by the --clay-* variables, which are redefined per theme at the top of
+   this file, so .card, .btn, .input and .badge are written once and come out
+   right on sand and on charcoal alike. That is the point of moving the
+   physics into variables: the previous glass system needed two parallel
+   sets of component rules because translucency plus blur cannot be
+   expressed as a colour swap, and clay can.
+
+   What is left are the few places where a colour, not a shadow, has to
+   differ — and they are deliberately kept at single-class specificity
+   wherever a caller might want to override them, because a
+   [data-theme] prefix outranks a modifier class like .badge-accepted and
+   silently wins a fight it should lose. */
 @layer components {
-  /* Frosted panels. An ultra-sheer white film plus a heavy backdrop blur:
-     the sheerness is what lets the ambient pools and grid show through, and
-     the blur is what turns that show-through into frosted glass rather than
-     a translucent rectangle. The inset top-edge highlight is the detail
-     that sells it — real glass catches a bright line along its top lip, and
-     without it a panel this sheer reads as a flat wash. */
-  [data-theme="dark"] .card,
-  [data-theme="dark"] .card-elevated {
-    background-color: rgb(255 255 255 / 0.03);
-    border-color: rgb(255 255 255 / 0.1);
-    backdrop-filter: blur(40px);
-    box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.08);
-  }
-  /* Hover brightens the surface rather than the border. Changing the edge
-     would make the panel look like it gained a focus ring; brightening the
-     film reads as the glass itself catching more light. */
-  [data-theme="dark"] .card-interactive {
-    transition: background-color 300ms ease, transform 200ms ease;
-  }
-  [data-theme="dark"] .card-interactive:hover {
-    background-color: rgb(255 255 255 / 0.06);
-    border-color: rgb(255 255 255 / 0.1);
-    box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.08);
-  }
-  /* Inputs are recessed glass — darker than the panel they sit on, so a
-     field reads as cut *into* the surface rather than floating above it. */
-  [data-theme="dark"] .input {
-    background-color: rgb(0 0 0 / 0.4);
-    border-color: rgb(255 255 255 / 0.1);
-    color: rgb(255 255 255);
-    backdrop-filter: blur(12px);
-    box-shadow: none;
-  }
-  [data-theme="dark"] .input:focus {
-    background-color: rgb(0 0 0 / 0.4);
-    border-color: rgb(255 255 255 / 0.3);
-    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.2);
-  }
-  /* Every button is glass now, including the primary — the accent red is
-     reserved entirely for the wordmark, so hierarchy between primary and
-     secondary is carried by surface brightness instead of hue. */
-  [data-theme="dark"] .btn-primary {
-    background-color: rgb(255 255 255 / 0.1);
-    color: rgb(255 255 255);
-    border: 1px solid rgb(255 255 255 / 0.2);
-    backdrop-filter: blur(12px);
-    box-shadow: none;
-  }
-  [data-theme="dark"] .btn-primary:hover {
-    background-color: rgb(255 255 255 / 0.2);
-  }
-  [data-theme="dark"] .btn-secondary {
-    background-color: rgb(255 255 255 / 0.05);
-    color: rgb(255 255 255 / 0.9);
-    border: 1px solid rgb(255 255 255 / 0.12);
-    backdrop-filter: blur(12px);
-  }
-  [data-theme="dark"] .btn-secondary:hover {
-    background-color: rgb(255 255 255 / 0.12);
-  }
-  [data-theme="dark"] .btn-ghost {
-    border-color: rgb(255 255 255 / 0.15);
-    color: rgb(255 255 255 / 0.9);
-  }
-  [data-theme="dark"] .btn-ghost:hover {
-    background-color: rgb(255 255 255 / 0.08);
-  }
-  /* Ghost badges: outline only, no fill. Replaces the solid status pills,
-     which at this sheerness were the heaviest thing on the screen. */
-  [data-theme="dark"] .badge {
-    background-color: transparent;
-    border: 1px solid rgb(255 255 255 / 0.15);
-    color: rgb(255 255 255 / 0.5);
-  }
-  /* The one exception, deliberately: a live match keeps its emerald. It's
-     the single state on a match-day screen that has to be findable at a
-     glance across a long list, and an all-ghost badge set makes LIVE
-     indistinguishable from FINAL at arm's length. Still ghosted — no fill,
-     just the colour on the text, dot and edge. */
-  [data-theme="dark"] .badge-live {
-    border-color: rgb(var(--status-live) / 0.5);
+  /* A live match keeps its own colour in both themes: it is the one state
+     on a matchday screen that has to be findable at a glance down a long
+     list, and a set of same-coloured clay pills makes LIVE indistinguishable
+     from FINAL at arm's length. */
+  .badge-live {
     color: rgb(var(--status-live));
   }
-
-  /* ── "White Glass" — the light theme's counterpart ────────────────────
-     Same treatment, inverted. Two things genuinely differ from the dark
-     rules rather than just being recoloured:
-
-     1. Light glass still needs a drop shadow. On black, a panel separates
-        from the canvas because it is lighter than it; on cream, a
-        translucent white panel is nearly the same luminance as the page
-        behind it, so without a cast shadow it dissolves. The dark rules
-        deliberately carry no drop shadow at all — a shadow on black is
-        invisible — so this is not an oversight being corrected, it is the
-        one place the two themes need different physics.
-
-     2. The film is far less sheer (0.62 vs 0.03). Sheerness on black still
-        leaves plenty of text contrast because everything behind it is
-        near-black anyway; at 0.03 on cream the orbs would read straight
-        through the panel and sit behind body copy.
-
-     Scoped to [data-theme="light"] rather than left as the bare component
-     defaults so the opaque cards stay reachable — the base .card is still
-     what renders anywhere the attribute is missing (a page rendered before
-     hydration, or any future surface that opts out of theming). */
-  [data-theme="light"] .card,
-  [data-theme="light"] .card-elevated {
-    background-color: rgb(255 255 255 / 0.6);
-    border-color: rgb(255 255 255 / 0.8);
-    backdrop-filter: blur(40px);
-    /* The spec's 0 8px 32px rgba(31,38,135,0.07) — a blue-shifted shadow,
-       not a neutral grey one, which is what keeps a white panel reading as
-       glass on a porcelain canvas rather than as paper on paper. */
-    box-shadow:
-      0 8px 32px 0 rgb(31 38 135 / 0.07),
-      inset 0 1px 1px rgb(255 255 255 / 0.9);
-  }
-  [data-theme="light"] .card-interactive {
-    transition: background-color 300ms ease, transform 200ms ease, box-shadow 200ms ease;
-  }
-  /* Hover fills the glass in rather than brightening it — the dark theme
-     lifts a panel by adding light, which on cream would mean going past
-     white. Going more opaque is the only direction left, and it reads the
-     same way: the surface catching more of the light. */
-  [data-theme="light"] .card-interactive:hover {
-    background-color: rgb(255 255 255 / 0.85);
-    border-color: rgb(255 255 255);
-    box-shadow:
-      0 2px 4px rgb(17 17 17 / 0.05),
-      0 16px 40px rgb(17 17 17 / 0.09),
-      inset 0 1px 1px rgb(255 255 255 / 0.9);
-  }
-  /* Recessed glass, same idea as the dark input: the field sits *under*
-     the panel it's cut into. On cream that means less white than the card,
-     not more black. */
-  [data-theme="light"] .input {
-    background-color: rgb(255 255 255 / 0.4);
-    border-color: rgb(226 232 240 / 0.8);
-    backdrop-filter: blur(12px);
-    box-shadow: inset 0 1px 2px rgb(17 17 17 / 0.04);
-  }
-  [data-theme="light"] .input:focus {
-    background-color: rgb(255 255 255);
-  }
-  /* Light badges get the same ghost outline the dark theme gives them. The
-     base .badge carries no background of its own — it is coloured by
-     whatever class the caller passes — so a bare <span class="badge"> had an
-     outline on black and rendered as loose unattached text on porcelain. */
-  [data-theme="light"] .badge {
-    background-color: rgb(255 255 255 / 0.6);
-    border: 1px solid rgb(226 232 240 / 0.9);
-    color: rgb(var(--ink2));
-    backdrop-filter: blur(12px);
-  }
-  [data-theme="light"] .badge-live {
-    background-color: rgb(var(--status-live) / 0.1);
-    border-color: rgb(var(--status-live) / 0.35);
-    color: rgb(var(--status-live));
+  /* The sidebar and any full-bleed rail sit flush with the canvas rather
+     than floating on it — a raised panel the height of the viewport reads
+     as a wall, not as clay. */
+  .clay-flush {
+    box-shadow: none;
+    border-radius: 0;
   }
 }
-
 
 /* ── Print ───────────────────────────────────────────────────────────────
    The dashboard shell is navigation; on paper it is a wasted third of every
@@ -796,45 +761,24 @@
     radial-gradient(50% 60% at 50% 100%, rgb(16 185 129 / 0.08), transparent 70%);
 }
 
-/* Modal and drawer surfaces. A .card is tuned to sit on the page canvas at
-   3% white; floated over a 60%-black scrim it has almost nothing to
-   separate from, so a dialog built out of .card alone reads as text hanging
-   in space rather than a panel on top of the page. These are much denser —
-   near-opaque — while keeping the blur and the edge-lit border, which is
-   what a modal needs to do: obscure what it covers, not merely tint it. */
+/* Modal and drawer surfaces. A dialog needs to obscure what it covers, not
+   merely tint it, so this is the one place clay goes fully opaque and takes
+   the deepest drop shadow in the system — a panel floating over a scrim has
+   no canvas to be extruded from, so the lift has to be carried entirely by
+   the shadow underneath it. */
 .modal-panel {
   background-color: rgb(var(--surface));
-  border: 1px solid rgb(var(--ink) / 0.1);
-  backdrop-filter: blur(40px);
-}
-[data-theme="dark"] .modal-panel {
-  background-color: rgb(18 18 18 / 0.94);
-  border-color: rgb(255 255 255 / 0.12);
-  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.08);
-}
-[data-theme="light"] .modal-panel {
-  background-color: rgb(255 255 255 / 0.97);
-  border-color: rgb(17 17 17 / 0.08);
-  box-shadow: 0 24px 60px rgb(17 17 17 / 0.18);
+  border-radius: var(--clay-radius-lg);
+  box-shadow: 0 30px 70px rgb(0 0 0 / 0.35), var(--clay-inner);
 }
 
-/* The sidebar rail as its own glass panel, matching the cards. Not a
-   solid fill: the rail should read as another sheet of frosted glass over
-   the same abyss, so the ambient pools carry across the whole layout
-   instead of stopping at a hard opaque column. */
-[data-theme="dark"] aside {
-  background-color: rgb(255 255 255 / 0.03);
-  border-color: rgb(255 255 255 / 0.1);
-  backdrop-filter: blur(40px);
-}
-/* Same rail, light theme. Kept a touch more opaque than the cards: the
-   sidebar is a full-height column, so orbs drifting behind it are read as
-   streaks down the whole edge of the screen rather than as depth under a
-   discrete panel. */
-[data-theme="light"] aside {
-  background-color: rgb(255 255 255 / 0.72);
-  border-color: rgb(17 17 17 / 0.07);
-  backdrop-filter: blur(40px);
+/* The sidebar rail sits flush with the canvas. A raised panel the full
+   height of the viewport stops reading as a moulded object and starts
+   reading as a wall, so the rail keeps the surface colour and drops the
+   clay shadow, separating from the content column with a single hairline. */
+aside {
+  background-color: rgb(var(--sidebar));
+  border-color: rgb(var(--line));
 }
 
 @media (prefers-reduced-motion: reduce) {

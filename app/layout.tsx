@@ -34,59 +34,59 @@ export const revalidate = 60;
 // colors — statusLive in particular deliberately reintroduces a dedicated
 // green for LIVE badges (see tailwind.config.ts's volt definition), a
 // direct, explicit reversal of an earlier "unified brand red" decision.
+// "Warm Clay" — the palette both themes are built from.
+//
+// Clay is a lighting model before it is a colour scheme: every surface is
+// meant to read as a soft solid extruded out of the canvas, lit from the
+// top-left. That only works if the canvas and the card are close in value —
+// a card that is much lighter than the page reads as paper floating over it,
+// which is the glass model this replaces. So the tokens below sit close
+// together and the separation is carried by the dual shadows in globals.css
+// instead of by contrast.
+//
+// Both palettes are warm on purpose. The dark theme is a charcoal with red
+// in it rather than a neutral black, and the light theme is a sand cream
+// rather than a porcelain white, so the terracotta accents and the athletic
+// red belong to the same family as the surfaces they sit on.
 const THEME_VARS = {
-  // "Frosted White Glass": a porcelain off-white canvas with a slate ink
-  // ramp, replacing the earlier warm-cream palette. Values are the spec's
-  // literals — #f8fafc canvas, slate-900 headlines, slate-500/400 subtext,
-  // slate-200 rules — converted to the space-separated RGB triples these
-  // tokens use so the alpha modifier (`text-ink2/70`) keeps working.
+  // Warm sand canvas with a cream card one step lighter, and a slate-brown
+  // ink ramp. Kept off pure white and off pure black at both ends: clay has
+  // no hard edges, and neither should its type.
   light: {
-    ink: "15 23 42",
-    inkDisplay: "15 23 42",
-    ink2: "100 116 139",
-    ink3: "148 163 184",
-    paper: "248 250 252",
-    surface: "255 255 255",
-    surface2: "241 245 249",
-    sidebar: "255 255 255",
-    line: "226 232 240",
-    lineSoft: "241 245 249",
-    neutralBadge: "241 245 249",
+    ink: "44 39 36",
+    inkDisplay: "29 25 23",
+    ink2: "109 99 91",
+    ink3: "155 144 137",
+    paper: "244 241 234",
+    surface: "252 250 246",
+    surface2: "235 230 220",
+    sidebar: "252 250 246",
+    line: "222 213 200",
+    lineSoft: "235 228 217",
+    neutralBadge: "234 226 213",
     statusLive: "16 185 129",
-    statusWarning: "245 158 11",
-    brandHover: "230 62 62",
+    statusWarning: "217 119 6",
+    brandHover: "201 69 44",
   },
-  // "True Black Glass": a pure #000000 abyss with frosted white-sheer
-  // panels floating over it. Every surface token here is white — the actual
-  // translucency (white at 3%, 6% on hover) is applied in the dark-scoped
-  // rules in globals.css, because a token can only carry a colour, not the
-  // alpha + backdrop-blur pair that makes a panel read as glass.
-  // Secondary text is white-at-opacity rather than a zinc ramp so it
-  // blends into the glass layers instead of sitting on top of them as its
-  // own grey.
-  // Values are the *composited* result of the spec's white-at-opacity over
-  // the black canvas (e.g. line = white/10 on #000 = #1A1A1A). They have to
-  // be flat colours because most call sites use these tokens bare
-  // (`text-ink2`, `border-line`) with no alpha modifier, so a token set to
-  // pure white would render fully opaque. The genuinely translucent
-  // surfaces — the glass panels themselves, where the alpha has to stay
-  // live so the blur can refract through it — are handled by the
-  // dark-scoped rules in globals.css instead.
+  // Warm charcoal clay. The canvas is #141416 and the card is a few points
+  // lighter with the same warmth, so a panel reads as raised rather than as
+  // a lighter rectangle. Secondary text is a warm grey rather than a neutral
+  // one — a cool grey on warm charcoal looks like a rendering mistake.
   dark: {
-    ink: "255 255 255",
-    inkDisplay: "255 255 255",
-    ink2: "138 138 138",
-    ink3: "102 102 102",
-    paper: "0 0 0",
-    surface: "10 10 10",
-    surface2: "10 10 10",
-    sidebar: "0 0 0",
-    line: "38 38 38",
-    lineSoft: "20 20 20",
-    neutralBadge: "26 26 26",
+    ink: "246 241 236",
+    inkDisplay: "253 250 247",
+    ink2: "168 158 151",
+    ink3: "122 113 107",
+    paper: "20 20 22",
+    surface: "30 28 30",
+    surface2: "38 35 38",
+    sidebar: "25 23 25",
+    line: "52 48 47",
+    lineSoft: "38 35 36",
+    neutralBadge: "42 38 40",
     statusLive: "16 185 129",
-    statusWarning: "245 158 11",
-    brandHover: "230 62 62",
+    statusWarning: "234 152 62",
+    brandHover: "201 69 44",
   },
 } as const;
 
