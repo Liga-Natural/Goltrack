@@ -341,6 +341,12 @@ const CAMEL_CASE_COLUMNS: Record<string, string> = {
   dueat: "dueAt",
   installmentcount: "installmentCount",
   invoiceid: "invoiceId",
+  // Computed aliases need mapping just like real columns do: Postgres
+  // lowercases every identifier a query returns, so a SUM aliased
+  // chargedCents arrives as chargedcents and reads back undefined. Its
+  // sibling paidCents was mapped and this one was not, which made every
+  // invoice roll-up on the finance page NaN.
+  chargedcents: "chargedCents",
   issuedat: "issuedAt",
   itemcount: "itemCount",
   paidat: "paidAt",

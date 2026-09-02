@@ -767,6 +767,15 @@
 .mesh {
   position: relative;
   isolation: isolate;
+  /* The halo below is inset -20%, which on a 356px card is 71px of ink
+     hanging off each side. That bleed is the effect and it stays — but it
+     was also counted as page width, so every card-bearing route measured
+     71px of horizontal overflow that nothing could scroll to. `clip` keeps
+     the glow (out to the clip margin) while removing it from the scrollable
+     area, so a real sideways overflow is now the only thing that shows up
+     as one. */
+  overflow-x: clip;
+  overflow-clip-margin: 4rem;
 }
 .mesh::before {
   content: "";

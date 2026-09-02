@@ -16,12 +16,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-screen">
       <SimpleDashboardHeader label="Admin" userName={user.name} />
       <div className="border-b border-black/5 bg-surface2">
-        <nav className="mx-auto max-w-5xl px-4 sm:px-6 flex items-center gap-1 py-2">
+        {/* Scrolls sideways inside itself on a phone. Seven tabs do not fit in
+            390px, and a plain flex row pushed the last three off the screen
+            with no way to reach them. */}
+        <nav className="mx-auto max-w-5xl px-4 sm:px-6 flex items-center gap-1 py-2 overflow-x-auto">
           {adminNav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-lg px-3 py-1.5 text-sm font-medium text-black/60 hover:text-black hover:bg-black/5 transition-colors"
+              className="shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium text-black/60 hover:text-black hover:bg-black/5 transition-colors"
             >
               {item.label}
             </Link>

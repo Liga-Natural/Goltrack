@@ -28,14 +28,33 @@ export default async function FinancePage({ params }: { params: { id: string } }
   ]);
   const teams = allTeams.filter((t) => t.name);
 
-  // Every entrant owes the entry fee — there is no per-team pricing in the
-  // schema, so the invoice is teams x fee. Stated plainly rather than
-  // implied, because it is the assumption the whole page rests on.
   const fee = tournament.feeCents;
-  const invoiced = teams.length * fee;
   const paidTeams = teams.filter((t) => t.paid);
-  const collected = paidTeams.length * fee;
-  const outstanding = invoiced - collected;
+
+  // Headline money comes from the invoice ledger, summed the same way the
+  // invoice list below and the invoice page itself compute a grand total:
+  // line items, less discounts, plus any processing fee, against payments
+  // recorded. The old figures here were teams x fee and paid-teams x fee,
+  // which ignored a discount and counted a part payment as nothing — so an
+  // organizer who discounted one entry saw "Invoiced $1,650" while the
+  // invoice said $1,635, and the platform ledger disagreed about collected
+  // cash. One event's money now reads the same everywhere it is shown.
+  const ledger = invoices.reduce(
+    (acc, inv) => {
+      const roll = invoiceTotals.get(inv.id) ?? { chargedCents: 0, paidCents: 0 };
+      acc.invoiced += Math.max(0, roll.chargedCents - inv.discountCents + inv.processingFeeCents);
+      acc.collected += roll.paidCents;
+      return acc;
+    },
+    { invoiced: 0, collected: 0 }
+  );
+  // Before any invoice is raised there is no ledger to read, so the entry fee
+  // per entrant stands in — and the caption says which of the two you are
+  // looking at rather than letting an estimate pass as a bill.
+  const fromLedger = invoices.length > 0;
+  const invoiced = fromLedger ? ledger.invoiced : teams.length * fee;
+  const collected = fromLedger ? ledger.collected : paidTeams.length * fee;
+  const outstanding = Math.max(0, invoiced - collected);
 
   // Payment intent recorded at application time, which is richer than the
   // team row's single paid flag: it distinguishes a deposit from an invoice
@@ -73,8 +92,13 @@ export default async function FinancePage({ params }: { params: { id: string } }
           />
         </div>
         <p className="text-[11px] text-ink3 mt-2">
-          {paidTeams.length} of {teams.length} teams settled · invoice assumes the flat {money(fee)} entry fee per
-          entrant
+          {fromLedger
+            ? `${paidTeams.length} of ${teams.length} teams settled · from ${invoices.length} invoice${
+                invoices.length === 1 ? "" : "s"
+              }, including discounts and part payments`
+            : `${paidTeams.length} of ${teams.length} teams settled · estimated at the flat ${money(
+                fee
+              )} entry fee per entrant — no invoices raised yet`}
         </p>
       </div>
 

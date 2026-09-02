@@ -149,14 +149,18 @@ export function ProductShowcase({
       <section className="mx-auto max-w-5xl px-4 sm:px-6 pb-16 space-y-16">
         {sections.map((s, i) => (
           <div key={s.title} className={`grid lg:grid-cols-2 gap-10 items-center ${i % 2 === 1 ? "lg:[direction:rtl]" : ""}`}>
-            <div className="lg:[direction:ltr]">
+            {/* min-w-0 on the grid items themselves: a grid item defaults to
+                min-width:auto, so the standings preview's 420px table widened
+                the whole track past a 390px phone. The table's own
+                overflow-x-auto can only take over once the track may shrink. */}
+            <div className="min-w-0 lg:[direction:ltr]">
               <div className="h-10 w-10 rounded-lg bg-pitch-400/10 text-pitch-600 flex items-center justify-center mb-4">
                 <s.icon className="h-5 w-5" />
               </div>
               <h2 className="text-xl font-semibold mb-2">{s.title}</h2>
               <p className="text-black/55 leading-relaxed">{s.body}</p>
             </div>
-            <div className="lg:[direction:ltr]">{s.preview}</div>
+            <div className="min-w-0 lg:[direction:ltr]">{s.preview}</div>
           </div>
         ))}
       </section>
