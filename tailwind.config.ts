@@ -92,6 +92,7 @@ const config: Config = {
         pitch: {
           50: "rgb(var(--pitch-50) / <alpha-value>)",
           100: "rgb(var(--pitch-100) / <alpha-value>)",
+          300: "rgb(var(--pitch-300) / <alpha-value>)",
           400: "rgb(var(--pitch-400) / <alpha-value>)",
           500: "rgb(var(--pitch-500) / <alpha-value>)",
           600: "rgb(var(--pitch-600) / <alpha-value>)",
@@ -109,41 +110,57 @@ const config: Config = {
         // Reintroduces a dedicated LIVE-status color (Emerald, #10B981) —
         // a direct, explicit reversal of the earlier "volt tracks the brand
         // red" decision, per an exact hex from the design system spec.
-        // Both stops share one var (unlike pitch's ramp) since the spec
-        // gives a single exact emerald, not a light/dark pair — Tailwind's
-        // own opacity modifiers (bg-volt-400/20 vs text-volt-500) still do
-        // the tint-vs-solid distinction.
+        // The two stops are deliberately *different* vars, reversing the
+        // earlier "one exact emerald" decision. Sharing one var meant the
+        // text colour and the tint it sits on were the same hue at the same
+        // lightness, which is the definition of an unreadable badge —
+        // text-volt-500 on bg-volt-400/20 measured 1.9:1. So 400 is the fill
+        // (the emerald the spec names, unchanged) and 500 is the ink, which
+        // each theme sets to whatever clears 7:1 on that fill: near-black
+        // green on cream, pale mint on charcoal. Same split for warning.
         volt: {
           400: "rgb(var(--status-live) / <alpha-value>)",
-          500: "rgb(var(--status-live) / <alpha-value>)",
+          500: "rgb(var(--status-live-ink) / <alpha-value>)",
         },
         warning: {
           400: "rgb(var(--status-warning) / <alpha-value>)",
-          500: "rgb(var(--status-warning) / <alpha-value>)",
+          500: "rgb(var(--status-warning-ink) / <alpha-value>)",
         },
+        // Tailwind's stock emerald-500 is the only emerald stop this codebase
+        // uses, and every one of its 13 uses is success *text* — "Collected",
+        // "Saved", a negative discount line. Stock #10B981 measured 2.4:1 on
+        // cream, so it is pointed at the same ink token as volt-500 rather
+        // than left as a second, unthemed green that happens to look right on
+        // one background.
+        emerald: {
+          500: "rgb(var(--status-live-ink) / <alpha-value>)",
+        },
+        // The 600 stop of each sport is the badge *text* on its own 50
+        // background. Every one measured below WCAG AA at 12px before this;
+        // these values clear AAA on that pairing.
         soccer: {
           50: "#e6faf1",
           400: "#16C172",
           500: "#0fa35f",
-          600: "#0c8a50",
+          600: "#085f37",  // 7.15:1 on soccer-50
         },
         basketball: {
           50: "#fff4e6",
           400: "#FF8A00",
           500: "#e67a00",
-          600: "#cc6d00",
+          600: "#7e4400",  // 7.12:1 on basketball-50
         },
         futsal: {
           50: "#e6f9fc",
           400: "#00B8D9",
           500: "#00a2c0",
-          600: "#008aa3",
+          600: "#005c6d",  // 7.02:1 on futsal-50
         },
         flag: {
           50: "#ffe9f0",
           400: "#FF3D71",
           500: "#e62f60",
-          600: "#cc2854",
+          600: "#971e3e",  // 7.07:1 on flag-50
         },
       },
       fontSize: {

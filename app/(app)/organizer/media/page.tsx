@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { organizerTournaments, selectedTournament } from "@/lib/organizerScope";
 import { moduleSettings, saveModuleSettings, decideMedia } from "@/lib/actions";
 import { TournamentPicker } from "@/components/TournamentPicker";
+import { ConfirmButton } from "@/components/ConfirmButton";
 import { MediaItems } from "@/lib/models";
 import { formatDate } from "@/lib/invoices";
 
@@ -99,7 +100,10 @@ export default async function OrganizerMediaPage({ searchParams }: { searchParam
             {pending.map((item) => (
               <div key={item.id} className="rounded-2xl bg-surface2 overflow-hidden clay-tile">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/api/media/${item.id}/image`} alt="" className="w-full h-40 object-cover" />
+                <img src={`/api/media/${item.id}/image`} alt="" className="w-full h-40 object-cover" 
+          loading="lazy"
+          decoding="async"
+        />
                 <div className="p-3.5 space-y-2">
                   <p className="text-sm text-inkDisplay line-clamp-2">{item.caption || "No caption"}</p>
                   <p className="text-[11px] text-ink3">
@@ -112,9 +116,13 @@ export default async function OrganizerMediaPage({ searchParams }: { searchParam
                       </button>
                     </form>
                     <form action={decideMedia.bind(null, tournament.id, item.id, "REJECTED")}>
-                      <button type="submit" className="btn-ghost text-xs">
+                      <ConfirmButton
+                        title="Reject this photo?"
+                        detail="It stays in the queue marked rejected and never appears in the public gallery. The person who uploaded it is not told automatically — Jogo has no notification for this."
+                        confirmLabel="Reject the photo"
+                      >
                         Reject
-                      </button>
+                      </ConfirmButton>
                     </form>
                   </div>
                 </div>
@@ -133,7 +141,10 @@ export default async function OrganizerMediaPage({ searchParams }: { searchParam
             {decided.map((item) => (
               <div key={item.id} className="rounded-2xl bg-surface2 overflow-hidden clay-tile">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/api/media/${item.id}/image`} alt="" className="w-full h-32 object-cover" />
+                <img src={`/api/media/${item.id}/image`} alt="" className="w-full h-32 object-cover" 
+          loading="lazy"
+          decoding="async"
+        />
                 <div className="p-3.5 space-y-2">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className={`badge text-[10px] ${item.status === "APPROVED" ? "badge-accepted" : "badge-danger"}`}>
@@ -153,9 +164,13 @@ export default async function OrganizerMediaPage({ searchParams }: { searchParam
                       </form>
                     )}
                     <form action={decideMedia.bind(null, tournament.id, item.id, "DELETE")}>
-                      <button type="submit" className="btn-ghost text-xs">
+                      <ConfirmButton
+                        title="Delete this photo for good?"
+                        detail="The image itself is removed from the database. There is no copy anywhere else and this cannot be undone."
+                        confirmLabel="Delete permanently"
+                      >
                         Delete
-                      </button>
+                      </ConfirmButton>
                     </form>
                   </div>
                 </div>

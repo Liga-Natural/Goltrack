@@ -36,8 +36,8 @@ export function InquiryForm() {
   if (status === "sent") {
     return (
       <div className="card p-6 text-center">
-        <p className="text-pitch-600 font-semibold mb-1.5">Message sent — thanks!</p>
-        <p className="text-black/50 text-sm">We&apos;ll get back to you shortly. No account needed on your end.</p>
+        <p className="text-accent font-semibold mb-1.5">Message sent — thanks!</p>
+        <p className="text-ink2 text-sm">We&apos;ll get back to you shortly. No account needed on your end.</p>
       </div>
     );
   }
@@ -81,7 +81,7 @@ export function InquiryForm() {
       <button className="btn-primary w-full" disabled={status === "loading"}>
         {status === "loading" ? "Sending..." : "Send inquiry"}
       </button>
-      <p className="text-xs text-black/30 text-center">No account required — we&apos;ll follow up by email.</p>
+      <p className="text-xs text-ink3 text-center">No account required — we&apos;ll follow up by email.</p>
     </form>
   );
 }

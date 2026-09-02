@@ -9,7 +9,7 @@ export default async function PlayerDashboardPage() {
 
   if (!player) {
     return (
-      <div className="card p-10 text-center text-black/50">
+      <div className="card p-10 text-center text-ink2">
         Your account isn&apos;t linked to a passport yet. Claim your passport from your team&apos;s roster page to see
         it here.
       </div>
@@ -31,15 +31,15 @@ export default async function PlayerDashboardPage() {
   return (
     <div>
       <h1 className="text-3xl font-extrabold text-inkDisplay mb-1">Hey, {player.name.split(" ")[0]}</h1>
-      <p className="text-black/50 text-sm mb-6">Your passport and this season&apos;s stats.</p>
+      <p className="text-ink2 text-sm mb-6">Your passport and this season&apos;s stats.</p>
 
       {team && (
         <div className="card p-5 flex items-center gap-3 mb-6">
           <TeamBadge id={team.id} name={team.name} hasCrest={team.hasCrest} crestUpdatedAt={team.crestUpdatedAt} logoUrl={team.logoUrl} sport={tournament?.sport || "Soccer"} size="lg" />
           <div className="min-w-0">
             <p className="font-medium truncate">{team.name}</p>
-            {tournament && <p className="text-sm text-black/40 truncate">{tournament.name}</p>}
-            {player.jerseyNumber && <p className="text-xs text-black/40">#{player.jerseyNumber}</p>}
+            {tournament && <p className="text-sm text-ink3 truncate">{tournament.name}</p>}
+            {player.jerseyNumber && <p className="text-xs text-ink3">#{player.jerseyNumber}</p>}
           </div>
         </div>
       )}
@@ -47,11 +47,11 @@ export default async function PlayerDashboardPage() {
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="card p-4 text-center">
           <p className="font-score text-2xl">{played.length}</p>
-          <p className="text-xs text-black/40">Matches played</p>
+          <p className="text-xs text-ink3">Matches played</p>
         </div>
         <div className="card p-4 text-center">
           <p className="font-score text-2xl">{wins}</p>
-          <p className="text-xs text-black/40">Wins</p>
+          <p className="text-xs text-ink3">Wins</p>
         </div>
       </div>
 

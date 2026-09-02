@@ -38,7 +38,7 @@ export function VenueStatusBar({ conflicts }: { conflicts: Conflict[] }) {
                   setSent(false);
                 }}
                 aria-pressed={status === s.key}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold border transition-colors ${
+                className={`rounded-full px-3 min-h-[48px] inline-flex items-center text-xs font-semibold border transition-colors ${
                   status === s.key
                     ? `badge ${s.cls}`
                     : "border-line text-ink2 hover:text-black hover:bg-black/[0.03]"

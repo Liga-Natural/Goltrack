@@ -58,7 +58,7 @@ export default function LoginPage() {
         </div>
         <div className="card p-6">
           <h1 className="text-lg font-semibold mb-1">Welcome back</h1>
-          <p className="text-sm text-black/50 mb-6">Log in to your Jogo account.</p>
+          <p className="text-sm text-ink2 mb-6">Log in to your Jogo account.</p>
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
               <label className="label">Email</label>
@@ -87,9 +87,9 @@ export default function LoginPage() {
               {loading ? "Logging in..." : "Log in"}
             </button>
           </form>
-          <p className="text-sm text-black/50 mt-6 text-center">
+          <p className="text-sm text-ink2 mt-6 text-center">
             New to Jogo?{" "}
-            <Link href="/signup" className="text-pitch-600 font-semibold hover:underline">
+            <Link href="/signup" className="text-accent font-semibold hover:underline">
               Create an account
             </Link>
           </p>

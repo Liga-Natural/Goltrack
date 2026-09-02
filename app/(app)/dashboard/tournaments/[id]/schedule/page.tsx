@@ -48,7 +48,7 @@ export default async function SchedulePage({ params }: { params: { id: string } 
       )}
 
       {matches.length === 0 && (
-        <div className="card p-8 text-center text-black/50">
+        <div className="card p-8 text-center text-ink2">
           No schedule yet — go to Overview and click &quot;Generate schedule&quot;.
         </div>
       )}
@@ -74,13 +74,13 @@ export default async function SchedulePage({ params }: { params: { id: string } 
             {groupMatches.map((m) => (
               <div key={m.id} className="flex items-center justify-between text-sm border-b border-black/5 pb-2">
                 <div className="flex-1 min-w-0">
-                  <span className="text-black/40 text-xs mr-2">{m.round}</span>
+                  <span className="text-ink3 text-xs mr-2">{m.round}</span>
                   <TeamInline team={teamsById.get(m.homeTeamId || "")} sport={tournament.sport} />
-                  <span className="mx-2 text-black/30">vs</span>
+                  <span className="mx-2 text-ink3">vs</span>
                   <TeamInline team={teamsById.get(m.awayTeamId || "")} sport={tournament.sport} />
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-black/40 text-xs">{m.field}</span>
+                  <span className="text-ink3 text-xs">{m.field}</span>
                   <span className="font-score text-sm">{m.homeScore ?? "-"} : {m.awayScore ?? "-"}</span>
                   <MatchStatusBadge status={m.status} />
                 </div>

@@ -19,9 +19,9 @@ export default function InquirePage() {
       <MarketingNav links={NAV_LINKS} />
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-8 text-center">
-        <span className="badge bg-pitch-400/10 text-pitch-600 border border-pitch-400/20 mb-5">No account needed</span>
+        <span className="badge bg-pitch-400/10 text-accent border border-pitch-400/20 mb-5">No account needed</span>
         <h1 className="text-display-sm">Not sure Jogo fits your event?</h1>
-        <p className="text-black/60 mt-4 max-w-xl mx-auto">
+        <p className="text-ink2 mt-4 max-w-xl mx-auto">
           Browse the formats below, or just send us a note.
         </p>
       </section>
@@ -41,10 +41,10 @@ export default function InquirePage() {
               </span>
               <div className="relative z-10 pl-12 sm:pl-16">
                 <div className="flex items-center gap-2.5 mb-1.5">
-                  <f.icon className="h-4 w-4 text-pitch-600 shrink-0" />
+                  <f.icon className="h-4 w-4 text-accent shrink-0" />
                   <h3 className="font-semibold text-black">{f.title}</h3>
                 </div>
-                <p className="text-sm text-black/50 leading-relaxed">{f.body}</p>
+                <p className="text-sm text-ink2 leading-relaxed">{f.body}</p>
               </div>
             </div>
           ))}
@@ -53,10 +53,10 @@ export default function InquirePage() {
         <div className="grid lg:grid-cols-2 gap-10 items-start max-w-4xl mx-auto">
           <div className="reveal">
             <h2 className="text-xl font-semibold mb-2">Ask us anything</h2>
-            <p className="text-black/50 text-sm leading-relaxed mb-4">
+            <p className="text-ink2 text-sm leading-relaxed mb-4">
               Team counts, field availability, anything else — send it over and we&apos;ll reply by email.
             </p>
-            <Link href="/tour" className="text-pitch-600 font-semibold text-sm hover:underline">
+            <Link href="/tour" className="text-accent font-semibold text-sm inline-flex items-center min-h-12 hover:underline">
               Explore the live interface preview →
             </Link>
           </div>
@@ -67,7 +67,7 @@ export default function InquirePage() {
       </section>
 
       <footer className="border-t border-black/5">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-black/30">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-ink3">
           <Logo wordmarkClassName="text-sm" />
           <p>© {new Date().getFullYear()} Jogo. Built for organizers, players, and families.</p>
         </div>

@@ -26,7 +26,7 @@ export default async function TeamCrestPage({ params }: { params: { slug: string
         {!valid || !team ? (
           <div className="card p-8 text-center">
             <p className="font-semibold mb-1.5">This crest upload link isn&apos;t valid.</p>
-            <p className="text-black/50 text-sm mb-4">
+            <p className="text-ink2 text-sm mb-4">
               Double-check the link your organizer sent you, or ask {tournament.supervisorName || "the organizer"} for a fresh one.
             </p>
             <Link href={`/t/${tournament.slug}`} className="btn-primary">
@@ -47,13 +47,13 @@ export default async function TeamCrestPage({ params }: { params: { slug: string
               />
               <div>
                 <h1 className="text-xl font-semibold">{team.name}</h1>
-                <p className="text-black/50 text-sm">{tournament.name}</p>
+                <p className="text-ink2 text-sm">{tournament.name}</p>
               </div>
             </div>
 
             <div className="card p-6">
               <h2 className="font-semibold mb-1">{team.hasCrest ? "Replace your crest" : "Upload your crest"}</h2>
-              <p className="text-xs text-black/40 mb-4">
+              <p className="text-xs text-ink3 mb-4">
                 PNG, JPG, WEBP, or SVG — up to 5MB. No account needed, and you can come back to this same link to
                 update it later.
               </p>

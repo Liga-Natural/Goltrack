@@ -15,7 +15,7 @@ export default async function AdminTournamentsPage() {
       <p className="text-ink2 text-sm font-medium mb-6">Across every organizer on the platform.</p>
 
       {tournaments.length === 0 ? (
-        <div className="card p-10 text-center text-black/50">No tournaments on the platform yet.</div>
+        <div className="card p-10 text-center text-ink2">No tournaments on the platform yet.</div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {tournaments.map((t) => {
@@ -33,8 +33,8 @@ export default async function AdminTournamentsPage() {
                     {theme.emoji} {t.sport} {t.teamFormat}
                   </span>
                 </div>
-                <p className="text-sm text-black/40">{new Date(t.startDate).toLocaleDateString()}</p>
-                <p className="text-xs text-black/30 mt-2 truncate">Owner: {owner?.name || t.supervisorName}</p>
+                <p className="text-sm text-ink3">{new Date(t.startDate).toLocaleDateString()}</p>
+                <p className="text-xs text-ink3 mt-2 truncate">Owner: {owner?.name || t.supervisorName}</p>
               </Link>
             );
           })}

@@ -30,13 +30,29 @@ export default async function OrganizerLayout({ children }: { children: React.Re
             <Link
               key={item.href}
               href={item.href}
-              className="shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium text-ink2 hover:text-inkDisplay hover:bg-surface transition-colors"
+              className="shrink-0 whitespace-nowrap rounded-full px-4 py-2 min-h-[48px] inline-flex items-center text-sm font-medium text-ink2 hover:text-inkDisplay hover:bg-surface transition-colors"
             >
               {item.label}
             </Link>
           ))}
         </nav>
       </div>
+      <div className="border-b border-lineSoft">
+        <nav aria-label="Breadcrumb" className="mx-auto max-w-5xl px-4 sm:px-6 py-3">
+          <ol className="flex items-center gap-2 text-sm text-ink2 flex-wrap">
+            <li>
+              <Link href="/dashboard" className="hover:text-inkDisplay transition-colors inline-flex items-center min-h-12">
+                Dashboard
+              </Link>
+            </li>
+            <li aria-hidden className="text-ink3">
+              /
+            </li>
+            <li className="text-inkDisplay font-semibold">Event modules</li>
+          </ol>
+        </nav>
+      </div>
+
       <main className="mx-auto max-w-5xl px-4 sm:px-6 py-8">{children}</main>
     </div>
   );

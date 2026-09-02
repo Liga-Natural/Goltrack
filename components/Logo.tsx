@@ -27,7 +27,12 @@ export function Logo({
   wordmarkClassName?: string;
 }) {
   return (
-    <span className={`inline-flex items-center ${className}`}>
+    // min-h-12 on the wrapper, not on the image: the wordmark is almost
+    // always the target of a link back to the homepage, and at its natural
+    // 27px it was the most-repeated undersized tap target in the app. The
+    // extra height is empty space above and below the mark, so nothing moves
+    // visually — the link just becomes something a thumb can hit.
+    <span className={`inline-flex items-center min-h-12 ${className}`}>
       <span className={`${wordmarkClassName} inline-flex leading-none`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

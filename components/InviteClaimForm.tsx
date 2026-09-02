@@ -15,7 +15,7 @@ export function InviteClaimForm({ token }: { token: string }) {
       <div>
         <label className="label">Team name</label>
         <input className="input" name="name" required />
-        <p className="text-xs text-black/30 mt-1">You&apos;ll get a link to upload your team crest right after this.</p>
+        <p className="text-xs text-ink3 mt-1">You&apos;ll get a link to upload your team crest right after this.</p>
       </div>
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
@@ -30,7 +30,7 @@ export function InviteClaimForm({ token }: { token: string }) {
       <div>
         <label className="label">Password</label>
         <input className="input" type="password" name="password" minLength={8} required />
-        <p className="text-xs text-black/30 mt-1">
+        <p className="text-xs text-ink3 mt-1">
           At least 8 characters — this logs you into your team&apos;s dashboard after you register.
         </p>
       </div>
@@ -40,7 +40,7 @@ export function InviteClaimForm({ token }: { token: string }) {
           <label className="label mb-0">Roster</label>
           <button
             type="button"
-            className="text-xs text-pitch-600 hover:underline"
+            className="text-xs text-accent hover:underline"
             onClick={() => setPlayers((p) => [...p, p.length])}
           >
             + Add player

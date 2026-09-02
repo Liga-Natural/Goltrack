@@ -76,7 +76,7 @@ export default async function CoachRosterPage() {
           <Link href="/">
             <Logo />
           </Link>
-          <Link href="/coach/dashboard" className="text-sm text-ink2 hover:text-inkDisplay transition-colors">
+          <Link href="/coach/dashboard" className="text-sm text-ink2 hover:text-inkDisplay transition-colors inline-flex items-center min-h-12">
             Coach dashboard →
           </Link>
         </div>

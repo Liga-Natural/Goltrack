@@ -21,7 +21,7 @@ export function CheckInScanner({ tournamentId }: { tournamentId: string }) {
   return (
     <div className="card p-5">
       <h3 className="font-semibold mb-1">On-site check-in</h3>
-      <p className="text-sm text-black/50 mb-3">
+      <p className="text-sm text-ink2 mb-3">
         Scan a player&apos;s passport QR code (or type their passport ID) to verify eligibility and check them in.
       </p>
       <form onSubmit={submit} className="flex gap-2">

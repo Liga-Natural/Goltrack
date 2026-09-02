@@ -37,7 +37,10 @@ export function TeamBadge({
         src={src}
         alt={`${name} crest`}
         className={`${dims} rounded-full object-cover border border-black/10 shrink-0 bg-surface`}
-      />
+      
+          loading="lazy"
+          decoding="async"
+        />
     );
   }
 

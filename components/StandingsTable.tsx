@@ -10,7 +10,7 @@ export function StandingsTable({ rows, title, sport }: { rows: StandingRow[]; ti
     // Classic CSS Grid "blowout": the overflow-x-auto below only works once
     // its ancestor is actually allowed to be narrower than its content.
     <div className="min-w-0">
-      {title && <h3 className="font-semibold mb-2 text-sm text-black/70">{title}</h3>}
+      {title && <h3 className="font-semibold mb-2 text-sm text-ink2">{title}</h3>}
       {/* A plain overflow-x-auto, scoped to the card's own padding — no
           negative-margin bleed. That trick sounds like it should buy the
           scroll area more room, but a block with overflow:auto and a

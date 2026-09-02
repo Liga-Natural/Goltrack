@@ -323,7 +323,7 @@ export function RoleWorkspace({ organizer }: { organizer: React.ReactNode }) {
             type="button"
             onClick={() => setRole(r)}
             aria-pressed={role === r}
-            className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+            className={`shrink-0 rounded-full px-4 min-h-[48px] inline-flex items-center text-xs font-semibold transition-colors ${
               role === r ? "bg-black/10 text-black border border-black/20" : "border border-transparent text-ink2 hover:text-black hover:bg-black/5"
             }`}
           >

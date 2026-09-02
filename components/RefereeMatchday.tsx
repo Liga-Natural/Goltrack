@@ -78,7 +78,7 @@ export function RefereeMatchday({
             key={s}
             type="button"
             onClick={() => setStep(s)}
-            className={`flex-1 text-[11px] py-2 rounded-lg border transition-colors ${
+            className={`flex-1 text-xs min-h-[48px] inline-flex items-center justify-center py-2 rounded-xl border transition-colors ${
               step === s
                 ? "border-pitch-400 bg-pitch-400/10 text-inkDisplay font-semibold"
                 : "border-line text-ink3"
@@ -187,7 +187,7 @@ function RosterCheck({
                   else next.add(p.id);
                   setChecked(next);
                 }}
-                className={`w-full flex items-center gap-2.5 rounded-lg border px-3 py-2.5 text-left transition-colors ${
+                className={`w-full flex items-center gap-2.5 rounded-xl border px-3 py-2.5 min-h-[48px] text-left transition-colors ${
                   p.suspended
                     ? "border-warning-500/40 bg-warning-500/5 cursor-not-allowed"
                     : checked.has(p.id)
@@ -195,10 +195,10 @@ function RosterCheck({
                       : "border-line"
                 }`}
               >
-                <span className="font-score text-xs text-ink3 w-8 shrink-0">
+                <span className="font-score text-sm text-ink2 w-9 shrink-0">
                   {p.jerseyNumber ? `#${p.jerseyNumber}` : "—"}
                 </span>
-                <span className="text-sm truncate min-w-0 flex-1">{p.name}</span>
+                <span className="text-base truncate min-w-0 flex-1">{p.name}</span>
                 {/* A suspended player cannot be ticked in at all — the whole
                     point of surfacing eligibility on this screen is that the
                     referee is the last person who can stop them playing. */}
@@ -353,7 +353,7 @@ function ScorePad({
                   setPicker(null);
                 }}
               >
-                <span className="font-score text-xs text-ink3 w-8 shrink-0">
+                <span className="font-score text-sm text-ink2 w-9 shrink-0">
                   {p.jerseyNumber ? `#${p.jerseyNumber}` : "—"}
                 </span>
                 <span className="text-sm truncate">{p.name}</span>
@@ -364,7 +364,7 @@ function ScorePad({
               // is refused by the server, so it is not offered here.
               <button
                 type="button"
-                className="w-full rounded-lg border border-dashed border-line px-3 py-2.5 text-xs text-ink2"
+                className="w-full rounded-xl border border-dashed border-line px-3 min-h-[48px] text-sm text-ink2"
                 onClick={() => {
                   onLog({ type: "GOAL", teamId: teamId ?? "", minute, note: "Scorer not recorded" });
                   setPicker(null);

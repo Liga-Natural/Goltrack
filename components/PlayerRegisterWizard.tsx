@@ -82,7 +82,7 @@ export function PlayerRegisterWizard({ clubs }: { clubs: ClubOption[] }) {
                 i === step
                   ? "border-pitch-400 bg-pitch-400/10 text-inkDisplay"
                   : i < step
-                    ? "border-pitch-400/40 text-pitch-600"
+                    ? "border-pitch-400/40 text-accent"
                     : "border-line text-ink3"
               }`}
             >
@@ -163,7 +163,7 @@ export function PlayerRegisterWizard({ clubs }: { clubs: ClubOption[] }) {
               {AGE_DOC_TYPES.map((d) => (
                 <label
                   key={d.value}
-                  className={`cursor-pointer rounded-xl border p-3 text-center transition-colors ${
+                  className={`cursor-pointer rounded-xl border p-3 min-h-[48px] flex items-center justify-center text-center transition-colors ${
                     docType === d.value ? "border-pitch-400 bg-pitch-400/10" : "border-line hover:border-black/25"
                   }`}
                 >

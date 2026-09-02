@@ -22,7 +22,7 @@ export function TeamCard({
       <TeamBadge id={team.id} name={team.name} hasCrest={team.hasCrest} crestUpdatedAt={team.crestUpdatedAt} logoUrl={team.logoUrl} sport={sport} />
       <div className="min-w-0 flex-1">
         <p className="font-semibold truncate">{team.name}</p>
-        <p className="text-xs text-black/40">
+        <p className="text-xs text-ink3">
           {team.groupName ? `Group ${team.groupName}` : "Unassigned"}
           {standing ? ` · ${standing.won}-${standing.drawn}-${standing.lost} · ${standing.points} pts` : ""}
         </p>

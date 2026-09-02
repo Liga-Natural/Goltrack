@@ -76,10 +76,10 @@ export function RoleTabs() {
             // white/10 in dark and ink/10 in light, since Tailwind's black
             // key is remapped onto --ink; writing bg-white/10 literally
             // would resolve to the canvas colour and disappear.
-            className={`rounded-full px-3.5 sm:px-4 py-2 transition-colors ${
+            className={`rounded-full px-3.5 sm:px-4 min-h-[48px] inline-flex items-center justify-center transition-colors ${
               active === i
                 ? "bg-black/10 text-black border border-black/20 backdrop-blur-md"
-                : "border border-transparent text-black/50 hover:text-black hover:bg-black/5"
+                : "border border-transparent text-ink2 hover:text-black hover:bg-black/5"
             }`}
           >
             {r.label}
@@ -112,10 +112,10 @@ export function RoleTabs() {
             </span>
             <div className="relative z-10 pl-12 sm:pl-16">
               <div className="flex items-center gap-2.5 mb-1.5">
-                <f.icon className="h-4 w-4 text-pitch-600 shrink-0" />
+                <f.icon className="h-4 w-4 text-accent shrink-0" />
                 <h3 className="font-semibold text-black">{f.title}</h3>
               </div>
-              <p className="text-sm text-black/50 leading-relaxed">{f.body}</p>
+              <p className="text-sm text-ink2 leading-relaxed">{f.body}</p>
             </div>
           </div>
         ))}

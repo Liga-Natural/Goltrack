@@ -52,7 +52,10 @@ function Avatar({ player }: { player: RosterCandidate }) {
       src={`/api/players/${player.id}/photo`}
       alt=""
       className="h-10 w-10 shrink-0 rounded-full object-cover border border-line"
-    />
+    
+          loading="lazy"
+          decoding="async"
+        />
   );
 }
 

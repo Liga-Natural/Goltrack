@@ -43,8 +43,13 @@ export function RoleNav() {
           key={r.key}
           href={isHome ? "#roles" : `/#roles`}
           onClick={() => handleClick(r.key)}
-          className={`text-xs font-semibold px-3.5 py-1.5 rounded-full transition-colors ${
-            i === 0 ? "bg-pitch-400 text-white" : "text-black/50 hover:text-black"
+          className={`text-xs font-semibold px-3.5 min-h-[48px] inline-flex items-center rounded-full transition-colors ${
+            // pitch-700 with a literal white, matching .btn-primary. On
+            // pitch-400 with `text-white` this pill was 2.9:1 — the accent's
+            // bright stop is a fill for tints, never a ground for text, and
+            // Tailwind's `white` key is remapped onto --paper here so it was
+            // cream rather than white on top of that.
+            i === 0 ? "bg-pitch-700 text-[#ffffff]" : "text-ink2 hover:text-black"
           }`}
         >
           {r.label}

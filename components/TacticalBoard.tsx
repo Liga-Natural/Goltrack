@@ -122,7 +122,7 @@ export function TacticalBoard({
             key={f.id}
             type="button"
             onClick={() => changeFormation(f.id)}
-            className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+            className={`text-xs px-4 min-h-[48px] inline-flex items-center rounded-full border transition-colors ${
               formationId === f.id
                 ? "border-pitch-400 bg-pitch-400/10 text-inkDisplay font-semibold"
                 : "border-line text-ink2 hover:border-black/25"
@@ -139,7 +139,7 @@ export function TacticalBoard({
               setDrawing((d) => !d);
               setPicked(null);
             }}
-            className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+            className={`text-xs px-4 min-h-[48px] inline-flex items-center rounded-full border transition-colors ${
               drawing ? "border-pitch-400 bg-pitch-400/10 text-inkDisplay font-semibold" : "border-line text-ink2"
             }`}
           >

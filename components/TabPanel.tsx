@@ -52,7 +52,7 @@ export function TabPanel({ tabs, className = "" }: { tabs: TabDef[]; className?:
               // -mb-px pulls each tab's own bottom border down onto the
               // strip's border-b so the active underline replaces that line
               // rather than stacking a second rule under it.
-              className={`shrink-0 -mb-px border-b-2 pb-2.5 pt-1 text-sm font-semibold transition-colors ${
+              className={`shrink-0 -mb-px border-b-2 pb-2.5 pt-1 min-h-[48px] inline-flex items-center text-sm font-semibold transition-colors ${
                 on ? "border-black text-black" : "border-transparent text-ink2 hover:text-black"
               }`}
             >

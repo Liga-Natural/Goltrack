@@ -45,7 +45,7 @@ export default async function PublicTeamPage({ params }: { params: { slug: strin
               <h1 className="text-display-sm">{team.name}</h1>
               <span className={`badge ${getSportTheme(tournament.sport).soft}`}>{getSportTheme(tournament.sport).emoji}</span>
             </div>
-            <p className="text-black/50 mt-1">
+            <p className="text-ink2 mt-1">
               {tournament.name}
               {team.groupName ? ` · Group ${team.groupName}` : ""} · Captain {team.contactName}
             </p>
@@ -62,7 +62,7 @@ export default async function PublicTeamPage({ params }: { params: { slug: strin
               ["MOTM awards", motmCount],
             ].map(([label, value]) => (
               <div key={label as string} className="card-elevated p-4 text-center">
-                <p className="text-xs uppercase tracking-wide text-black/40 mb-1">{label}</p>
+                <p className="text-xs uppercase tracking-wide text-ink3 mb-1">{label}</p>
                 <p className="font-score text-2xl">{value}</p>
               </div>
             ))}
@@ -72,7 +72,7 @@ export default async function PublicTeamPage({ params }: { params: { slug: strin
         <section className="card p-6 mb-6">
           <h2 className="font-semibold mb-4">Roster</h2>
           {players.length === 0 ? (
-            <p className="text-black/40 text-sm">No roster published yet.</p>
+            <p className="text-ink3 text-sm">No roster published yet.</p>
           ) : (
             <div className="grid sm:grid-cols-2 gap-2">
               {players.map((p) => (
@@ -80,13 +80,13 @@ export default async function PublicTeamPage({ params }: { params: { slug: strin
                   key={p.id}
                   href={`/passport/${p.id}`}
                   target="_blank"
-                  className="flex items-center justify-between text-sm border-b border-black/5 pb-1.5 hover:text-pitch-600"
+                  className="flex items-center justify-between text-sm border-b border-black/5 pb-1.5 hover:text-accent"
                 >
                   <span>
-                    {p.jerseyNumber && <span className="text-black/30 mr-2">#{p.jerseyNumber}</span>}
+                    {p.jerseyNumber && <span className="text-ink3 mr-2">#{p.jerseyNumber}</span>}
                     {p.name}
                   </span>
-                  <span className="text-black/30 text-xs">passport →</span>
+                  <span className="text-ink2 text-xs">passport →</span>
                 </Link>
               ))}
             </div>
@@ -96,7 +96,7 @@ export default async function PublicTeamPage({ params }: { params: { slug: strin
         <section className="card p-6">
           <h2 className="font-semibold mb-4">Results</h2>
           {teamMatches.length === 0 ? (
-            <p className="text-black/40 text-sm">No matches played yet.</p>
+            <p className="text-ink3 text-sm">No matches played yet.</p>
           ) : (
             <div className="space-y-2">
               {teamMatches.map((m) => {
@@ -106,7 +106,7 @@ export default async function PublicTeamPage({ params }: { params: { slug: strin
                 return (
                   <div key={m.id} className="flex items-center justify-between text-sm border-b border-black/5 pb-2">
                     <div>
-                      <span className="text-black/40 text-xs mr-2">{m.round}</span>
+                      <span className="text-ink3 text-xs mr-2">{m.round}</span>
                       {isHome ? "vs" : "@"} {opponent || "TBD"}
                     </div>
                     <div className="flex items-center gap-3">

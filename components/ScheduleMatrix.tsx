@@ -236,7 +236,7 @@ export function ScheduleMatrix({
                               <StatusChip status={m.status} />
                             </div>
                             {div && (
-                              <span className="badge bg-neutralBadge text-ink2 border border-line text-[9px] mb-1 inline-block">
+                              <span className="badge bg-neutralBadge text-ink2 border border-line text-[10px] mb-1 inline-block">
                                 {div}
                               </span>
                             )}
@@ -285,7 +285,7 @@ export function ScheduleMatrix({
 function StatusChip({ status }: { status: string }) {
   if (status === "LIVE") {
     return (
-      <span className="badge badge-live bg-red-500/20 text-red-500 border border-red-500/50 text-[9px] inline-flex items-center gap-1 shrink-0">
+      <span className="badge live-chip text-[10px] inline-flex items-center gap-1 shrink-0">
         <span className="relative flex h-1.5 w-1.5">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
           <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-500" />
@@ -295,7 +295,7 @@ function StatusChip({ status }: { status: string }) {
     );
   }
   if (status === "FINAL") {
-    return <span className="badge bg-neutralBadge text-ink2 border border-line text-[9px] shrink-0">FINAL</span>;
+    return <span className="badge bg-neutralBadge text-ink2 border border-line text-[10px] shrink-0">FINAL</span>;
   }
-  return <span className="badge badge-pending text-[9px] shrink-0">UPCOMING</span>;
+  return <span className="badge badge-pending text-[10px] shrink-0">UPCOMING</span>;
 }

@@ -34,7 +34,7 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
             min-w-0 note. */}
         <div className="lg:col-span-2 space-y-4 min-w-0">
           {teams.length === 0 && pendingInvites.length === 0 && (
-            <p className="text-black/50">No teams yet — add one, generate an invite link, or share the registration link.</p>
+            <p className="text-ink2">No teams yet — add one, generate an invite link, or share the registration link.</p>
           )}
           {teamsWithDetails.map(({ team, players, logoToken }) => {
             const addPlayerWithIds = addPlayer.bind(null, tournament.id, team.id);
@@ -49,9 +49,9 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
                     <TeamBadge id={team.id} name={team.name} hasCrest={team.hasCrest} crestUpdatedAt={team.crestUpdatedAt} logoUrl={team.logoUrl} sport={tournament.sport} />
                     <div className="min-w-0">
                       <h3 className="font-semibold truncate">
-                        {team.name} {team.groupName && <span className="text-black/40 font-normal text-sm">· Group {team.groupName}</span>}
+                        {team.name} {team.groupName && <span className="text-ink3 font-normal text-sm">· Group {team.groupName}</span>}
                       </h3>
-                      <p className="text-sm text-black/40 truncate">{team.contactName} · {team.contactEmail}</p>
+                      <p className="text-sm text-ink3 truncate">{team.contactName} · {team.contactEmail}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -61,7 +61,7 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
                       </button>
                     </form>
                     <form action={removeTeamWithIds}>
-                      <button className="text-xs text-black/30 hover:text-red-600">Remove</button>
+                      <button className="text-xs text-ink2 hover:text-red-600 min-h-[48px] px-3 inline-flex items-center">Remove</button>
                     </form>
                   </div>
                 </div>
@@ -80,31 +80,31 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
                     </button>
                   </form>
                   <div className="flex items-center gap-1.5 min-w-0 w-full sm:w-auto">
-                    <code className="text-xs text-pitch-600 truncate min-w-0">…/crest/{logoToken}</code>
+                    <code className="text-xs text-accent truncate min-w-0">…/crest/{logoToken}</code>
                     <CopyLinkButton path={`/t/${tournament.slug}/crest/${logoToken}`} />
                   </div>
                 </div>
-                <p className="text-xs text-black/30 -mt-2 mb-3">
+                <p className="text-xs text-ink3 -mt-2 mb-3">
                   Send the crest link above to {team.contactName || "the team"}&apos;s manager to let them upload their own logo — no account needed.
                 </p>
 
                 <div className="space-y-1.5 mb-3">
                   {players.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between gap-2 text-sm text-black/60 border-b border-black/5 pb-1">
+                    <div key={p.id} className="flex items-center justify-between gap-2 text-sm text-ink2 border-b border-black/5 pb-1">
                       <span className="truncate min-w-0">
-                        {p.jerseyNumber && <span className="text-black/30 mr-2">#{p.jerseyNumber}</span>}
+                        {p.jerseyNumber && <span className="text-ink3 mr-2">#{p.jerseyNumber}</span>}
                         {p.name}
                       </span>
                       <a
                         href={`/passport/${p.id}`}
                         target="_blank"
-                        className="text-black/30 hover:text-pitch-600 text-xs underline decoration-dotted shrink-0"
+                        className="text-ink2 hover:text-accent text-xs underline decoration-dotted shrink-0 inline-flex items-center min-h-[48px] px-2"
                       >
                         passport →
                       </a>
                     </div>
                   ))}
-                  {players.length === 0 && <p className="text-xs text-black/30">No players added yet.</p>}
+                  {players.length === 0 && <p className="text-xs text-ink3">No players added yet.</p>}
                 </div>
 
                 <form action={addPlayerWithIds} className="flex gap-2">
@@ -129,21 +129,21 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
                 <button className="btn-secondary text-xs px-2.5 py-1.5">+ Generate</button>
               </form>
             </div>
-            <p className="text-xs text-black/40 mb-3">
+            <p className="text-xs text-ink3 mb-3">
               Each link is unique to one team and works once — like a gotsport-style invite. Send one per team you
               want to reserve a spot.
             </p>
             {pendingInvites.length === 0 ? (
-              <p className="text-xs text-black/30">No pending invites.</p>
+              <p className="text-xs text-ink3">No pending invites.</p>
             ) : (
               <div className="space-y-2">
                 {pendingInvites.map((invite) => (
                   <div key={invite.id} className="flex items-center justify-between gap-2 bg-black/[0.05] rounded-lg px-2.5 py-2">
-                    <code className="text-xs text-pitch-600 truncate min-w-0">…/invite/{invite.inviteToken}</code>
+                    <code className="text-xs text-accent truncate min-w-0">…/invite/{invite.inviteToken}</code>
                     <div className="flex items-center gap-1.5 shrink-0">
                       <CopyLinkButton path={`/t/${tournament.slug}/invite/${invite.inviteToken}`} />
                       <form action={removeTeam.bind(null, tournament.id, invite.id)}>
-                        <button className="text-xs text-black/30 hover:text-red-600 px-1">✕</button>
+                        <button aria-label="Remove player" className="text-sm text-ink2 hover:text-red-600 min-h-[48px] min-w-[48px] inline-flex items-center justify-center">✕</button>
                       </form>
                     </div>
                   </div>
@@ -167,7 +167,7 @@ export default async function TeamsPage({ params }: { params: { id: string } }) 
                 <label className="label">Contact email</label>
                 <input className="input" type="email" name="contactEmail" required />
               </div>
-              <p className="text-xs text-black/30">
+              <p className="text-xs text-ink3">
                 Crest upload happens after the team is created — use the &quot;Upload crest&quot; control on the team&apos;s card.
               </p>
               <button className="btn-primary w-full">Add team</button>

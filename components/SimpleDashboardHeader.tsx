@@ -16,8 +16,8 @@ export function SimpleDashboardHeader({ label, userName }: { label: string; user
           <Logo />
         </Link>
         <div className="flex items-center gap-3">
-          <span className="hidden sm:inline text-xs font-semibold uppercase tracking-wide text-black/35">{label}</span>
-          <span className="text-sm text-black/50 truncate max-w-[10rem]">{userName}</span>
+          <span className="hidden sm:inline text-xs font-semibold uppercase tracking-wide text-ink2">{label}</span>
+          <span className="text-sm text-ink2 truncate max-w-[10rem]">{userName}</span>
           <LogoutButton />
         </div>
       </div>

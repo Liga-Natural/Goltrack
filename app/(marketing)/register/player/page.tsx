@@ -28,7 +28,7 @@ export default async function PlayerRegisterPage() {
           <Link href="/">
             <Logo />
           </Link>
-          <Link href="/login" className="text-sm text-ink2 hover:text-inkDisplay transition-colors">
+          <Link href="/login" className="text-sm text-ink2 hover:text-inkDisplay transition-colors inline-flex items-center min-h-12">
             Already have an account?
           </Link>
         </div>

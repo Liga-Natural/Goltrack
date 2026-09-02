@@ -11,7 +11,7 @@ export default async function TourPage() {
   const tournament = await Tournaments.bySlug("coastal-cup");
   if (!tournament) {
     return (
-      <main className="min-h-screen flex items-center justify-center text-black/50">
+      <main className="min-h-screen flex items-center justify-center text-ink2">
         Demo tournament not seeded yet — refresh in a moment.
       </main>
     );

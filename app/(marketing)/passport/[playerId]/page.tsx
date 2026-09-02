@@ -82,7 +82,10 @@ export default async function PassportPage({ params }: { params: { playerId: str
               </div>
               <div className="bg-white rounded-lg p-1.5 shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={qr} alt="Passport QR code" className="h-20 w-20" />
+                <img src={qr} alt="Passport QR code" className="h-20 w-20" 
+          loading="lazy"
+          decoding="async"
+        />
               </div>
             </div>
           </div>
@@ -91,12 +94,12 @@ export default async function PassportPage({ params }: { params: { playerId: str
 
           <div className="p-5">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs text-black/40">Passport ID</span>
+              <span className="text-xs text-ink3">Passport ID</span>
               <code className="font-score text-xs text-navy-700">{player.passportId}</code>
             </div>
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs text-black/40">Status</span>
-              <span className={`badge ${isCheckedIn ? "bg-volt-400/10 text-volt-500" : "bg-black/5 text-black/50"}`}>
+              <span className="text-xs text-ink3">Status</span>
+              <span className={`badge ${isCheckedIn ? "bg-volt-400/10 text-volt-500" : "bg-black/5 text-ink2"}`}>
                 {isCheckedIn ? "Checked in ✓" : "Not checked in"}
               </span>
             </div>
@@ -104,22 +107,22 @@ export default async function PassportPage({ params }: { params: { playerId: str
             <div className="grid grid-cols-3 gap-3 my-5 text-center">
               <div>
                 <p className="font-score text-2xl">{played.length}</p>
-                <p className="text-xs text-black/40">Matches</p>
+                <p className="text-xs text-ink3">Matches</p>
               </div>
               <div>
                 <p className="font-score text-2xl">{wins}</p>
-                <p className="text-xs text-black/40">Wins</p>
+                <p className="text-xs text-ink3">Wins</p>
               </div>
               <div>
                 <p className="font-score text-2xl">1</p>
-                <p className="text-xs text-black/40">Tournaments</p>
+                <p className="text-xs text-ink3">Tournaments</p>
               </div>
             </div>
 
-            <h2 className="text-sm font-semibold mb-2 text-black/70">Career timeline</h2>
+            <h2 className="text-sm font-semibold mb-2 text-ink2">Career timeline</h2>
             <div className="rounded-xl border border-black/10 p-3">
               <p className="text-sm font-medium">{tournament.name}</p>
-              <p className="text-xs text-black/40">
+              <p className="text-xs text-ink3">
                 {new Date(tournament.startDate).toLocaleDateString()} · {team.name} ·{" "}
                 {played.length} match{played.length === 1 ? "" : "es"} played
               </p>
@@ -135,7 +138,7 @@ export default async function PassportPage({ params }: { params: { playerId: str
           </div>
         </div>
 
-        <p className="text-xs text-black/30 text-center mt-4">
+        <p className="text-xs text-ink3 text-center mt-4">
           Show this QR code at the check-in table on match day.
         </p>
       </div>

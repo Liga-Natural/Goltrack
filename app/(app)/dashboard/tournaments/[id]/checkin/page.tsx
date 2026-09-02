@@ -22,7 +22,7 @@ export default async function CheckInPage({ params }: { params: { id: string } }
               <div key={team.id} className="card p-4 flex items-center justify-between gap-3">
                 <div>
                   <p className="font-medium">{team.name}</p>
-                  <p className="text-xs text-black/40">
+                  <p className="text-xs text-ink3">
                     {checkedCount}/{players.length} players passport-verified
                   </p>
                 </div>

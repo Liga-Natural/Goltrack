@@ -28,7 +28,7 @@ export default async function DashboardHome() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-extrabold text-inkDisplay">Your tournaments</h1>
-          <p className="text-black/50 text-sm mt-1">Create, schedule, and run your events.</p>
+          <p className="text-ink2 text-sm mt-1">Create, schedule, and run your events.</p>
         </div>
         <Link href="/dashboard/tournaments/new" className="btn-primary shrink-0 self-start sm:self-auto whitespace-nowrap">
           + New tournament
@@ -37,8 +37,8 @@ export default async function DashboardHome() {
 
       {tournaments.length === 0 ? (
         <div className="card p-10 text-center">
-          <p className="text-black/60 mb-1">No tournaments on the board yet.</p>
-          <p className="text-black/40 text-sm mb-5">Set up sport, format, and fees — you can open registration whenever you're ready.</p>
+          <p className="text-ink2 mb-1">No tournaments on the board yet.</p>
+          <p className="text-ink3 text-sm mb-5">Set up sport, format, and fees — you can open registration whenever you're ready.</p>
           <Link href="/dashboard/tournaments/new" className="btn-primary">
             Create your first tournament
           </Link>
@@ -63,12 +63,12 @@ export default async function DashboardHome() {
                   <span className={`badge ${theme.soft}`}>
                     {theme.emoji} {t.sport} {t.teamFormat}
                   </span>
-                  <span className="text-xs text-black/40">
+                  <span className="text-xs text-ink3">
                     {formatLabel(t.format)}
                   </span>
                 </div>
-                <p className="text-sm text-black/40">{new Date(t.startDate).toLocaleDateString()}</p>
-                {t.location && <p className="text-sm text-black/40">{t.location}</p>}
+                <p className="text-sm text-ink3">{new Date(t.startDate).toLocaleDateString()}</p>
+                {t.location && <p className="text-sm text-ink3">{t.location}</p>}
               </Link>
             );
           })}

@@ -24,7 +24,7 @@ export function ClaimPassportForm({ playerId, defaultName }: { playerId: string;
 
   return (
     <form action={formAction} className="mt-4 rounded-xl border border-black/10 p-4 space-y-3">
-      <p className="text-xs text-black/40">
+      <p className="text-xs text-ink3">
         Create a login for this passport to see it any time from your own dashboard.
       </p>
       <div>

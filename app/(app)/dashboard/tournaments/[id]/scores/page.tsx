@@ -15,7 +15,7 @@ export default async function ScoresPage({ params }: { params: { id: string } })
   return (
     <div>
       {matches.length === 0 ? (
-        <div className="card p-8 text-center text-black/50">Generate a schedule first from the Overview tab.</div>
+        <div className="card p-8 text-center text-ink2">Generate a schedule first from the Overview tab.</div>
       ) : (
         // One card holding hairline-divided rows, rather than a stack of
         // separately-floating cards each casting its own shadow — a list of

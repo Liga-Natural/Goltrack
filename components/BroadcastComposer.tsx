@@ -80,7 +80,7 @@ export function BroadcastComposer({
           {STATUSES.map((s) => (
             <label
               key={s}
-              className={`cursor-pointer rounded-xl border p-3 text-center transition-colors ${
+              className={`cursor-pointer rounded-xl border p-3 min-h-[48px] flex items-center justify-center text-center transition-colors ${
                 tournament.eventStatus === s ? "border-pitch-400 bg-pitch-400/10" : "border-line hover:border-black/25"
               }`}
             >
@@ -137,7 +137,7 @@ export function BroadcastComposer({
                 key={t.id}
                 type="button"
                 onClick={() => applyTemplate(t.id)}
-                className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                className={`text-xs px-4 min-h-[48px] inline-flex items-center rounded-full border transition-colors ${
                   template === t.id
                     ? "border-pitch-400 bg-pitch-400/10 text-inkDisplay font-semibold"
                     : "border-line text-ink2 hover:border-black/25"

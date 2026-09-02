@@ -58,7 +58,10 @@ export function CrestDropZone() {
           <div className="h-16 w-16 shrink-0 rounded-full border border-line bg-black/[0.04] flex items-center justify-center overflow-hidden">
             {preview ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={preview} alt="Club crest preview" className="h-full w-full object-cover" />
+              <img src={preview} alt="Club crest preview" className="h-full w-full object-cover" 
+          loading="lazy"
+          decoding="async"
+        />
             ) : (
               <span className="text-xl" aria-hidden="true">🛡️</span>
             )}

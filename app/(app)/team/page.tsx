@@ -11,7 +11,7 @@ export default async function TeamDashboardPage() {
 
   if (!team) {
     return (
-      <div className="card p-10 text-center text-black/50">
+      <div className="card p-10 text-center text-ink2">
         Your account isn&apos;t linked to a team yet. Register or claim a team from a tournament&apos;s public page to
         see it here.
       </div>
@@ -35,7 +35,7 @@ export default async function TeamDashboardPage() {
         <div>
           <h1 className="text-3xl font-extrabold text-inkDisplay">{team.name}</h1>
           {tournament && (
-            <Link href={`/t/${tournament.slug}`} className="text-sm text-pitch-600 hover:underline">
+            <Link href={`/t/${tournament.slug}`} className="text-sm text-accent hover:underline">
               {tournament.name}
             </Link>
           )}
@@ -56,7 +56,7 @@ export default async function TeamDashboardPage() {
         {team.logoToken && (
           <Link href={`/t/${tournament?.slug}/crest/${team.logoToken}`} className="card p-4 hover:bg-black/[0.02] transition-colors">
             <p className="text-xs uppercase tracking-wide text-ink2 font-semibold mb-1">Team crest</p>
-            <p className="text-sm text-pitch-600 font-medium">{team.hasCrest ? "Change crest →" : "Upload a crest →"}</p>
+            <p className="text-sm text-accent font-medium">{team.hasCrest ? "Change crest →" : "Upload a crest →"}</p>
           </Link>
         )}
       </div>
@@ -110,7 +110,7 @@ export default async function TeamDashboardPage() {
       <h2 className="font-extrabold mb-3">Schedule</h2>
       <div className="card divide-y divide-black/5">
         {matches.length === 0 ? (
-          <p className="p-6 text-sm text-black/40 text-center">No matches scheduled yet.</p>
+          <p className="p-6 text-sm text-ink3 text-center">No matches scheduled yet.</p>
         ) : (
           matches.map((m) => {
             const opponentId = m.homeTeamId === team.id ? m.awayTeamId : m.homeTeamId;
@@ -119,7 +119,7 @@ export default async function TeamDashboardPage() {
               <div key={m.id} className="flex items-center justify-between px-5 py-3 text-sm gap-2">
                 <div className="min-w-0">
                   <p className="truncate">vs {opponent?.name || "TBD"}</p>
-                  <p className="text-xs text-black/40">{m.round}{m.field ? ` · ${m.field}` : ""}</p>
+                  <p className="text-xs text-ink3">{m.round}{m.field ? ` · ${m.field}` : ""}</p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="font-score">{m.homeScore ?? "-"} : {m.awayScore ?? "-"}</span>

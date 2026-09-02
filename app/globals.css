@@ -266,10 +266,15 @@
      replacement, keyboard users lose track of focus entirely. One rule
      here covers every interactive element site-wide instead of needing
      focus classes hand-added per component. */
+  /* Thicker and offset further than the browser default, because the people
+     who rely on it are keyboard users on a laptop in daylight, and a 2px
+     hairline against warm clay is exactly the thing they cannot see. The
+     accent colour is used rather than a fixed red so it stays visible when
+     an organizer picks their own. */
   :focus-visible {
-    outline: 2px solid rgb(var(--pitch-400));
-    outline-offset: 2px;
-    border-radius: 2px;
+    outline: 3px solid rgb(var(--pitch-400));
+    outline-offset: 3px;
+    border-radius: 6px;
   }
 }
 
@@ -282,6 +287,15 @@
     @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold transition-[background-color,color,box-shadow,transform] duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
     border-radius: 999px;
     box-shadow: var(--clay-shadow), var(--clay-inner);
+    /* 48px minimum, on every button including the text-xs ones. This app is
+       used one-handed on a touchline in sunlight, by people who are not
+       looking at the screen while they tap — a 28px "Mark received" is a
+       miss waiting to happen. The width minimum is deliberately lower than
+       the height: a 48px-wide "Edit" next to a 48px-wide "Delete" pushes a
+       dense table row off a phone, and a finger is taller than it is wide
+       in the direction that matters for a row of controls. */
+    min-height: 48px;
+    min-width: 44px;
   }
   .btn:active:not(:disabled) {
     transform: translateY(2px);
@@ -293,13 +307,27 @@
   /* The one saturated surface in the system: the athletic red, moulded like
      everything else and carrying its own inner glow so it reads as a solid
      lump of colour rather than a flat fill. */
+  /* The accent's *deep* stop, not its bright one. White on --pitch-400
+     measures 3.27:1 — the primary call to action failed WCAG AA outright,
+     which is the worst place in a product for a contrast failure to hide.
+     --pitch-700 takes the same white to 6.13:1: AA comfortably, AAA at the
+     large sizes the hero CTAs use. It is also the richer, deeper terracotta
+     the clay system wanted, so this reads as a better button as well as a
+     legible one. Taken from the generated ramp rather than hard-coded, so an
+     organizer who picks their own accent keeps the same relationship. */
   .btn-primary {
-    @apply btn text-white;
-    background-color: rgb(var(--pitch-400));
-    box-shadow: var(--clay-shadow), inset -4px -4px 10px rgb(120 30 20 / 0.35), inset 4px 4px 10px rgb(255 255 255 / 0.25);
+    @apply btn;
+    /* A literal white, not `text-white`. Tailwind's `white` key is remapped
+       onto --paper so the theme toggle works, which in dark mode makes
+       `text-white` the #141416 canvas — near-black text on a red button,
+       measured at 3:1. This is the same trap that has bitten this codebase
+       before, and the only way out of it is to write the colour. */
+    color: #ffffff;
+    background-color: rgb(var(--pitch-700));
+    box-shadow: var(--clay-shadow), inset -4px -4px 10px rgb(60 10 5 / 0.4), inset 4px 4px 10px rgb(255 255 255 / 0.18);
   }
   .btn-primary:hover:not(:disabled) {
-    background-color: rgb(var(--brand-hover));
+    background-color: rgb(var(--pitch-900));
   }
   .btn-secondary {
     @apply btn text-inkDisplay;
@@ -382,6 +410,9 @@
        rather than extruded out of it, which is the whole reason the inner
        shadow pair exists. No border — the recess is the edge. */
     @apply w-full h-12 bg-surface2 px-4 py-3 text-sm text-black placeholder:text-ink3 transition-[color,background-color,box-shadow] duration-200 ease-in-out focus:outline-none;
+    /* A floor under the h-auto overrides (file pickers, textareas), which
+       otherwise shrink the field to 46px. */
+    min-height: 48px;
     border-radius: 0.9rem;
     border: none;
     box-shadow: var(--clay-field);
@@ -402,6 +433,17 @@
     color: rgb(var(--ink-2));
     box-shadow: var(--clay-inner);
   }
+  /* A badge that is actually a control gets a finger-sized box; a badge that
+     is only a label does not, because a 48px-tall "PAID" chip in a table cell
+     would double every row's height for no benefit. The distinction is the
+     element: the paid/unpaid toggles in the teams table are <button>s, and
+     they were 24px tall — the smallest real controls in the product. Padding
+     is left alone so the pill itself keeps its shape and the extra height is
+     hit area around it. */
+  button.badge,
+  a.badge {
+    min-height: 48px;
+  }
   /* A pill that is the selected one in a tab bar reads as pressed in, the
      same physics as a field. */
   .clay-pill-active {
@@ -409,6 +451,15 @@
   }
   /* An unselected pill and a matchday tile are the same moulded lozenge at
      two sizes — one rule so a tab bar and a fixture card cannot drift apart. */
+  /* Filter pills are tapped mid-match with a phone in one hand, so they get
+     the same 48px floor as a button rather than the 32px a text-xs pill
+     lands on naturally. */
+  .clay-pill-raised,
+  .clay-pill-active {
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+  }
   .clay-pill-raised {
     box-shadow: var(--clay-shadow), var(--clay-inner);
   }
@@ -421,10 +472,44 @@
   .clay-tile:hover {
     box-shadow: var(--clay-shadow-hover), var(--clay-inner);
   }
+
+  /* Compositing hints, deliberately narrow.
+     A dual-layer clay shadow is expensive to repaint, so the elements that
+     actually move — a card that lifts, a button that sinks, a tile that
+     reacts — are promoted to their own layer so the move is a composite
+     rather than a repaint. Applying this to every .card instead would be
+     the classic own-goal: hundreds of promoted layers cost more memory than
+     the repaints they save, and on the mid-range Android this is meant to
+     help that shows up as the stutter it was supposed to fix. will-change
+     is scoped to hover/focus so a layer exists only while it is about to be
+     needed. */
+  .card-interactive,
+  .clay-tile,
+  .btn {
+    transform: translateZ(0);
+  }
+  .card-interactive:hover,
+  .card-interactive:focus-within,
+  .clay-tile:hover,
+  .btn:hover {
+    will-change: transform, box-shadow;
+  }
   /* Scores, stat figures, countdowns — tabular figures so digits don't
      jitter the layout as they update, paired with a heavy display weight
      for the "digital scoreboard" read the skill's number-tabular check
      calls for. */
+  /* Accent text. --pitch-600 measures 3.48:1 on charcoal — below AA — while
+     the brighter --pitch-400 is fine there and too pale on sand. This picks
+     the stop that suits the canvas instead of asking every call site to. */
+  .text-accent {
+    color: rgb(var(--pitch-600));
+  }
+  /* 300, not 400: the raw accent measures 4.8:1 on charcoal. The 300
+     stop is generated by lightening the accent until it clears 7:1 on a
+     dark ground, so a custom accent gets a legible one too. */
+  [data-theme="dark"] .text-accent {
+    color: rgb(var(--pitch-300));
+  }
   .font-score {
     @apply font-display font-extrabold tabular-nums;
   }
@@ -457,8 +542,28 @@
      on a matchday screen that has to be findable at a glance down a long
      list, and a set of same-coloured clay pills makes LIVE indistinguishable
      from FINAL at arm's length. */
-  .badge-live {
-    color: rgb(var(--status-live));
+  /* LIVE is the one badge that must be findable at arm's length, and the one
+     that was least readable: the emerald token measured 1.9:1 on its own
+     pale tinted pill. The fix is not here — every call site writes
+     `text-volt-500` as a utility, and a utility outranks a component rule,
+     so a colour set on .badge-live would have been overridden everywhere it
+     mattered while still looking like the thing that fixed it. It is fixed
+     at the token instead: --status-live is the fill, --status-live-ink is
+     the text, and each theme sets the ink to clear 7:1 on that fill. This
+     class is left as a semantic hook and deliberately sets no colour. */
+
+  /* The matchday tile's own LIVE chip: red rather than green, because on the
+     grid it marks the match in progress against amber UPCOMING and a quiet
+     FINAL. Same measurement, same per-theme split. */
+  .live-chip {
+    background-color: rgb(239 68 68 / 0.25);
+    border: 1px solid rgb(239 68 68 / 0.5);
+    color: rgb(96 36 41);
+  }
+  [data-theme="dark"] .live-chip {
+    /* 6.8:1 -> 7.6:1 */
+    color: rgb(253 205 209);
+    border-color: rgb(239 68 68 / 0.7);
   }
   /* The sidebar and any full-bleed rail sit flush with the canvas rather
      than floating on it — a raised panel the height of the viewport reads
@@ -590,7 +695,7 @@
 .role-admin {
   background-color: rgb(244 63 94 / 0.12);
   border-color: rgb(244 63 94 / 0.35);
-  color: rgb(190 18 60);
+  color: rgb(136 19 55);
 }
 [data-theme="dark"] .role-admin {
   color: rgb(253 164 175);
@@ -599,7 +704,7 @@
 .role-director {
   background-color: rgb(139 92 246 / 0.12);
   border-color: rgb(139 92 246 / 0.35);
-  color: rgb(109 40 217);
+  color: rgb(76 29 149);
 }
 [data-theme="dark"] .role-director {
   color: rgb(196 181 253);
@@ -608,7 +713,7 @@
 .role-referee {
   background-color: rgb(245 158 11 / 0.12);
   border-color: rgb(245 158 11 / 0.35);
-  color: rgb(180 83 9);
+  color: rgb(120 53 15);
 }
 [data-theme="dark"] .role-referee {
   color: rgb(252 211 77);
@@ -617,7 +722,7 @@
 .role-manager {
   background-color: rgb(14 165 233 / 0.12);
   border-color: rgb(14 165 233 / 0.35);
-  color: rgb(3 105 161);
+  color: rgb(12 74 110);
 }
 [data-theme="dark"] .role-manager {
   color: rgb(125 211 252);
@@ -628,7 +733,10 @@
 .role-player {
   background-color: rgb(113 113 122 / 0.12);
   border-color: rgb(113 113 122 / 0.3);
-  color: rgb(82 82 91);
+  /* zinc-600 → zinc-800: 6.4:1 to 9.2:1 on its own tint. Still the quiet
+     tag — it is grey while the others are coloured, which is what makes it
+     recede; it does not also need to be the least readable. */
+  color: rgb(63 63 70);
 }
 [data-theme="dark"] .role-player {
   color: rgb(212 212 216);
@@ -642,42 +750,51 @@
 [data-theme="light"] .role-admin {
   background-color: rgb(244 63 94 / 0.12);
   border-color: rgb(244 63 94 / 0.35);
-  color: rgb(190 18 60);
+  color: rgb(136 19 55);
 }
 [data-theme="light"] .role-director {
   background-color: rgb(139 92 246 / 0.12);
   border-color: rgb(139 92 246 / 0.35);
-  color: rgb(109 40 217);
+  color: rgb(76 29 149);
 }
 [data-theme="light"] .role-referee {
   background-color: rgb(245 158 11 / 0.14);
   border-color: rgb(245 158 11 / 0.4);
-  color: rgb(146 64 14);
+  /* amber-800 -> amber-900, matching the bare rule above. */
+  color: rgb(120 53 15);
 }
 [data-theme="light"] .role-manager {
   background-color: rgb(14 165 233 / 0.12);
   border-color: rgb(14 165 233 / 0.35);
-  color: rgb(3 105 161);
+  color: rgb(12 74 110);
 }
 [data-theme="light"] .role-player {
   background-color: rgb(113 113 122 / 0.12);
   border-color: rgb(113 113 122 / 0.3);
-  color: rgb(82 82 91);
+  /* zinc-600 → zinc-800: 6.4:1 to 9.2:1 on its own tint. Still the quiet
+     tag — it is grey while the others are coloured, which is what makes it
+     recede; it does not also need to be the least readable. */
+  color: rgb(63 63 70);
 }
 
 .badge-accepted {
   background-color: rgb(16 185 129 / 0.1);
   border-color: rgb(16 185 129 / 0.3);
-  color: rgb(5 150 105);
+  /* Was a fixed emerald-600, which is 3.3:1 on its own tint — the "PAID"
+     and "ACTIVE" pills were the most-repeated failure in the light theme.
+     The ink token already carries the per-theme value, so the dark override
+     that used to live below is gone with it. */
+  color: rgb(var(--status-live-ink));
 }
 [data-theme="dark"] .badge-accepted {
-  color: rgb(52 211 153);
   box-shadow: 0 0 15px rgb(16 185 129 / 0.15);
 }
 .badge-pending {
   background-color: rgb(245 158 11 / 0.12);
   border-color: rgb(245 158 11 / 0.3);
-  color: rgb(180 83 9);
+  /* amber-700 measured 3.9:1 on this tint — under AA, not just under AAA.
+     amber-900 takes the same pill to 8.0:1. */
+  color: rgb(120 53 15);
 }
 [data-theme="dark"] .badge-pending {
   color: rgb(252 211 77);
@@ -685,7 +802,8 @@
 .badge-danger {
   background-color: rgb(244 63 94 / 0.1);
   border-color: rgb(244 63 94 / 0.32);
-  color: rgb(190 18 60);
+  /* rose-800 → rose-900: 5.3:1 to 8.1:1 on the tint. */
+  color: rgb(136 19 55);
 }
 [data-theme="dark"] .badge-danger {
   color: rgb(253 164 175);

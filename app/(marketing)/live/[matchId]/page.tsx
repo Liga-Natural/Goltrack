@@ -52,7 +52,7 @@ export default async function LiveMatchPage({ params }: { params: { matchId: str
           <Link href="/">
             <Logo />
           </Link>
-          <Link href={`/t/${tournament.slug}`} className="text-sm text-ink2 hover:text-inkDisplay transition-colors">
+          <Link href={`/t/${tournament.slug}`} className="text-sm text-ink2 hover:text-inkDisplay transition-colors inline-flex items-center min-h-12">
             {tournament.name} →
           </Link>
         </div>

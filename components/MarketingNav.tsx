@@ -81,7 +81,7 @@ export function MarketingNav({
               onClick={() => setOpen((v) => !v)}
               aria-label={open ? "Close menu" : "Open menu"}
               aria-expanded={open}
-              className="h-10 w-10 shrink-0 flex items-center justify-center rounded-full border border-black/15 text-black/70 hover:text-black hover:bg-black/5"
+              className="h-12 w-12 shrink-0 flex items-center justify-center rounded-full border border-black/15 text-ink2 hover:text-black hover:bg-black/5"
             >
               {open ? <IconX className="h-5 w-5" /> : <IconMenu className="h-5 w-5" />}
             </button>
@@ -95,11 +95,11 @@ export function MarketingNav({
           // actually behaving like the rest of the glass.
           <nav className="lg:hidden mt-2 mb-3 rounded-2xl border border-line bg-white/60 backdrop-blur-xl shadow-elevated px-3 py-2">
             {links.map((l) => (
-              <Link key={l.href} href={l.href} className="block w-full rounded-lg px-3 py-2.5 text-sm font-medium text-black/70 hover:bg-black/5 hover:text-black">
+              <Link key={l.href} href={l.href} className="block w-full rounded-lg px-3 py-2.5 text-sm font-medium text-ink2 hover:bg-black/5 hover:text-black">
                 {l.label}
               </Link>
             ))}
-            <Link href="/login" className="block w-full rounded-lg px-3 py-2.5 text-sm font-medium text-black/70 hover:bg-black/5 hover:text-black">
+            <Link href="/login" className="block w-full rounded-lg px-3 py-2.5 text-sm font-medium text-ink2 hover:bg-black/5 hover:text-black">
               Log in
             </Link>
           </nav>

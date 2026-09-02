@@ -58,19 +58,19 @@ export function HeroPhoneMockup() {
               <img src="/jogo-wordmark.png" alt="Jogo" className="h-[0.95rem] w-auto select-none" draggable={false} />
               <span className="relative">
                 <IconBell className="h-4 w-4 text-white/50" />
-                <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-pitch-400" />
+                <span className="absolute -top-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-pitch-700" />
               </span>
             </div>
 
             <div className="px-5">
-              <p className="text-[10px] uppercase tracking-[0.15em] text-white/35 mb-0.5">Coastal Cup</p>
+              <p className="text-[10px] uppercase tracking-[0.15em] text-white/70 mb-0.5">Coastal Cup</p>
               <h3 className="font-display text-xl text-white leading-tight mb-3">Schedule &amp; scores</h3>
 
               {/* Filter tabs */}
               <div className="flex items-center gap-1 bg-white/[0.06] rounded-full p-1 mb-4 text-[11px] font-semibold">
-                <span className="flex-1 text-center rounded-full bg-pitch-400 text-white py-1.5">All</span>
-                <span className="flex-1 text-center text-white/40 py-1.5">Upcoming</span>
-                <span className="flex-1 text-center text-white/40 py-1.5">Live</span>
+                <span className="flex-1 text-center rounded-full bg-pitch-700 text-white py-1.5">All</span>
+                <span className="flex-1 text-center text-white/70 py-1.5">Upcoming</span>
+                <span className="flex-1 text-center text-white/70 py-1.5">Live</span>
               </div>
 
               {/* Upcoming match card — stacked rows, same pattern as the
@@ -78,21 +78,21 @@ export function HeroPhoneMockup() {
                   squeezed team names into mid-word wraps ("Coastal" / "FC")
                   at this card's fixed width. */}
               <div className="rounded-xl bg-[#1A1A1A] border border-white/10 p-3 mb-3 text-xs">
-                <p className="text-[10px] text-white/35 mb-2">{matches[0].time} · {matches[0].field}</p>
+                <p className="text-[10px] text-white/70 mb-2">{matches[0].time} · {matches[0].field}</p>
                 <div className="flex items-center gap-1.5 text-white/85 mb-1.5">
-                  <span className="h-5 w-5 shrink-0 rounded-full bg-pitch-400/20 text-pitch-400 text-[9px] font-bold flex items-center justify-center">
+                  <span className="h-5 w-5 shrink-0 rounded-full bg-white/10 text-white/90 text-[9px] font-bold flex items-center justify-center">
                     {matches[0].homeInit}
                   </span>
                   {matches[0].home}
                 </div>
                 <div className="flex items-center gap-1.5 text-white/85 mb-3">
-                  <span className="h-5 w-5 shrink-0 rounded-full bg-white/10 text-white/60 text-[9px] font-bold flex items-center justify-center">
+                  <span className="h-5 w-5 shrink-0 rounded-full bg-white/10 text-white/90 text-[9px] font-bold flex items-center justify-center">
                     {matches[0].awayInit}
                   </span>
                   {matches[0].away}
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="flex-1 text-center rounded-full bg-pitch-400 text-white text-[10px] font-bold py-1.5">
+                  <span className="flex-1 text-center rounded-full bg-pitch-700 text-white text-[10px] font-bold py-1.5">
                     View Details
                   </span>
                   <span className="flex-1 text-center rounded-full border border-white/25 text-white/80 text-[10px] font-bold py-1.5">
@@ -102,18 +102,24 @@ export function HeroPhoneMockup() {
               </div>
 
               {/* Live section */}
-              <p className="text-[10px] uppercase tracking-[0.15em] text-white/35 mb-2 mt-4">Live now</p>
+              <p className="text-[10px] uppercase tracking-[0.15em] text-white/70 mb-2 mt-4">Live now</p>
               <div className="rounded-xl bg-volt-400/10 border border-volt-400/30 p-3 mb-4">
                 <div className="flex items-center gap-1.5 mb-2">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-volt-400 opacity-75" />
                     <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-volt-400" />
                   </span>
-                  <span className="text-[10px] font-bold text-volt-500 tracking-wide">LIVE · 62&apos;</span>
+                  {/* A literal mint, not text-volt-500. The live-status ink
+                      token is theme-aware and in the light theme resolves to
+                      a near-black green — correct on the site's cream cards,
+                      1.7:1 on this phone's permanently dark screen. The
+                      screen does not follow the theme, so its text cannot
+                      either. */}
+                  <span className="text-[10px] font-bold text-[#6ee7b7] tracking-wide">LIVE · 62&apos;</span>
                 </div>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="flex items-center gap-1.5 text-sm font-medium text-white">
-                    <span className="h-5 w-5 shrink-0 rounded-full bg-white/10 text-white/70 text-[9px] font-bold flex items-center justify-center">
+                    <span className="h-5 w-5 shrink-0 rounded-full bg-white/10 text-white/90 text-[9px] font-bold flex items-center justify-center">
                       MU
                     </span>
                     Miami United
@@ -121,13 +127,13 @@ export function HeroPhoneMockup() {
                   <span className="font-score text-base text-white">2 - 1</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-sm font-medium text-white mb-3">
-                  <span className="h-5 w-5 shrink-0 rounded-full bg-white/10 text-white/70 text-[9px] font-bold flex items-center justify-center">
+                  <span className="h-5 w-5 shrink-0 rounded-full bg-white/10 text-white/90 text-[9px] font-bold flex items-center justify-center">
                     BS
                   </span>
                   Broward SC
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="flex-1 text-center rounded-full bg-pitch-400 text-white text-[10px] font-bold py-1.5">
+                  <span className="flex-1 text-center rounded-full bg-pitch-700 text-white text-[10px] font-bold py-1.5">
                     View Details
                   </span>
                   <span className="flex-1 text-center rounded-full border border-white/25 text-white/80 text-[10px] font-bold py-1.5">
@@ -138,7 +144,7 @@ export function HeroPhoneMockup() {
 
               <Link
                 href="/signup"
-                className="block w-full text-center rounded-full bg-pitch-400 text-white text-xs font-bold uppercase tracking-wide py-3"
+                className="block w-full text-center rounded-full bg-pitch-700 text-white text-xs font-bold uppercase tracking-wide py-3 min-h-12 flex items-center justify-center"
               >
                 Create new tournament
               </Link>

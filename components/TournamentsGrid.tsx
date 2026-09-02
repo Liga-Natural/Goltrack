@@ -19,7 +19,7 @@ export function TournamentsGrid({ tournaments, teamCounts }: { tournaments: Tour
           <button
             onClick={() => setFilter(null)}
             className={`badge px-3 py-1.5 transition-colors ${
-              filter === null ? "bg-black text-white" : "bg-black/5 text-black/60 hover:bg-black/10"
+              filter === null ? "bg-black text-white" : "bg-black/5 text-ink2 hover:bg-black/10"
             }`}
           >
             All sports
@@ -41,7 +41,7 @@ export function TournamentsGrid({ tournaments, teamCounts }: { tournaments: Tour
       )}
 
       {visible.length === 0 ? (
-        <div className="card p-10 text-center text-black/50">No tournaments in this sport yet.</div>
+        <div className="card p-10 text-center text-ink2">No tournaments in this sport yet.</div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {visible.map((t, i) => {
@@ -62,11 +62,11 @@ export function TournamentsGrid({ tournaments, teamCounts }: { tournaments: Tour
                   <span className={`badge ${tournamentStatusClass(t.status)}`}>{t.status.replace("_", " ")}</span>
                 </div>
                 <h3 className="font-semibold text-black mb-1.5">{t.name}</h3>
-                <p className="text-sm text-black/50 mb-3">
+                <p className="text-sm text-ink2 mb-3">
                   {new Date(t.startDate).toLocaleDateString()}
                   {t.location ? ` · ${t.location}` : ""}
                 </p>
-                <p className="text-xs text-black/40">
+                <p className="text-xs text-ink3">
                   {teamCount} team{teamCount === 1 ? "" : "s"} registered
                 </p>
               </Link>

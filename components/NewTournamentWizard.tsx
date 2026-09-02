@@ -258,7 +258,7 @@ export function NewTournamentWizard() {
                   type="button"
                   onClick={() => toggle("ages", a)}
                   aria-pressed={v.ages.includes(a)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold border transition-colors ${
+                  className={`rounded-full px-3 min-h-[48px] inline-flex items-center text-xs font-semibold border transition-colors ${
                     v.ages.includes(a) ? "bg-black/10 text-black border-black/20" : "border-line text-ink2 hover:text-black"
                   }`}
                 >
@@ -274,7 +274,7 @@ export function NewTournamentWizard() {
                   type="button"
                   onClick={() => toggle("tiers", t)}
                   aria-pressed={v.tiers.includes(t)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold border transition-colors ${
+                  className={`rounded-full px-3 min-h-[48px] inline-flex items-center text-xs font-semibold border transition-colors ${
                     v.tiers.includes(t) ? "bg-black/10 text-black border-black/20" : "border-line text-ink2 hover:text-black"
                   }`}
                 >

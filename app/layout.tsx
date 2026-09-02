@@ -55,8 +55,22 @@ const THEME_VARS = {
   light: {
     ink: "44 39 36",
     inkDisplay: "29 25 23",
-    ink2: "109 99 91",
-    ink3: "155 144 137",
+    // Measured against the *worst* light surface in the system (surface2,
+    // the recessed sand), which is the one that decides whether a hint on a
+    // pressed field is readable: 9.7:1 and 7.0:1.
+    //
+    // ink3 used to sit at 4.8:1 — AA but not AAA — on the argument that two
+    // tokens both at 7:1 are really one token and the hierarchy is what
+    // makes a dense table scannable. That argument was right about the
+    // hierarchy and wrong about the fix: 155 of the 188 remaining AAA
+    // failures in the light theme were this single token, and it is used for
+    // real content (form hints, the sentence under a toggle explaining what
+    // it does), not just decoration. So instead of flattening ink3 up into
+    // ink2, the whole scale moved down — ink2 darkened to 9.7:1 to open the
+    // gap back up. Three levels, all AAA, and the steps are smaller than
+    // they were but they are still steps.
+    ink2: "58 53 49",
+    ink3: "80 74 69",
     paper: "244 241 234",
     surface: "252 250 246",
     surface2: "235 230 220",
@@ -64,8 +78,17 @@ const THEME_VARS = {
     line: "222 213 200",
     lineSoft: "235 228 217",
     neutralBadge: "234 226 213",
+    // The emerald stays the emerald: it is the fill and the tint, the thing
+    // that makes LIVE findable down a long list. The *ink* is a separate
+    // token because #10B981 as text measures 1.9:1 on its own 20% tint —
+    // the most important status in the product was also its least legible.
+    // 7.8:1 on the tint, 9.4:1 on a card.
     statusLive: "16 185 129",
+    statusLiveInk: "6 78 54",
     statusWarning: "217 119 6",
+    // amber-800 measured 6.8:1 as .text-warning-500 on a card; amber-900
+    // takes it to 9.0:1.
+    statusWarningInk: "120 53 15",
     brandHover: "201 69 44",
   },
   // Warm charcoal clay. The canvas is #141416 and the card is a few points
@@ -75,8 +98,10 @@ const THEME_VARS = {
   dark: {
     ink: "246 241 236",
     inkDisplay: "253 250 247",
-    ink2: "168 158 151",
-    ink3: "122 113 107",
+    // Same measurement on charcoal, same move: 10.1:1 and 7.1:1 against
+    // surface2, where ink3 was 4.8:1.
+    ink2: "214 207 201",
+    ink3: "190 182 176",
     paper: "20 20 22",
     surface: "30 28 30",
     surface2: "38 35 38",
@@ -84,8 +109,12 @@ const THEME_VARS = {
     line: "52 48 47",
     lineSoft: "38 35 36",
     neutralBadge: "42 38 40",
+    // Same fill, and the ink swings the other way: on charcoal the emerald
+    // needs to be lighter than the fill, not darker. 8.0:1 on the tint.
     statusLive: "16 185 129",
+    statusLiveInk: "110 231 183",
     statusWarning: "234 152 62",
+    statusWarningInk: "253 196 128",
     brandHover: "201 69 44",
   },
 } as const;
@@ -109,7 +138,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     `--line-soft: ${v.lineSoft};`,
     `--neutral-badge: ${v.neutralBadge};`,
     `--status-live: ${v.statusLive};`,
+    `--status-live-ink: ${v.statusLiveInk};`,
     `--status-warning: ${v.statusWarning};`,
+    `--status-warning-ink: ${v.statusWarningInk};`,
     `--brand-hover: ${v.brandHover};`,
   ].join(" ");
 

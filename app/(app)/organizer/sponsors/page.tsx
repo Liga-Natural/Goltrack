@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { organizerTournaments, selectedTournament } from "@/lib/organizerScope";
 import { moduleSettings, saveModuleSettings, saveSponsor, deleteSponsor } from "@/lib/actions";
 import { TournamentPicker } from "@/components/TournamentPicker";
+import { ConfirmButton } from "@/components/ConfirmButton";
 import { Sponsors } from "@/lib/models";
 
 export const dynamic = "force-dynamic";
@@ -104,7 +105,7 @@ export default async function SponsorsPage({ searchParams }: { searchParams: { t
             <input name="priority" type="number" min={0} max={99} className="input w-full" defaultValue={editing?.priority ?? 0} />
           </label>
         </div>
-        <label className="flex items-center gap-2.5 cursor-pointer">
+        <label className="flex items-center gap-2.5 cursor-pointer min-h-[48px]">
           <input type="checkbox" name="active" defaultChecked={editing ? editing.active === 1 : true} className="h-4 w-4 accent-pitch-400" />
           <span className="text-sm text-inkDisplay">This slot is live</span>
         </label>
@@ -132,7 +133,10 @@ export default async function SponsorsPage({ searchParams }: { searchParams: { t
               <div key={s.id} className="flex items-center gap-3 py-3">
                 {s.logoMimeType ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={`/api/sponsors/${s.id}/logo`} alt="" className="h-10 w-10 rounded-xl object-contain bg-surface2 p-1 shrink-0" />
+                  <img src={`/api/sponsors/${s.id}/logo`} alt="" className="h-10 w-10 rounded-xl object-contain bg-surface2 p-1 shrink-0" 
+          loading="lazy"
+          decoding="async"
+        />
                 ) : (
                   <span className="h-10 w-10 rounded-xl bg-neutralBadge flex items-center justify-center text-[11px] font-bold text-ink2 shrink-0">
                     {s.name.slice(0, 2).toUpperCase()}
@@ -153,9 +157,13 @@ export default async function SponsorsPage({ searchParams }: { searchParams: { t
                   Edit
                 </Link>
                 <form action={deleteSponsor.bind(null, tournament.id, s.id)}>
-                  <button type="submit" className="btn-ghost text-xs">
+                  <ConfirmButton
+                    title={`Delete ${s.name}?`}
+                    detail="Their logo, promo code and priority go with them, and this cannot be undone from here. To take a sponsor off the public page for a while, set their slot to paused instead."
+                    confirmLabel="Delete this sponsor"
+                  >
                     Delete
-                  </button>
+                  </ConfirmButton>
                 </form>
               </div>
             ))}

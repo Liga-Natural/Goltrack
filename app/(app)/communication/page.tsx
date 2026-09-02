@@ -119,7 +119,7 @@ export default async function CommunicationPage({ searchParams }: { searchParams
         <div className="card overflow-hidden">
           <div className="p-5 sm:p-6 pb-3 flex items-baseline justify-between gap-3 flex-wrap">
             <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-ink2">Sent messages</h2>
-            <Link href={`/t/${tournament.slug}`} className="text-[11px] text-ink2 hover:text-inkDisplay">
+            <Link href={`/t/${tournament.slug}`} className="text-[11px] text-ink2 hover:text-inkDisplay inline-flex items-center min-h-12">
               View public page →
             </Link>
           </div>

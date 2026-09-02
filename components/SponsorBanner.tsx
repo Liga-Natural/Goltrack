@@ -20,7 +20,10 @@ export function SponsorBanner({ sponsors, compact = false }: { sponsors: Sponsor
             <>
               {s.logoMimeType ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={`/api/sponsors/${s.id}/logo`} alt="" className="h-10 w-10 rounded-xl object-contain bg-surface p-1 shrink-0" />
+                <img src={`/api/sponsors/${s.id}/logo`} alt="" className="h-10 w-10 rounded-xl object-contain bg-surface p-1 shrink-0" 
+          loading="lazy"
+          decoding="async"
+        />
               ) : (
                 <span className="h-10 w-10 rounded-xl bg-surface flex items-center justify-center text-[11px] font-bold text-ink2 shrink-0">
                   {s.name.slice(0, 2).toUpperCase()}

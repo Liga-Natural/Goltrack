@@ -60,10 +60,10 @@ export function ThemeToggle({ currentTheme }: { currentTheme: SiteTheme }) {
               <div className="mt-3 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold">{opt.label}</p>
-                  <p className="text-xs text-black/40">{opt.sub}</p>
+                  <p className="text-xs text-ink3">{opt.sub}</p>
                 </div>
-                {active && <span className="badge bg-pitch-400/10 text-pitch-600 shrink-0">Active</span>}
-                {saving === opt.value && <span className="text-xs text-black/40 shrink-0">Saving…</span>}
+                {active && <span className="badge bg-pitch-400/10 text-accent shrink-0">Active</span>}
+                {saving === opt.value && <span className="text-xs text-ink3 shrink-0">Saving…</span>}
               </div>
             </button>
           </form>

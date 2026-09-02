@@ -80,9 +80,12 @@ export function ShareRegistrationLink({ path }: { path: string }) {
             <div className="rounded-xl bg-white p-3 inline-block">
               {qr ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={qr} alt="QR code for the registration link" className="h-44 w-44 block" />
+                <img src={qr} alt="QR code for the registration link" className="h-44 w-44 block" 
+          loading="lazy"
+          decoding="async"
+        />
               ) : (
-                <div className="h-44 w-44 flex items-center justify-center text-xs text-black/40">Generating…</div>
+                <div className="h-44 w-44 flex items-center justify-center text-xs text-ink3">Generating…</div>
               )}
             </div>
             <button type="button" onClick={() => setShowQr(false)} className="btn-ghost text-xs w-full mt-5">

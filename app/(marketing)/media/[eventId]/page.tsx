@@ -39,7 +39,7 @@ export default async function MediaPage({
           <Link href="/">
             <Logo />
           </Link>
-          <Link href={`/t/${tournament.slug}`} className="text-sm text-ink2 hover:text-inkDisplay transition-colors">
+          <Link href={`/t/${tournament.slug}`} className="text-sm text-ink2 hover:text-inkDisplay transition-colors inline-flex items-center min-h-12">
             {tournament.name} →
           </Link>
         </div>
@@ -75,7 +75,7 @@ export default async function MediaPage({
         ) : (
           <div className="card p-5 sm:p-6 text-center">
             <p className="text-sm text-ink2">
-              <Link href={`/login?next=/media/${tournament.id}`} className="text-pitch-600 font-semibold">
+              <Link href={`/login?next=/media/${tournament.id}`} className="text-accent font-semibold">
                 Sign in
               </Link>{" "}
               to add a photo.{" "}

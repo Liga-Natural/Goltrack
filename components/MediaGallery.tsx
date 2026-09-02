@@ -59,7 +59,10 @@ export function MediaGallery({
         {visible.map((item) => (
           <figure key={item.id} className="rounded-2xl bg-surface2 overflow-hidden clay-tile">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/api/media/${item.id}/image`} alt={item.caption ?? ""} className="w-full h-48 object-cover" />
+            <img src={`/api/media/${item.id}/image`} alt={item.caption ?? ""} className="w-full h-48 object-cover" 
+          loading="lazy"
+          decoding="async"
+        />
             <figcaption className="p-3.5">
               {item.featured && <span className="badge badge-pending text-[10px] mb-1.5 inline-block">FEATURED</span>}
               <p className="text-sm text-inkDisplay line-clamp-2">{item.caption || "Untitled"}</p>

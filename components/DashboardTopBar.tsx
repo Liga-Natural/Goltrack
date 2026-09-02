@@ -67,7 +67,7 @@ export function DashboardTopBar({
             onBlur={() => setTimeout(() => setFocused(false), 150)}
             placeholder="Search your tournaments…"
             aria-label="Search tournaments"
-            className="w-full rounded-full bg-black/[0.05] border border-line px-4 py-1.5 text-sm placeholder:text-ink3 focus:outline-none focus:border-black/25 transition-colors"
+            className="w-full min-h-12 rounded-full bg-black/[0.05] border border-line px-4 py-1.5 text-sm placeholder:text-ink3 focus:outline-none focus:border-black/25 transition-colors"
           />
           {focused && hits.length > 0 && (
             <div className="absolute left-0 right-0 top-full mt-2 modal-panel rounded-xl p-1.5 z-50">
@@ -94,7 +94,7 @@ export function DashboardTopBar({
           <Link
             href="/dashboard"
             aria-label={pendingCount > 0 ? `${pendingCount} applications awaiting review` : "Notifications"}
-            className="relative h-9 w-9 flex items-center justify-center rounded-full border border-line text-ink2 hover:text-black hover:bg-black/[0.04] transition-colors"
+            className="relative h-12 w-12 flex items-center justify-center rounded-full border border-line text-ink2 hover:text-black hover:bg-black/[0.04] transition-colors"
           >
             <IconBell className="h-4 w-4" />
             {pendingCount > 0 && (
@@ -114,7 +114,7 @@ export function DashboardTopBar({
           <Link
             href="/dashboard/settings"
             aria-label="Branding settings"
-            className="h-9 w-9 flex items-center justify-center rounded-full border border-line text-ink2 hover:text-black hover:bg-black/[0.04] transition-colors"
+            className="h-12 w-12 flex items-center justify-center rounded-full border border-line text-ink2 hover:text-black hover:bg-black/[0.04] transition-colors"
           >
             <IconPalette className="h-4 w-4" />
           </Link>

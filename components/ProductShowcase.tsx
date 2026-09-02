@@ -46,7 +46,7 @@ export function ProductShowcase({
             ["Entry fee", `$${(tournament.feeCents / 100).toFixed(0)}`],
           ].map(([label, value]) => (
             <div key={label as string} className="card p-3.5">
-              <p className="text-[10px] uppercase tracking-wide text-black/40 mb-1">{label}</p>
+              <p className="text-[10px] uppercase tracking-wide text-ink3 mb-1">{label}</p>
               <p className="text-xl font-semibold">{value}</p>
             </div>
           ))}
@@ -63,7 +63,7 @@ export function ProductShowcase({
             <div key={t.id} className="card p-3.5 flex items-center justify-between">
               <div>
                 <p className="font-medium text-sm">{t.name}</p>
-                <p className="text-xs text-black/40">{(playersByTeam[t.id] || []).length} players</p>
+                <p className="text-xs text-ink3">{(playersByTeam[t.id] || []).length} players</p>
               </div>
               <span className={`badge ${t.paid ? "bg-volt-400/15 text-volt-500" : "bg-neutralBadge text-ink2 border border-line"}`}>
                 {t.paid ? "Paid ✓" : "Unpaid"}
@@ -88,7 +88,7 @@ export function ProductShowcase({
           {groupMatches.slice(0, 3).map((m) => (
             <div key={m.id} className="card p-3 flex items-center justify-between gap-2 text-sm">
               <span className="truncate min-w-0">
-                {teamsById.get(m.homeTeamId || "")?.name} <span className="text-black/30">vs</span>{" "}
+                {teamsById.get(m.homeTeamId || "")?.name} <span className="text-ink3">vs</span>{" "}
                 {teamsById.get(m.awayTeamId || "")?.name}
               </span>
               <div className="flex items-center gap-2 shrink-0">
@@ -111,7 +111,7 @@ export function ProductShowcase({
           {referees.slice(0, 3).map((r) => (
             <div key={r.id} className="card p-3 text-sm">
               <span className="font-medium">{r.name}</span>
-              {r.contact && <span className="text-black/40"> · {r.contact}</span>}
+              {r.contact && <span className="text-ink3"> · {r.contact}</span>}
             </div>
           ))}
         </div>
@@ -123,7 +123,7 @@ export function ProductShowcase({
       body: "Scan each passport on match day. No clipboard, no Sharpie.",
       preview: (
         <div className="card p-4 text-center">
-          <p className="text-sm text-black/50">Passport scanned</p>
+          <p className="text-sm text-ink2">Passport scanned</p>
           <p className="font-semibold text-volt-500 mt-1">✓ Checked in</p>
         </div>
       ),
@@ -135,13 +135,13 @@ export function ProductShowcase({
       <MarketingNav links={NAV_LINKS} maxWidthClass="max-w-5xl" />
 
       <section className="mx-auto max-w-5xl px-4 sm:px-6 pt-16 pb-8 text-center">
-        <span className="badge bg-pitch-400/10 text-pitch-600 border border-pitch-400/20 mb-5">
+        <span className="badge bg-pitch-400/10 text-accent border border-pitch-400/20 mb-5">
           A look inside the console
         </span>
         <h1 className="text-display-sm mb-4">
           What you get when you run a tournament on Jogo
         </h1>
-        <p className="text-black/60 max-w-xl mx-auto">
+        <p className="text-ink2 max-w-xl mx-auto">
           Real screens from a real tournament — not a mockup.
         </p>
       </section>
@@ -154,11 +154,11 @@ export function ProductShowcase({
                 the whole track past a 390px phone. The table's own
                 overflow-x-auto can only take over once the track may shrink. */}
             <div className="min-w-0 lg:[direction:ltr]">
-              <div className="h-10 w-10 rounded-lg bg-pitch-400/10 text-pitch-600 flex items-center justify-center mb-4">
+              <div className="h-10 w-10 rounded-lg bg-pitch-400/10 text-accent flex items-center justify-center mb-4">
                 <s.icon className="h-5 w-5" />
               </div>
               <h2 className="text-xl font-semibold mb-2">{s.title}</h2>
-              <p className="text-black/55 leading-relaxed">{s.body}</p>
+              <p className="text-ink2 leading-relaxed">{s.body}</p>
             </div>
             <div className="min-w-0 lg:[direction:ltr]">{s.preview}</div>
           </div>
@@ -168,7 +168,7 @@ export function ProductShowcase({
       <section className="border-t border-black/5">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 py-16 text-center">
           <h2 className="text-display-sm mb-4">Ready to run your own tournament?</h2>
-          <p className="text-black/50 mb-8">
+          <p className="text-ink2 mb-8">
             A paid tool for organizers done juggling spreadsheets and group chats.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
@@ -183,7 +183,7 @@ export function ProductShowcase({
       </section>
 
       <footer className="border-t border-black/5">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-black/30">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-ink3">
           <Logo wordmarkClassName="text-sm" />
           <p>© {new Date().getFullYear()} Jogo. Built for organizers, players, and families.</p>
         </div>

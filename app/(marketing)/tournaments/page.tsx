@@ -28,20 +28,20 @@ export default async function TournamentsHubPage() {
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pt-14 pb-10">
         <h1 className="text-display-sm mb-3">Tournaments</h1>
-        <p className="text-black/50 max-w-md">Live standings, schedules, rosters, and results — updated as matches happen.</p>
+        <p className="text-ink2 max-w-md">Live standings, schedules, rosters, and results — updated as matches happen.</p>
         <div className="divider-pitch mt-8" style={{ ["--divider-bg" as any]: "rgb(var(--paper))" }} />
       </section>
 
       <section className="mx-auto max-w-6xl px-4 sm:px-6 pb-20">
         {tournaments.length === 0 ? (
-          <div className="card p-10 text-center text-black/50">No public tournaments yet — check back soon.</div>
+          <div className="card p-10 text-center text-ink2">No public tournaments yet — check back soon.</div>
         ) : (
           <TournamentsGrid tournaments={tournaments} teamCounts={teamCounts} />
         )}
       </section>
 
       <footer className="border-t border-black/5">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-black/30">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-ink3">
           <Logo wordmarkClassName="text-sm" />
           <p>© {new Date().getFullYear()} Jogo. Built for organizers, players, and families.</p>
         </div>

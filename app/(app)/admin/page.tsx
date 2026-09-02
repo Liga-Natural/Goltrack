@@ -100,7 +100,7 @@ export default async function AdminOverviewPage() {
       <div className="card p-5 sm:p-6">
         <div className="flex items-center justify-between mb-1">
           <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-ink2">Tournaments</h2>
-          <Link href="/admin/tournaments" className="text-xs font-semibold text-ink2 hover:text-black transition-colors">
+          <Link href="/admin/tournaments" className="text-xs font-semibold text-ink2 inline-flex items-center min-h-12 hover:text-black transition-colors">
             View all →
           </Link>
         </div>

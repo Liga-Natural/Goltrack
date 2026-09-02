@@ -193,7 +193,7 @@ export default async function PublicTournamentPage({
         />
         <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10">
           {searchParams.paid && (
-            <div className="mb-6 rounded-xl bg-pitch-400/10 border border-pitch-400/30 text-pitch-600 px-4 py-3 text-sm">
+            <div className="mb-6 rounded-xl bg-pitch-400/10 border border-pitch-400/30 text-accent px-4 py-3 text-sm">
               Registration received — you&apos;re all set. Bring your player passports (below) on match day for check-in.
             </div>
           )}
@@ -208,7 +208,7 @@ export default async function PublicTournamentPage({
                 {theme.emoji} {theme.label}
               </span>
             </div>
-            <p className="text-black/50 mt-1">
+            <p className="text-ink2 mt-1">
               {new Date(tournament.startDate).toLocaleDateString()} –{" "}
               {new Date(tournament.endDate).toLocaleDateString()}
               {tournament.location ? ` · ${tournament.location}` : ""}
@@ -267,7 +267,7 @@ export default async function PublicTournamentPage({
                   <div key={m.id} className="flex items-center justify-between text-sm border-l-4 border-volt-400 pl-3">
                     <span className="flex items-center gap-2">
                       <TeamInline team={teamsById.get(m.homeTeamId || "")} sport={tournament.sport} />
-                      <span className="text-black/30">vs</span>
+                      <span className="text-ink3">vs</span>
                       <TeamInline team={teamsById.get(m.awayTeamId || "")} sport={tournament.sport} />
                     </span>
                     <span className="font-score score-flip text-base">
@@ -343,7 +343,7 @@ export default async function PublicTournamentPage({
           <FollowBar matches={matches} teams={teams} />
 
           {matches.length === 0 && (
-            <div className="card p-10 text-center text-black/50">Schedule hasn&apos;t been published yet — check back soon.</div>
+            <div className="card p-10 text-center text-ink2">Schedule hasn&apos;t been published yet — check back soon.</div>
           )}
         </div>
       </div>

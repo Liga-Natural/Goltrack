@@ -60,7 +60,7 @@ function NavItem({
       // Active state is carried by surface brightness, not hue — the red is
       // reserved for the wordmark, so an active item is simply the one lit
       // panel in the rail rather than the one coloured one.
-      className={`group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-300 ${
+      className={`group relative flex items-center gap-2.5 rounded-lg px-3 py-2 min-h-[48px] text-sm font-medium transition-colors duration-300 ${
         active ? "bg-black/10 text-black font-semibold" : "text-ink2 hover:text-black hover:bg-black/5"
       }`}
     >
@@ -120,7 +120,7 @@ export function DashboardSidebar({
           <Link
             href="/dashboard"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-ink3 hover:text-black transition-colors mb-1"
+            className="flex items-center gap-2 px-3 min-h-[48px] text-xs font-semibold uppercase tracking-wide text-ink3 hover:text-black transition-colors mb-1"
           >
             <IconArrowLeft className="h-3.5 w-3.5" />
             All tournaments
@@ -158,7 +158,7 @@ export function DashboardSidebar({
         <button
           onClick={() => setOpen(true)}
           aria-label="Open menu"
-          className="h-9 w-9 flex items-center justify-center rounded-lg border border-line text-ink2 hover:text-black hover:bg-black/5"
+          className="h-12 w-12 flex items-center justify-center rounded-lg border border-line text-ink2 hover:text-black hover:bg-black/5"
         >
           <IconMenu className="h-5 w-5" />
         </button>
@@ -182,7 +182,7 @@ export function DashboardSidebar({
           <button
             onClick={() => setOpen(false)}
             aria-label="Close menu"
-            className="lg:hidden h-8 w-8 flex items-center justify-center rounded-lg text-black/50 hover:text-black"
+            className="lg:hidden h-12 w-12 flex items-center justify-center rounded-lg text-ink2 hover:text-black"
           >
             <IconX className="h-5 w-5" />
           </button>

@@ -16,7 +16,7 @@ function Roster({ label, teamName, players }: { label: string; teamName: string;
   const rows = Math.max(players.length, 12);
   return (
     <div className="flex-1 min-w-0">
-      <p className="text-[9px] uppercase tracking-wide text-black/40 font-semibold">{label}</p>
+      <p className="text-[9px] uppercase tracking-wide text-ink3 font-semibold">{label}</p>
       <p className="text-sm font-bold mb-2 truncate">{teamName}</p>
       <table className="w-full text-[11px]">
         <tbody>
@@ -24,7 +24,7 @@ function Roster({ label, teamName, players }: { label: string; teamName: string;
             const p = players[i];
             return (
               <tr key={p?.id ?? `blank-${i}`} className="border-b border-black/20">
-                <td className="w-7 py-[3px] text-black/40">{p?.jerseyNumber || ""}</td>
+                <td className="w-7 py-[3px] text-ink3">{p?.jerseyNumber || ""}</td>
                 <td className="py-[3px] truncate">{p?.name || ""}</td>
                 {/* Goals / cards columns are left blank on purpose — the
                     referee writes them, and pre-filling anything here would
@@ -96,12 +96,12 @@ export default async function GameCardsPage({ params }: { params: { id: string }
                 <div className="flex items-start justify-between gap-4 border-b border-black/20 pb-2 mb-3">
                   <div className="min-w-0">
                     <p className="text-sm font-extrabold truncate">{tournament.name}</p>
-                    <p className="text-[11px] text-black/50 truncate">
+                    <p className="text-[11px] text-ink2 truncate">
                       {[m.round, m.field, kickoff(m.scheduledAt)].filter(Boolean).join(" · ")}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[9px] uppercase tracking-wide text-black/40 font-semibold">Referee</p>
+                    <p className="text-[9px] uppercase tracking-wide text-ink3 font-semibold">Referee</p>
                     <p className="text-[11px]">{ref?.name || "________________"}</p>
                   </div>
                 </div>
@@ -115,12 +115,12 @@ export default async function GameCardsPage({ params }: { params: { id: string }
                   {["Home coach", "Away coach", "Referee"].map((role) => (
                     <div key={role}>
                       <div className="border-b border-black/40 h-7" />
-                      <p className="text-[9px] uppercase tracking-wide text-black/40 font-semibold mt-1">{role}</p>
+                      <p className="text-[9px] uppercase tracking-wide text-ink3 font-semibold mt-1">{role}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="flex items-center justify-between mt-3 text-[9px] text-black/40">
+                <div className="flex items-center justify-between mt-3 text-[9px] text-ink3">
                   <span>Final score: ______ – ______</span>
                   <span>Jogo.</span>
                 </div>

@@ -15,21 +15,21 @@ export function TournamentBreadcrumb({ tournamentId, tournamentName }: { tournam
   const current = tournamentNav.find((item) => item.href === suffix);
 
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-black/40 mb-3">
-      <Link href="/dashboard" className="hover:text-black/70">
+    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-ink3 mb-3">
+      <Link href="/dashboard" className="hover:text-inkDisplay min-h-[48px] inline-flex items-center transition-colors">
         Dashboard
       </Link>
       <span aria-hidden="true">/</span>
       {current ? (
         <>
-          <Link href={base} className="hover:text-black/70 truncate max-w-[10rem]">
+          <Link href={base} className="hover:text-inkDisplay truncate max-w-[10rem] min-h-[48px] inline-flex items-center transition-colors">
             {tournamentName}
           </Link>
           <span aria-hidden="true">/</span>
-          <span className="text-black/60 font-medium">{current.label}</span>
+          <span className="text-ink2 font-medium">{current.label}</span>
         </>
       ) : (
-        <span className="text-black/60 font-medium truncate max-w-[14rem]">{tournamentName}</span>
+        <span className="text-ink2 font-medium truncate max-w-[14rem]">{tournamentName}</span>
       )}
     </nav>
   );

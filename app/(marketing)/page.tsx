@@ -37,7 +37,7 @@ export default function Home() {
                 calm, uniform style says the same thing without the noise. */}
             <div className="flex flex-wrap items-center gap-1.5 mb-6">
               {SPORT_NAMES.map((s) => (
-                <span key={s} className="badge bg-black/5 text-black/60 text-[11px]">
+                <span key={s} className="badge bg-black/5 text-ink2 text-[11px]">
                   {SPORTS[s].emoji} {SPORTS[s].label}
                 </span>
               ))}
@@ -47,10 +47,10 @@ export default function Home() {
               <br />
               LEAGUE.
               <br />
-              <span className="relative inline-block text-pitch-600">
+              <span className="relative inline-block text-accent">
                 OWN MATCH DAY.
                 <svg
-                  className="absolute left-0 -bottom-2 w-full h-3 text-pitch-600/50"
+                  className="absolute left-0 -bottom-2 w-full h-3 text-accent/50"
                   viewBox="0 0 300 12"
                   preserveAspectRatio="none"
                   fill="none"
@@ -59,7 +59,7 @@ export default function Home() {
                 </svg>
               </span>
             </h1>
-            <p className="mt-7 text-lg text-black/60 max-w-lg">
+            <p className="mt-7 text-lg text-ink2 max-w-lg">
               One app connecting tournament organizers, team captains, and players — from registration and live
               match scoring to digital player passports.
             </p>
@@ -71,13 +71,13 @@ export default function Home() {
                 See what you get →
               </Link>
             </div>
-            <p className="mt-5 text-sm text-black/40">
+            <p className="mt-5 text-sm text-ink3">
               No account needed —{" "}
-              <Link href="/tour" className="text-pitch-600 hover:underline">
+              <Link href="/tour" className="text-accent hover:underline">
                 browse the console
               </Link>{" "}
               or check out a{" "}
-              <Link href="/t/coastal-cup" className="text-pitch-600 hover:underline">
+              <Link href="/t/coastal-cup" className="text-accent hover:underline">
                 live tournament page
               </Link>
               .
@@ -92,7 +92,7 @@ export default function Home() {
                   by, it has no exact match anywhere in the real product) —
                   so the caption underneath makes a claim it can back up
                   instead of "real screen, real tournament" like before. */}
-              <p className="text-center text-[11px] uppercase tracking-[0.2em] text-black/40 pt-6">
+              <p className="text-center text-[11px] uppercase tracking-[0.2em] text-ink3 pt-6">
                 Live scores &amp; schedules, from any phone
               </p>
             </div>
@@ -105,12 +105,12 @@ export default function Home() {
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 py-16 sm:py-20">
           <div className="reveal flex items-end justify-between gap-6 mb-8 flex-wrap">
             <div>
-              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-pitch-600">One system, every role</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent">One system, every role</span>
               <h2 className="text-display-sm mt-2 max-w-lg leading-[0.95]">
                 Built for whoever's looking
               </h2>
             </div>
-            <p className="text-black/50 max-w-sm text-sm">
+            <p className="text-ink2 max-w-sm text-sm">
               Same live data, a different view for directors, coaches, and families.
             </p>
           </div>
@@ -135,7 +135,7 @@ export default function Home() {
                 {s.n}
               </span>
               <h3 className="font-semibold text-black mt-5 mb-1.5 text-lg">{s.title}</h3>
-              <p className="text-sm text-black/50 leading-relaxed">{s.body}</p>
+              <p className="text-sm text-ink2 leading-relaxed">{s.body}</p>
             </div>
           ))}
         </div>
@@ -171,18 +171,18 @@ export default function Home() {
       <footer className="border-t border-black/5">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm">
           <Logo wordmarkClassName="text-sm" />
-          <nav className="flex items-center gap-5 text-black/40">
-            <Link href="/tournaments" className="hover:text-black/70">
+          <nav className="flex items-center gap-5 text-ink3">
+            <Link href="/tournaments" className="hover:text-black/70 inline-flex items-center min-h-12">
               Tournaments
             </Link>
-            <Link href="/tour" className="hover:text-black/70">
+            <Link href="/tour" className="hover:text-black/70 inline-flex items-center min-h-12">
               See how it works
             </Link>
-            <Link href="/inquire" className="hover:text-black/70">
+            <Link href="/inquire" className="hover:text-black/70 inline-flex items-center min-h-12">
               Get in touch
             </Link>
           </nav>
-          <p className="text-black/30">© {new Date().getFullYear()} Jogo. Built for organizers, players, and families.</p>
+          <p className="text-ink3">© {new Date().getFullYear()} Jogo. Built for organizers, players, and families.</p>
         </div>
       </footer>
     </main>

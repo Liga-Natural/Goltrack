@@ -54,7 +54,7 @@ export function AccentColorPicker({ currentColor }: { currentColor: string }) {
                 style={{ backgroundColor: p.hex }}
                 aria-hidden="true"
               />
-              <span className="text-[11px] text-black/50 text-center leading-tight">{p.name}</span>
+              <span className="text-[11px] text-ink2 text-center leading-tight">{p.name}</span>
             </button>
           ))}
         </div>
@@ -75,9 +75,9 @@ export function AccentColorPicker({ currentColor }: { currentColor: string }) {
             placeholder="#F2545C"
             maxLength={7}
           />
-          {!valid && <span className="text-xs text-black/40">6-digit hex, e.g. #F2545C</span>}
+          {!valid && <span className="text-xs text-ink3">6-digit hex, e.g. #F2545C</span>}
         </div>
-        <p className="text-xs text-black/30 mt-1.5">For a shade the presets above don&apos;t cover — stick to a red tone to keep the black/red/white identity.</p>
+        <p className="text-xs text-ink3 mt-1.5">For a shade the presets above don&apos;t cover — stick to a red tone to keep the black/red/white identity.</p>
       </div>
 
       <div className="border-t border-black/5 pt-5">
@@ -99,7 +99,7 @@ export function AccentColorPicker({ currentColor }: { currentColor: string }) {
               Soft badge
             </span>
           </div>
-          <p className="text-sm text-black/60">
+          <p className="text-sm text-ink2">
             This is what a link or highlighted word looks like in{" "}
             <span className="font-semibold" style={{ color: selected }}>
               your chosen color
@@ -119,7 +119,7 @@ export function AccentColorPicker({ currentColor }: { currentColor: string }) {
         <button className="btn-primary" disabled={!valid}>
           {saved ? "Saved ✓" : "Save accent color"}
         </button>
-        <p className="text-xs text-black/30 mt-2">
+        <p className="text-xs text-ink3 mt-2">
           Applies site-wide — buttons, links, and badges everywhere, not just this page. (LIVE status stays a fixed
           emerald green, independent of this color, so a live match is always recognizable at a glance.) Takes effect
           immediately on pages rendered per-request (dashboard, tournament pages); the marketing pages catch up within

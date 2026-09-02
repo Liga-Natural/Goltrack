@@ -1,5 +1,6 @@
 import { Players } from "@/lib/models";
 import { decideAgeVerification } from "@/lib/actions";
+import { ConfirmButton } from "@/components/ConfirmButton";
 import {
   AGE_CLASS,
   AGE_LABEL,
@@ -45,7 +46,10 @@ export default async function VerificationQueuePage() {
                       src={`/api/players/${p.id}/photo`}
                       alt=""
                       className="h-20 w-20 rounded-xl object-cover border border-line shrink-0"
-                    />
+                    
+          loading="lazy"
+          decoding="async"
+        />
                   ) : (
                     <span className="h-20 w-20 rounded-xl bg-neutralBadge border border-line flex items-center justify-center text-sm font-bold text-ink2 shrink-0">
                       {p.name.slice(0, 2).toUpperCase()}
@@ -85,14 +89,24 @@ export default async function VerificationQueuePage() {
                       Open {ageDocLabel(p.ageDocType).toLowerCase()}
                     </a>
                     <form action={decideAgeVerification.bind(null, p.id, "VERIFIED")}>
-                      <button type="submit" className="btn-primary text-xs w-full">
+                      <ConfirmButton
+                        className="btn-primary text-xs w-full"
+                        title={`Confirm ${p.name}'s age?`}
+                        detail="Approving says you opened the document and it matches the date of birth on the account. This clears them to be named in a matchday squad, and your name is recorded against the decision."
+                        confirmLabel="Yes, I checked the document"
+                      >
                         Approve — age verified
-                      </button>
+                      </ConfirmButton>
                     </form>
                     <form action={decideAgeVerification.bind(null, p.id, "REJECTED")}>
-                      <button type="submit" className="btn-ghost text-xs w-full">
+                      <ConfirmButton
+                        className="btn-ghost text-xs w-full"
+                        title={`Reject ${p.name}'s document?`}
+                        detail="They stay blocked from matchday squads until they upload something else. Jogo does not tell them automatically — you will need to contact them."
+                        confirmLabel="Reject the document"
+                      >
                         Reject
-                      </button>
+                      </ConfirmButton>
                     </form>
                   </div>
                 </div>

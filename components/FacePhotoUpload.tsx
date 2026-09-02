@@ -148,7 +148,10 @@ export function FacePhotoUpload({
               src={preview}
               alt="Headshot preview"
               className="h-32 w-32 rounded-full object-cover border border-line"
-            />
+            
+          loading="lazy"
+          decoding="async"
+        />
             <span className="text-xs text-ink2">Click to choose a different photo</span>
           </div>
         ) : (
@@ -178,7 +181,7 @@ export function FacePhotoUpload({
 
       {result?.status === "PASSED" && !checking && (
         <div className="rounded-xl border border-pitch-400/40 bg-pitch-400/10 p-3">
-          <p className="text-sm font-semibold text-pitch-600">
+          <p className="text-sm font-semibold text-accent">
             Face detected — {result.score}% confidence.
           </p>
           <p className="text-[11px] text-ink2 mt-1">

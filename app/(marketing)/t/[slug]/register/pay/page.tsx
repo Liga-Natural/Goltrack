@@ -43,7 +43,7 @@ export default async function PayPage({
 
       <div className="mx-auto max-w-xl px-4 sm:px-6 py-10">
         <h1 className="text-2xl font-semibold mb-1">Almost there — pay the entry fee</h1>
-        <p className="text-black/50 mb-6 text-sm">
+        <p className="text-ink2 mb-6 text-sm">
           {team.name} · {players.length} players registered
         </p>
 
@@ -118,7 +118,7 @@ export default async function PayPage({
 
         <div className="card p-6 mt-4">
           <h2 className="font-semibold text-sm mb-1">Add your team crest</h2>
-          <p className="text-xs text-black/40 mb-3">
+          <p className="text-xs text-ink3 mb-3">
             This link is yours to keep — no login needed. Use it now or send it to whoever manages your team&apos;s logo; it also lets you replace the crest later.
           </p>
           <div className="flex items-center gap-2">
