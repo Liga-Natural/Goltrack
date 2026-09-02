@@ -86,9 +86,11 @@ const THEME_VARS = {
     statusLive: "16 185 129",
     statusLiveInk: "6 78 54",
     statusWarning: "217 119 6",
-    // amber-800 measured 6.8:1 as .text-warning-500 on a card; amber-900
-    // takes it to 9.0:1.
-    statusWarningInk: "120 53 15",
+    // amber-800 measured 6.8:1 as .text-warning-500 on a card. A step past
+    // amber-900, because the darkest ground this ink lands on is not a card
+    // but a surface2 gallery tile, where amber-900 itself was still 6.8:1.
+    // 7.4:1 there, 8.7:1 on a card.
+    statusWarningInk: "112 49 14",
     brandHover: "201 69 44",
   },
   // Warm charcoal clay. The canvas is #141416 and the card is a few points

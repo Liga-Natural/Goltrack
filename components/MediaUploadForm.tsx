@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { uploadMedia } from "@/lib/actions";
+import { downscaleImage, MAX_UPLOAD_EDGE } from "@/lib/downscale";
 
 export function MediaUploadForm({
   tournamentId,
@@ -19,6 +20,15 @@ export function MediaUploadForm({
     <form
       action={(fd) =>
         startTransition(async () => {
+          // Resized here rather than on the server: there is no image CDN and
+          // no native resizing library in this stack, so this is the only
+          // point at which the full-size original can be avoided — and doing
+          // it here also keeps the 8MB file out of the database entirely.
+          const chosen = fd.get("photo");
+          if (chosen instanceof File && chosen.size > 0) {
+            setNotice("Preparing the photo…");
+            fd.set("photo", await downscaleImage(chosen));
+          }
           const result = await uploadMedia(tournamentId, fd);
           setNotice(result.error || "Uploaded. An organizer reviews it before it appears in the gallery.");
         })
@@ -72,7 +82,9 @@ export function MediaUploadForm({
       </div>
 
       <p className="text-[11px] text-ink3">
-        Nothing you upload appears publicly until an organizer approves it.
+        Nothing you upload appears publicly until an organizer approves it. Large photos are scaled down to{" "}
+        {MAX_UPLOAD_EDGE}px on the long edge before they are sent, so posting from a phone on event wifi does not
+        depend on uploading a full-size camera file.
       </p>
     </form>
   );

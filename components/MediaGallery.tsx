@@ -23,6 +23,20 @@ export function MediaGallery({
 }) {
   const [team, setTeam] = useState(initialTeam);
   const visible = team ? items.filter((i) => i.teamId === team) : items;
+  const teamName = new Map(teams.map((t) => [t.id, t.name]));
+
+  // A match photo is content, not decoration, so it never gets an empty alt.
+  // The caption is the best description when there is one, but most photos
+  // arrive from a parent's phone with no caption at all — and alt="" on those
+  // meant a screen reader announced nothing whatsoever where a sighted user
+  // saw a photo card. The fallback says what the picture actually is, built
+  // from the two things always known about it.
+  const describe = (item: GalleryItem) => {
+    if (item.caption) return item.caption;
+    const who = item.teamId ? teamName.get(item.teamId) : null;
+    const where = [who, item.division].filter(Boolean).join(", ");
+    return where ? `Match photo — ${where}` : "Match photo";
+  };
   // Only offer a badge for a team that actually has photos — a filter bar of
   // twelve clubs where eleven return nothing is a worse list than no bar.
   const withPhotos = teams.filter((t) => items.some((i) => i.teamId === t.id));
@@ -59,7 +73,7 @@ export function MediaGallery({
         {visible.map((item) => (
           <figure key={item.id} className="rounded-2xl bg-surface2 overflow-hidden clay-tile">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/api/media/${item.id}/image`} alt={item.caption ?? ""} className="w-full h-48 object-cover" 
+            <img src={`/api/media/${item.id}/image`} alt={describe(item)} className="w-full h-48 object-cover"
           loading="lazy"
           decoding="async"
         />

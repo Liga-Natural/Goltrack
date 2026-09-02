@@ -90,7 +90,7 @@ export default async function FairPlaySettingsPage({ searchParams }: { searchPar
           </label>
         </div>
 
-        <label className="flex items-start gap-3 cursor-pointer rounded-2xl bg-surface2 p-4">
+        <label className="flex items-start gap-3 cursor-pointer min-h-[48px] rounded-2xl bg-surface2 p-4">
           <input
             type="checkbox"
             name="fairPlayPublic"

@@ -54,7 +54,7 @@ export function VenuePinEditor({
     >
       <input type="hidden" name="matchCenterEnabled__present" value="1" />
 
-      <label className="flex items-start gap-3 cursor-pointer rounded-2xl bg-surface2 p-4">
+      <label className="flex items-start gap-3 cursor-pointer min-h-[48px] rounded-2xl bg-surface2 p-4">
         <input type="checkbox" name="matchCenterEnabled" defaultChecked={enabled} className="mt-0.5 h-4 w-4 accent-pitch-400" />
         <span>
           <span className="block text-sm font-semibold text-inkDisplay">Publish the live match centre</span>

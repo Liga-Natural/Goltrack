@@ -44,7 +44,10 @@ export default async function VerificationQueuePage() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={`/api/players/${p.id}/photo`}
-                      alt=""
+                      /* This queue exists so a person can look at a face and a
+                         document together; an empty alt hid the face half of
+                         that from anyone using a screen reader. */
+                      alt={`Submitted headshot for ${p.name}`}
                       className="h-20 w-20 rounded-xl object-cover border border-line shrink-0"
                     
           loading="lazy"

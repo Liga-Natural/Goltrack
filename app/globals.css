@@ -695,7 +695,7 @@
 .role-admin {
   background-color: rgb(244 63 94 / 0.12);
   border-color: rgb(244 63 94 / 0.35);
-  color: rgb(136 19 55);
+  color: rgb(128 18 52);
 }
 [data-theme="dark"] .role-admin {
   color: rgb(253 164 175);
@@ -713,7 +713,7 @@
 .role-referee {
   background-color: rgb(245 158 11 / 0.12);
   border-color: rgb(245 158 11 / 0.35);
-  color: rgb(120 53 15);
+  color: rgb(112 49 14);
 }
 [data-theme="dark"] .role-referee {
   color: rgb(252 211 77);
@@ -750,7 +750,7 @@
 [data-theme="light"] .role-admin {
   background-color: rgb(244 63 94 / 0.12);
   border-color: rgb(244 63 94 / 0.35);
-  color: rgb(136 19 55);
+  color: rgb(128 18 52);
 }
 [data-theme="light"] .role-director {
   background-color: rgb(139 92 246 / 0.12);
@@ -761,7 +761,7 @@
   background-color: rgb(245 158 11 / 0.14);
   border-color: rgb(245 158 11 / 0.4);
   /* amber-800 -> amber-900, matching the bare rule above. */
-  color: rgb(120 53 15);
+  color: rgb(112 49 14);
 }
 [data-theme="light"] .role-manager {
   background-color: rgb(14 165 233 / 0.12);
@@ -794,7 +794,7 @@
   border-color: rgb(245 158 11 / 0.3);
   /* amber-700 measured 3.9:1 on this tint — under AA, not just under AAA.
      amber-900 takes the same pill to 8.0:1. */
-  color: rgb(120 53 15);
+  color: rgb(112 49 14);
 }
 [data-theme="dark"] .badge-pending {
   color: rgb(252 211 77);
@@ -803,7 +803,7 @@
   background-color: rgb(244 63 94 / 0.1);
   border-color: rgb(244 63 94 / 0.32);
   /* rose-800 → rose-900: 5.3:1 to 8.1:1 on the tint. */
-  color: rgb(136 19 55);
+  color: rgb(128 18 52);
 }
 [data-theme="dark"] .badge-danger {
   color: rgb(253 164 175);

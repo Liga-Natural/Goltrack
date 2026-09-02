@@ -47,7 +47,7 @@ export default async function OrganizerMediaPage({ searchParams }: { searchParam
 
       <form action={saveModuleSettings.bind(null, tournament.id)} className="card p-5 sm:p-6 space-y-4">
         <input type="hidden" name="mediaEnabled__present" value="1" />
-        <label className="flex items-start gap-3 cursor-pointer">
+        <label className="flex items-start gap-3 cursor-pointer min-h-[48px]">
           <input type="checkbox" name="mediaEnabled" defaultChecked={settings.mediaEnabled} className="mt-0.5 h-4 w-4 accent-pitch-400" />
           <span className="min-w-0">
             <span className="block text-sm font-semibold text-inkDisplay">Run a photo gallery for this event</span>
@@ -100,10 +100,16 @@ export default async function OrganizerMediaPage({ searchParams }: { searchParam
             {pending.map((item) => (
               <div key={item.id} className="rounded-2xl bg-surface2 overflow-hidden clay-tile">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/api/media/${item.id}/image`} alt="" className="w-full h-40 object-cover" 
-          loading="lazy"
-          decoding="async"
-        />
+                <img
+                  src={`/api/media/${item.id}/image`}
+                  /* Never alt="" here. This is a moderation queue: the whole
+                     task is telling one photo from another, and an empty alt
+                     made every card in it identical to a screen reader. */
+                  alt={item.caption || `Photo awaiting review from ${item.credit || item.uploadedByName || "an unknown uploader"}`}
+                  className="w-full h-40 object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
                 <div className="p-3.5 space-y-2">
                   <p className="text-sm text-inkDisplay line-clamp-2">{item.caption || "No caption"}</p>
                   <p className="text-[11px] text-ink3">
@@ -141,10 +147,13 @@ export default async function OrganizerMediaPage({ searchParams }: { searchParam
             {decided.map((item) => (
               <div key={item.id} className="rounded-2xl bg-surface2 overflow-hidden clay-tile">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/api/media/${item.id}/image`} alt="" className="w-full h-32 object-cover" 
-          loading="lazy"
-          decoding="async"
-        />
+                <img
+                  src={`/api/media/${item.id}/image`}
+                  alt={item.caption || `${item.status === "APPROVED" ? "Approved" : "Rejected"} photo from ${item.credit || item.uploadedByName || "an unknown uploader"}`}
+                  className="w-full h-32 object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
                 <div className="p-3.5 space-y-2">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className={`badge text-[10px] ${item.status === "APPROVED" ? "badge-accepted" : "badge-danger"}`}>
@@ -152,9 +161,9 @@ export default async function OrganizerMediaPage({ searchParams }: { searchParam
                     </span>
                     {item.featured === 1 && <span className="badge badge-pending text-[10px]">FEATURED</span>}
                   </div>
-                  <p className="text-[11px] text-ink3 truncate">
-                    {item.reviewedByName ? `by ${item.reviewedByName}` : ""}
-                  </p>
+                  {item.reviewedByName && (
+                    <p className="text-[11px] text-ink3 truncate">by {item.reviewedByName}</p>
+                  )}
                   <div className="flex items-center gap-2 flex-wrap">
                     {item.status === "APPROVED" && (
                       <form action={decideMedia.bind(null, tournament.id, item.id, item.featured === 1 ? "UNFEATURE" : "FEATURE")}>

@@ -45,7 +45,7 @@ export default async function SponsorsPage({ searchParams }: { searchParams: { t
 
       <form action={saveModuleSettings.bind(null, tournament.id)} className="card p-4 sm:p-5">
         <input type="hidden" name="sponsorsEnabled__present" value="1" />
-        <label className="flex items-start gap-3 cursor-pointer">
+        <label className="flex items-start gap-3 cursor-pointer min-h-[48px]">
           <input
             type="checkbox"
             name="sponsorsEnabled"
