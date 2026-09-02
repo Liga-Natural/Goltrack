@@ -148,6 +148,99 @@ CREATE TABLE IF NOT EXISTS applications (
   decidedAt TEXT
 );
 
+-- What happened in a match, one row per incident. This is the table the
+-- referee scorepad's own comment said was missing: without it a yellow card
+-- had nowhere to go, so the pad could only ever be a wireframe. Every player
+-- statistic in the app is derived from these rows rather than stored as a
+-- running total on the player, so a mistyped card can be deleted and the
+-- totals simply stop counting it.
+CREATE TABLE IF NOT EXISTS match_events (
+  id TEXT PRIMARY KEY,
+  matchId TEXT NOT NULL,
+  tournamentId TEXT NOT NULL,
+  teamId TEXT,
+  playerId TEXT,
+  type TEXT NOT NULL,          -- GOAL | ASSIST | YELLOW | RED
+  minute INTEGER,
+  note TEXT,
+  -- Only meaningful on a RED: the moment an organizer confirmed the
+  -- suspension was served. Null means the player is still sitting out.
+  clearedAt TEXT,
+  recordedByName TEXT,
+  createdAt TEXT NOT NULL
+);
+
+-- Combine testing, entered by hand. Every figure is an integer in hundredths
+-- of its display unit (a 5.12s sprint is 512) so no measurement is ever a
+-- float that drifts. There is no wearable or timing-gate integration here —
+-- a coach types what the stopwatch said.
+CREATE TABLE IF NOT EXISTS player_metrics (
+  id TEXT PRIMARY KEY,
+  playerId TEXT NOT NULL,
+  sprint40Hundredths INTEGER,      -- seconds x100, lower is better
+  verticalJumpHundredths INTEGER,  -- inches x100
+  topSpeedHundredths INTEGER,      -- mph x100
+  distanceHundredths INTEGER,      -- miles x100
+  yoyoHundredths INTEGER,          -- Yo-Yo level x100
+  recordedByName TEXT,
+  recordedAt TEXT NOT NULL
+);
+
+-- Matchday availability, one row per player per match.
+CREATE TABLE IF NOT EXISTS player_availability (
+  id TEXT PRIMARY KEY,
+  matchId TEXT NOT NULL,
+  playerId TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'NO_REPLY',  -- ATTENDING | INJURED | ABSENT | NO_REPLY
+  note TEXT,
+  respondedAt TEXT,
+  UNIQUE(matchId, playerId)
+);
+
+-- A saved starting XI. `slots` is a JSON map of formation slot id to player
+-- id; the formation's geometry lives in lib/lineup.ts rather than the
+-- database, so moving a shape by a few percent is a code change and not a
+-- migration of every saved lineup.
+CREATE TABLE IF NOT EXISTS lineups (
+  id TEXT PRIMARY KEY,
+  matchId TEXT NOT NULL,
+  teamId TEXT NOT NULL,
+  formation TEXT NOT NULL,
+  slots TEXT NOT NULL,
+  arrows TEXT,
+  notes TEXT,
+  updatedAt TEXT NOT NULL,
+  UNIQUE(matchId, teamId)
+);
+
+-- The signed result. Signatures are captured as PNG data URLs drawn on a
+-- canvas: a picture of a signature, which is what a paper match card also is
+-- — not a cryptographic e-signature, and the UI says so.
+CREATE TABLE IF NOT EXISTS match_reports (
+  id TEXT PRIMARY KEY,
+  matchId TEXT NOT NULL UNIQUE,
+  homeScore INTEGER NOT NULL,
+  awayScore INTEGER NOT NULL,
+  notes TEXT,
+  refereeName TEXT,
+  refereeSignature TEXT,
+  marshalName TEXT,
+  marshalSignature TEXT,
+  submittedAt TEXT NOT NULL
+);
+
+-- What an official is owed for a match. Recorded, not paid: like every other
+-- payment in Jogo, the money moves outside the app.
+CREATE TABLE IF NOT EXISTS referee_fees (
+  id TEXT PRIMARY KEY,
+  matchId TEXT NOT NULL,
+  refereeId TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'CENTER',   -- CENTER | AR1 | AR2 | FOURTH
+  feeCents INTEGER NOT NULL DEFAULT 0,
+  paidAt TEXT,
+  recordedAt TEXT NOT NULL
+);
+
 -- How one tournament takes money. One row per event, created on first save;
 -- an absent row means lib/pricing.ts's documented defaults, so an organizer
 -- who never opens the settings screen still has coherent, stated rules rather

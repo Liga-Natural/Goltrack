@@ -22,6 +22,7 @@ export const adminNav = [
   { href: "/admin/inbox", label: "Inbox" },
   { href: "/admin/users", label: "Accounts" },
   { href: "/admin/finance/platform", label: "Platform finance" },
+  { href: "/admin/referees", label: "Referees" },
   { href: "/admin/tournaments", label: "All tournaments" },
 ];
 

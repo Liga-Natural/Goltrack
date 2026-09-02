@@ -106,3 +106,52 @@ export function findConflicts(matches: Match[], teams: Team[]): Conflict[] {
   };
   return out.sort((a, b) => rank[a.kind] - rank[b.kind]);
 }
+
+export type OfficialConflictKind = "REFEREE_DOUBLE_BOOKED" | "REFEREE_BACK_TO_BACK";
+
+export interface OfficialConflict {
+  kind: OfficialConflictKind;
+  refereeId: string;
+  matchIds: string[];
+  title: string;
+  detail: string;
+}
+
+// The same two questions the fixture checker asks, asked of officials: is one
+// referee in two places at once, and has anyone been given a turnaround they
+// cannot physically make. Same thresholds, because a referee walking between
+// fields is under exactly the constraint a team is.
+export function findOfficialConflicts(matches: Match[], refereeNames: Map<string, string>): OfficialConflict[] {
+  const assigned = matches.filter((m) => m.scheduledAt && m.refereeId);
+  const out: OfficialConflict[] = [];
+
+  for (let i = 0; i < assigned.length; i++) {
+    for (let j = i + 1; j < assigned.length; j++) {
+      const a = assigned[i];
+      const b = assigned[j];
+      if (a.refereeId !== b.refereeId) continue;
+      const gap = minutesBetween(a.scheduledAt!, b.scheduledAt!);
+      const who = refereeNames.get(a.refereeId!) || "This official";
+      if (gap < SLOT_MINUTES) {
+        out.push({
+          kind: "REFEREE_DOUBLE_BOOKED",
+          refereeId: a.refereeId!,
+          matchIds: [a.id, b.id],
+          title: `${who} is double-booked`,
+          detail: `${a.round} and ${b.round} start ${Math.round(gap)} min apart — inside one ${SLOT_MINUTES}-minute slot.`,
+        });
+      } else if (gap < REST_MINUTES) {
+        out.push({
+          kind: "REFEREE_BACK_TO_BACK",
+          refereeId: a.refereeId!,
+          matchIds: [a.id, b.id],
+          title: `${who} has a tight turnaround`,
+          detail: `${Math.round(gap)} min between ${a.round} and ${b.round}${
+            a.field && b.field && a.field !== b.field ? `, on different fields` : ""
+          }.`,
+        });
+      }
+    }
+  }
+  return out;
+}

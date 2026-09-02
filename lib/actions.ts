@@ -23,11 +23,17 @@ import {
   PaymentSettings,
   PlatformFees,
   PlatformPayouts,
+  MatchEvents,
+  PlayerMetrics,
+  Availability,
+  Lineups,
+  MatchReports,
+  RefereeFees,
   isRole,
   slugify,
   Format,
 } from "@/lib/models";
-import type { ApplicationStatus, PaymentStatus, PaymentMethod, User, Role } from "@/lib/models";
+import type { ApplicationStatus, PaymentStatus, PaymentMethod, User, Role, MatchEventType, AvailabilityStatus } from "@/lib/models";
 import { ROLE_LABELS } from "@/lib/permissions";
 import {
   can,
@@ -1641,4 +1647,409 @@ export async function sendDueReminders(
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Something went wrong.", checked: 0, sent: 0, detail: "" };
   }
+}
+
+// ---------- Match events, squads, officials ----------
+//
+// Two authorities act on a match: the organizer who owns the tournament, and
+// the official assigned to that specific match. The second is new — the
+// scorepad could only ever be a wireframe while a referee had no account and
+// no way to prove a match was theirs.
+
+async function requireMatchOfficial(matchId: string) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Not authenticated");
+  const match = await Matches.byId(matchId);
+  if (!match) throw new Error("Match not found");
+  const tournament = await Tournaments.byId(match.tournamentId);
+  if (!tournament) throw new Error("Match not found");
+
+  // The organizer, an assigned staff member, or the platform admin may always
+  // act. A referee may act only on a match they are the assigned official for.
+  if (tournament.ownerId === user.id || user.role === "ADMIN") return { user, match, tournament };
+  if (await TournamentStaff.isAssigned(tournament.id, user.id)) return { user, match, tournament };
+  if (match.refereeId) {
+    const mine = await Referees.listByUserId(user.id);
+    if (mine.some((r) => r.id === match.refereeId)) return { user, match, tournament };
+  }
+  throw new Error("This match is not assigned to you.");
+}
+
+/** The squad a coach manages: their own team, or one they organize. */
+async function requireCoachTeam(teamId: string) {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Not authenticated");
+  const team = await Teams.byId(teamId);
+  if (!team) throw new Error("Team not found");
+  if (team.userId === user.id) return { user, team };
+  const tournament = await Tournaments.byId(team.tournamentId);
+  if (!tournament) throw new Error("Team not found");
+  if (tournament.ownerId === user.id || user.role === "ADMIN") return { user, team };
+  if (await TournamentStaff.isAssigned(tournament.id, user.id)) return { user, team };
+  throw new Error("This team is not yours to manage.");
+}
+
+export async function updatePlayerProfile(playerId: string, formData: FormData): Promise<ActionResult> {
+  return guarded(async () => {
+    const player = await Players.byId(playerId);
+    if (!player) throw new Error("Player not found");
+    await requireCoachTeam(player.teamId);
+
+    const gradRaw = String(formData.get("graduationYear") || "").trim();
+    const graduationYear = gradRaw ? Number(gradRaw) : null;
+    if (graduationYear !== null && (!Number.isFinite(graduationYear) || graduationYear < 1900 || graduationYear > 2100)) {
+      throw new Error("Enter a graduation year like 2029");
+    }
+
+    const url = String(formData.get("videoUrl") || "").trim() || null;
+    // Only https, and only a URL — an arbitrary string here ends up in an
+    // iframe src, and javascript: in an href is the classic way that goes
+    // wrong.
+    if (url) {
+      let parsed: URL;
+      try {
+        parsed = new URL(url);
+      } catch {
+        throw new Error("Enter a full video URL starting with https://");
+      }
+      if (parsed.protocol !== "https:") throw new Error("Video links must start with https://");
+    }
+
+    const privacyRaw = String(formData.get("videoPrivacy") || "PRIVATE");
+    const videoPrivacy = ["PUBLIC", "SCOUTS", "PRIVATE"].includes(privacyRaw) ? privacyRaw : "PRIVATE";
+
+    await Players.updateProfile(playerId, {
+      jerseyNumber: String(formData.get("jerseyNumber") || "").trim() || null,
+      position: String(formData.get("position") || "").trim() || null,
+      secondaryPosition: String(formData.get("secondaryPosition") || "").trim() || null,
+      graduationYear,
+      videoUrl: url,
+      videoPrivacy,
+    });
+    revalidatePath(`/player/${playerId}`);
+    revalidatePath("/coach/dashboard");
+  });
+}
+
+export async function recordPlayerMetrics(playerId: string, formData: FormData): Promise<ActionResult> {
+  return guarded(async () => {
+    const player = await Players.byId(playerId);
+    if (!player) throw new Error("Player not found");
+    const { user } = await requireCoachTeam(player.teamId);
+
+    // Entered in display units, stored in hundredths so no measurement is
+    // ever a float. Blank means "not tested", which is different from zero.
+    const hundredths = (name: string): number | null => {
+      const raw = String(formData.get(name) || "").trim();
+      if (!raw) return null;
+      const n = Number(raw);
+      if (!Number.isFinite(n) || n < 0) throw new Error(`Enter a number for ${name}, or leave it blank`);
+      return Math.round(n * 100);
+    };
+
+    const row = {
+      playerId,
+      sprint40Hundredths: hundredths("sprint40"),
+      verticalJumpHundredths: hundredths("verticalJump"),
+      topSpeedHundredths: hundredths("topSpeed"),
+      distanceHundredths: hundredths("distance"),
+      yoyoHundredths: hundredths("yoyo"),
+      recordedByName: user.name,
+    };
+    if (Object.values(row).every((v) => v === null || typeof v === "string")) {
+      throw new Error("Enter at least one measurement");
+    }
+    await PlayerMetrics.create(row);
+    revalidatePath(`/player/${playerId}`);
+  });
+}
+
+export async function logMatchEvent(matchId: string, formData: FormData): Promise<ActionResult> {
+  return guarded(async () => {
+    const { user, match } = await requireMatchOfficial(matchId);
+    const typeRaw = String(formData.get("type") || "");
+    if (!["GOAL", "ASSIST", "YELLOW", "RED"].includes(typeRaw)) throw new Error("Unknown event type");
+
+    const playerId = String(formData.get("playerId") || "").trim() || null;
+    // A card must name someone: an unattributed yellow cannot suspend anybody
+    // and quietly breaks the eligibility read further down the line.
+    if ((typeRaw === "YELLOW" || typeRaw === "RED") && !playerId) {
+      throw new Error("Pick the player who was carded");
+    }
+    if (playerId) {
+      const player = await Players.byId(playerId);
+      if (!player) throw new Error("Player not found");
+    }
+
+    const minuteRaw = String(formData.get("minute") || "").trim();
+    const minute = minuteRaw ? Number(minuteRaw) : null;
+    if (minute !== null && (!Number.isFinite(minute) || minute < 0 || minute > 200)) {
+      throw new Error("Enter a minute between 0 and 200");
+    }
+
+    await MatchEvents.create({
+      matchId,
+      tournamentId: match.tournamentId,
+      teamId: String(formData.get("teamId") || "").trim() || null,
+      playerId,
+      type: typeRaw as MatchEventType,
+      minute,
+      note: String(formData.get("note") || "").trim() || null,
+      recordedByName: user.name,
+    });
+    revalidatePath(`/referee/${matchId}`);
+    revalidatePath(`/dashboard/tournaments/${match.tournamentId}/scores`);
+    if (playerId) revalidatePath(`/player/${playerId}`);
+  });
+}
+
+export async function deleteMatchEvent(matchId: string, eventId: string): Promise<ActionResult> {
+  return guarded(async () => {
+    const { match } = await requireMatchOfficial(matchId);
+    const event = await MatchEvents.byId(eventId);
+    if (!event || event.matchId !== match.id) throw new Error("Event not found");
+    await MatchEvents.remove(eventId);
+    revalidatePath(`/referee/${matchId}`);
+    if (event.playerId) revalidatePath(`/player/${event.playerId}`);
+  });
+}
+
+/** Marks a red card's suspension as served, which is what restores eligibility. */
+export async function setRedCardCleared(tournamentId: string, eventId: string, cleared: boolean): Promise<ActionResult> {
+  return guarded(async () => {
+    const { user } = await requireOwnedTournament(tournamentId);
+    requirePermission(user, "ROSTER");
+    const event = await MatchEvents.byId(eventId);
+    if (!event || event.tournamentId !== tournamentId) throw new Error("Event not found");
+    await MatchEvents.setCleared(eventId, cleared);
+    if (event.playerId) revalidatePath(`/player/${event.playerId}`);
+    revalidatePath("/coach/dashboard");
+  });
+}
+
+export async function setPlayerAvailability(
+  matchId: string,
+  playerId: string,
+  status: string
+): Promise<ActionResult> {
+  return guarded(async () => {
+    if (!["ATTENDING", "INJURED", "ABSENT", "NO_REPLY"].includes(status)) throw new Error("Unknown status");
+    const player = await Players.byId(playerId);
+    if (!player) throw new Error("Player not found");
+    const user = await getCurrentUser();
+    if (!user) throw new Error("Not authenticated");
+    // The player's own account may answer for themselves; otherwise this has
+    // to be someone who manages the squad.
+    if (player.userId !== user.id) await requireCoachTeam(player.teamId);
+    await Availability.set(matchId, playerId, status as AvailabilityStatus);
+    revalidatePath("/coach/dashboard");
+    revalidatePath("/me");
+  });
+}
+
+/**
+ * Emails the squad's contacts asking them to confirm availability. Recorded in
+ * the same outbound log as every other message, and honest about delivery: the
+ * mailer reports SENT, FAILED, or QUEUED when no provider is configured.
+ */
+export async function sendCallUps(teamId: string, matchId: string): Promise<{ error?: string; detail: string }> {
+  try {
+    const { user, team } = await requireCoachTeam(teamId);
+    const tournament = await Tournaments.byId(team.tournamentId);
+    const match = await Matches.byId(matchId);
+    if (!tournament || !match) throw new Error("Match not found");
+
+    const when = match.scheduledAt ? formatDate(match.scheduledAt) : "a date to be confirmed";
+    const subject = `${team.name} — call-up for ${match.round}`;
+    const body = [
+      `${team.name} play ${match.round} on ${when}${match.field ? ` at ${match.field}` : ""}.`,
+      ``,
+      `Please reply to confirm whether your player is available.`,
+      ``,
+      `— ${user.name}, ${tournament.name}`,
+    ].join("\n");
+
+    // One address: the squad contact on the team record. There is no
+    // per-parent contact list in the schema, so pretending to reach each
+    // family individually would overstate what actually goes out.
+    const recipients = [team.contactEmail].filter(Boolean) as string[];
+    const message = await ApplicationMessages.create({
+      tournamentId: tournament.id,
+      template: "CALL_UP",
+      audience: `TEAM:${team.name}`,
+      subject,
+      body,
+      recipients: JSON.stringify(recipients),
+      recipientCount: recipients.length,
+    });
+    const result = await sendBulkEmail(recipients, subject, body);
+    if (result.ok) await ApplicationMessages.setStatus(message.id, "SENT");
+    else if (result.configured) await ApplicationMessages.setStatus(message.id, "FAILED");
+
+    revalidatePath("/coach/dashboard");
+    return {
+      detail: result.ok
+        ? `Call-up emailed to ${recipients.join(", ")}.`
+        : result.configured
+          ? `Not sent: ${result.reason}`
+          : "Recorded, but not sent — no mail provider is configured.",
+    };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Something went wrong.", detail: "" };
+  }
+}
+
+export async function saveLineup(teamId: string, matchId: string, formData: FormData): Promise<ActionResult> {
+  return guarded(async () => {
+    const { team } = await requireCoachTeam(teamId);
+    const formation = String(formData.get("formation") || "4-3-3");
+    const slotsRaw = String(formData.get("slots") || "{}");
+    // Parsed and re-serialised rather than trusted: this string is written by
+    // the client and read back as JSON on every render.
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(slotsRaw);
+    } catch {
+      throw new Error("Could not read that lineup");
+    }
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("Could not read that lineup");
+    const squad = new Set((await Players.listByTeam(team.id)).map((p) => p.id));
+    const clean: Record<string, string> = {};
+    for (const [slot, pid] of Object.entries(parsed as Record<string, unknown>)) {
+      if (typeof pid === "string" && squad.has(pid)) clean[slot] = pid;
+    }
+    // Arrows are coordinate quads in the same 0-100 percentage space as the
+    // slots. Clamped rather than trusted: this is client-written JSON that is
+    // read straight back into an SVG path on every render.
+    let arrows: string | null = null;
+    const arrowsRaw = String(formData.get("arrows") || "").trim();
+    if (arrowsRaw) {
+      let list: unknown;
+      try {
+        list = JSON.parse(arrowsRaw);
+      } catch {
+        throw new Error("Could not read those arrows");
+      }
+      if (!Array.isArray(list)) throw new Error("Could not read those arrows");
+      const clamp = (n: unknown) => Math.max(0, Math.min(100, Number(n) || 0));
+      arrows = JSON.stringify(
+        list
+          .filter((a): a is Record<string, unknown> => Boolean(a) && typeof a === "object")
+          .slice(0, 40)
+          .map((a) => ({ x1: clamp(a.x1), y1: clamp(a.y1), x2: clamp(a.x2), y2: clamp(a.y2) }))
+      );
+    }
+
+    await Lineups.save(
+      matchId,
+      team.id,
+      formation,
+      JSON.stringify(clean),
+      arrows,
+      String(formData.get("notes") || "").trim() || null
+    );
+    revalidatePath("/coach/dashboard");
+  });
+}
+
+export async function submitMatchReport(matchId: string, formData: FormData): Promise<ActionResult> {
+  return guarded(async () => {
+    const { user, match } = await requireMatchOfficial(matchId);
+    const home = Number(String(formData.get("homeScore") || ""));
+    const away = Number(String(formData.get("awayScore") || ""));
+    if (!Number.isFinite(home) || !Number.isFinite(away) || home < 0 || away < 0) {
+      throw new Error("Enter both final scores");
+    }
+
+    // A signature is a PNG the official drew on a canvas. Anything else is
+    // refused rather than stored and rendered back into an <img>.
+    const signature = (name: string): string | null => {
+      const raw = String(formData.get(name) || "");
+      if (!raw) return null;
+      if (!raw.startsWith("data:image/png;base64,")) throw new Error("Signature could not be read");
+      if (raw.length > 200_000) throw new Error("Signature image is too large");
+      return raw;
+    };
+
+    await MatchReports.save({
+      matchId,
+      homeScore: home,
+      awayScore: away,
+      notes: String(formData.get("notes") || "").trim() || null,
+      refereeName: String(formData.get("refereeName") || "").trim() || user.name,
+      refereeSignature: signature("refereeSignature"),
+      marshalName: String(formData.get("marshalName") || "").trim() || null,
+      marshalSignature: signature("marshalSignature"),
+    });
+
+    // The report is the record of the result, so the match itself is updated
+    // to match it — otherwise standings would keep showing the live score a
+    // referee has since corrected on the card.
+    await Matches.updateScore(matchId, home, away, "FINAL");
+    revalidatePath(`/referee/${matchId}`);
+    revalidatePath(`/dashboard/tournaments/${match.tournamentId}/scores`);
+    revalidatePath(`/dashboard/tournaments/${match.tournamentId}`);
+  });
+}
+
+export async function updateRefereeProfile(
+  tournamentId: string,
+  refereeId: string,
+  formData: FormData
+): Promise<ActionResult> {
+  return guarded(async () => {
+    const { user } = await requireOwnedTournament(tournamentId);
+    requirePermission(user, "ROSTER");
+    const referee = await Referees.byId(refereeId);
+    if (!referee || referee.tournamentId !== tournamentId) throw new Error("Referee not found");
+
+    const ratingRaw = String(formData.get("ratingPct") || "").trim();
+    const ratingPct = ratingRaw ? Number(ratingRaw) : null;
+    if (ratingPct !== null && (!Number.isFinite(ratingPct) || ratingPct < 0 || ratingPct > 100)) {
+      throw new Error("Rating must be between 0 and 100");
+    }
+
+    // Linking an account is what lets this official sign in and score their
+    // own matches, so the email has to resolve to a real user.
+    const email = String(formData.get("accountEmail") || "").trim().toLowerCase();
+    let userId: string | null = referee.userId;
+    if (email) {
+      const account = await Users.byEmail(email);
+      if (!account) throw new Error("No account exists with that email — invite them from Accounts first.");
+      userId = account.id;
+    } else if (formData.get("unlink")) {
+      userId = null;
+    }
+
+    await Referees.updateProfile(refereeId, {
+      certification: String(formData.get("certification") || "").trim() || null,
+      ratingPct,
+      contact: String(formData.get("contact") || "").trim() || referee.contact,
+      userId,
+    });
+    revalidatePath(`/admin/referees`);
+    revalidatePath(`/referee/profile/${refereeId}`);
+    revalidatePath(`/dashboard/tournaments/${tournamentId}/referees`);
+  });
+}
+
+export async function setRefereeFee(
+  tournamentId: string,
+  matchId: string,
+  refereeId: string,
+  formData: FormData
+): Promise<ActionResult> {
+  return guarded(async () => {
+    const { user } = await requireOwnedTournament(tournamentId);
+    requirePermission(user, "FINANCE");
+    const role = String(formData.get("role") || "CENTER");
+    await RefereeFees.set(
+      matchId,
+      refereeId,
+      ["CENTER", "AR1", "AR2", "FOURTH"].includes(role) ? role : "CENTER",
+      parseMoneyToCents(String(formData.get("fee") || "0"))
+    );
+    revalidatePath("/admin/referees");
+    revalidatePath(`/referee/profile/${refereeId}`);
+  });
 }

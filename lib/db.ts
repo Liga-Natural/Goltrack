@@ -204,6 +204,27 @@ async function runMigrations(pool: Pool) {
   // An invite token is a bearer credential — two invites sharing one would let
   // the wrong person claim the wrong role.
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_platform_payouts_tournament ON platform_payouts(tournamentId);`);
+  // Player profile fields. Position is free text rather than an enum: the
+  // vocabulary differs by sport and by club, and a fixed list would be wrong
+  // for the first futsal or basketball event.
+  await ensureColumn(pool, "players", "position", "position TEXT");
+  await ensureColumn(pool, "players", "secondaryposition", "secondaryPosition TEXT");
+  await ensureColumn(pool, "players", "graduationyear", "graduationYear INTEGER");
+  await ensureColumn(pool, "players", "videourl", "videoUrl TEXT");
+  await ensureColumn(pool, "players", "videoprivacy", "videoPrivacy TEXT NOT NULL DEFAULT 'PRIVATE'");
+  // Linking a referee row to an account is what lets a referee sign in and
+  // score their own matches — the missing half the scorepad's comment named.
+  await ensureColumn(pool, "referees", "userid", "userId TEXT");
+  await ensureColumn(pool, "referees", "certification", "certification TEXT");
+  await ensureColumn(pool, "referees", "ratingpct", "ratingPct INTEGER");
+  await ensureColumn(pool, "lineups", "arrows", "arrows TEXT");
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_match_events_match ON match_events(matchId);`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_match_events_player ON match_events(playerId);`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_match_events_tournament ON match_events(tournamentId);`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_player_metrics_player ON player_metrics(playerId);`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_player_availability_match ON player_availability(matchId);`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_referee_fees_referee ON referee_fees(refereeId);`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_referee_fees_match ON referee_fees(matchId);`);
   await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_user_invites_token ON user_invites(token);`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_tournament_staff_user ON tournament_staff(userId);`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_tournament_staff_tournament ON tournament_staff(tournamentId);`);
@@ -246,6 +267,25 @@ const CAMEL_CASE_COLUMNS: Record<string, string> = {
   accentcolor: "accentColor",
   advancepergroup: "advancePerGroup",
   acceptcash: "acceptCash",
+  awayscoreverified: "awayScoreVerified",
+  clearedat: "clearedAt",
+  distancehundredths: "distanceHundredths",
+  graduationyear: "graduationYear",
+  marshalname: "marshalName",
+  marshalsignature: "marshalSignature",
+  matchid: "matchId",
+  ratingpct: "ratingPct",
+  refereename: "refereeName",
+  refereesignature: "refereeSignature",
+  respondedat: "respondedAt",
+  secondaryposition: "secondaryPosition",
+  sprint40hundredths: "sprint40Hundredths",
+  submittedat: "submittedAt",
+  topspeedhundredths: "topSpeedHundredths",
+  verticaljumphundredths: "verticalJumpHundredths",
+  videoprivacy: "videoPrivacy",
+  videourl: "videoUrl",
+  yoyohundredths: "yoyoHundredths",
   acceptcheck: "acceptCheck",
   acceptedat: "acceptedAt",
   acceptwire: "acceptWire",

@@ -161,6 +161,12 @@ export interface Player {
   jerseyNumber: string | null;
   birthdate: string | null;
   passportId: string;
+  position: string | null;
+  secondaryPosition: string | null;
+  graduationYear: number | null;
+  videoUrl: string | null;
+  /** PUBLIC | SCOUTS | PRIVATE — enforced where the video renders. */
+  videoPrivacy: string;
   createdAt: string;
 }
 
@@ -189,6 +195,10 @@ export interface Referee {
   tournamentId: string;
   name: string;
   contact: string | null;
+  /** The account this official signs in with, once linked. */
+  userId: string | null;
+  certification: string | null;
+  ratingPct: number | null;
 }
 
 export interface CheckIn {
@@ -285,6 +295,281 @@ export const Users = {
       { $exclude: excludeId ?? null } as any
     );
     return Number(row?.n ?? 0);
+  },
+};
+
+// ---------- Match events, metrics, lineups, officials ----------
+
+export type MatchEventType = "GOAL" | "ASSIST" | "YELLOW" | "RED";
+
+export interface MatchEvent {
+  id: string;
+  matchId: string;
+  tournamentId: string;
+  teamId: string | null;
+  playerId: string | null;
+  type: MatchEventType;
+  minute: number | null;
+  note: string | null;
+  clearedAt: string | null;
+  recordedByName: string | null;
+  createdAt: string;
+}
+
+const EVENT_COLUMNS = `id, matchId, tournamentId, teamId, playerId, type, minute, note, clearedAt, recordedByName, createdAt`;
+
+export const MatchEvents = {
+  async create(input: Omit<MatchEvent, "id" | "createdAt" | "clearedAt">): Promise<MatchEvent> {
+    const row: MatchEvent = { id: uid(), clearedAt: null, createdAt: nowIso(), ...input };
+    await run(
+      `INSERT INTO match_events (${EVENT_COLUMNS})
+       VALUES ($id,$matchId,$tournamentId,$teamId,$playerId,$type,$minute,$note,NULL,$recordedByName,$createdAt)`,
+      row as any
+    );
+    return row;
+  },
+  async byId(id: string): Promise<MatchEvent | undefined> {
+    return get<MatchEvent>(`SELECT ${EVENT_COLUMNS} FROM match_events WHERE id = $id`, { $id: id } as any);
+  },
+  async listByMatch(matchId: string): Promise<MatchEvent[]> {
+    return all<MatchEvent>(
+      `SELECT ${EVENT_COLUMNS} FROM match_events WHERE matchId = $matchId ORDER BY minute NULLS LAST, createdAt ASC`,
+      { $matchId: matchId } as any
+    );
+  },
+  async listByTournament(tournamentId: string): Promise<MatchEvent[]> {
+    return all<MatchEvent>(
+      `SELECT ${EVENT_COLUMNS} FROM match_events WHERE tournamentId = $tournamentId ORDER BY createdAt ASC`,
+      { $tournamentId: tournamentId } as any
+    );
+  },
+  async listByPlayer(playerId: string): Promise<MatchEvent[]> {
+    return all<MatchEvent>(
+      `SELECT ${EVENT_COLUMNS} FROM match_events WHERE playerId = $playerId ORDER BY createdAt ASC`,
+      { $playerId: playerId } as any
+    );
+  },
+  /** Every event for a squad, so a coach sees the whole team's discipline. */
+  async listByTeam(teamId: string): Promise<MatchEvent[]> {
+    return all<MatchEvent>(
+      `SELECT ${EVENT_COLUMNS} FROM match_events WHERE teamId = $teamId ORDER BY createdAt ASC`,
+      { $teamId: teamId } as any
+    );
+  },
+  async remove(id: string): Promise<void> {
+    await run(`DELETE FROM match_events WHERE id = $id`, { $id: id } as any);
+  },
+  async setCleared(id: string, cleared: boolean): Promise<void> {
+    await run(`UPDATE match_events SET clearedAt = $at WHERE id = $id`, {
+      $id: id,
+      $at: cleared ? nowIso() : null,
+    } as any);
+  },
+};
+
+export interface PlayerMetric {
+  id: string;
+  playerId: string;
+  sprint40Hundredths: number | null;
+  verticalJumpHundredths: number | null;
+  topSpeedHundredths: number | null;
+  distanceHundredths: number | null;
+  yoyoHundredths: number | null;
+  recordedByName: string | null;
+  recordedAt: string;
+}
+
+const METRIC_COLUMNS = `id, playerId, sprint40Hundredths, verticalJumpHundredths, topSpeedHundredths, distanceHundredths, yoyoHundredths, recordedByName, recordedAt`;
+
+export const PlayerMetrics = {
+  async create(input: Omit<PlayerMetric, "id" | "recordedAt">): Promise<PlayerMetric> {
+    const row: PlayerMetric = { id: uid(), recordedAt: nowIso(), ...input };
+    await run(
+      `INSERT INTO player_metrics (${METRIC_COLUMNS})
+       VALUES ($id,$playerId,$sprint40Hundredths,$verticalJumpHundredths,$topSpeedHundredths,$distanceHundredths,$yoyoHundredths,$recordedByName,$recordedAt)`,
+      row as any
+    );
+    return row;
+  },
+  async listByPlayer(playerId: string): Promise<PlayerMetric[]> {
+    return all<PlayerMetric>(
+      `SELECT ${METRIC_COLUMNS} FROM player_metrics WHERE playerId = $playerId ORDER BY recordedAt DESC`,
+      { $playerId: playerId } as any
+    );
+  },
+  /** The comparison cohort: everyone measured on the same team. */
+  async listByTeam(teamId: string): Promise<PlayerMetric[]> {
+    return all<PlayerMetric>(
+      `SELECT m.id, m.playerId, m.sprint40Hundredths, m.verticalJumpHundredths, m.topSpeedHundredths, m.distanceHundredths, m.yoyoHundredths, m.recordedByName, m.recordedAt
+         FROM player_metrics m JOIN players p ON p.id = m.playerId
+        WHERE p.teamId = $teamId ORDER BY m.recordedAt ASC`,
+      { $teamId: teamId } as any
+    );
+  },
+};
+
+export type AvailabilityStatus = "ATTENDING" | "INJURED" | "ABSENT" | "NO_REPLY";
+
+export interface PlayerAvailability {
+  id: string;
+  matchId: string;
+  playerId: string;
+  status: AvailabilityStatus;
+  note: string | null;
+  respondedAt: string | null;
+}
+
+export const Availability = {
+  async set(matchId: string, playerId: string, status: AvailabilityStatus, note?: string | null): Promise<void> {
+    await run(
+      `INSERT INTO player_availability (id, matchId, playerId, status, note, respondedAt)
+       VALUES ($id,$matchId,$playerId,$status,$note,$respondedAt)
+       ON CONFLICT(matchId, playerId) DO UPDATE SET status = excluded.status, note = excluded.note, respondedAt = excluded.respondedAt`,
+      {
+        $id: uid(),
+        $matchId: matchId,
+        $playerId: playerId,
+        $status: status,
+        $note: note ?? null,
+        $respondedAt: nowIso(),
+      } as any
+    );
+  },
+  async listByMatch(matchId: string): Promise<PlayerAvailability[]> {
+    return all<PlayerAvailability>(
+      `SELECT id, matchId, playerId, status, note, respondedAt FROM player_availability WHERE matchId = $matchId`,
+      { $matchId: matchId } as any
+    );
+  },
+};
+
+export interface Lineup {
+  id: string;
+  matchId: string;
+  teamId: string;
+  formation: string;
+  slots: string;
+  arrows: string | null;
+  notes: string | null;
+  updatedAt: string;
+}
+
+export const Lineups = {
+  async save(
+    matchId: string,
+    teamId: string,
+    formation: string,
+    slots: string,
+    arrows: string | null,
+    notes: string | null
+  ): Promise<void> {
+    await run(
+      `INSERT INTO lineups (id, matchId, teamId, formation, slots, arrows, notes, updatedAt)
+       VALUES ($id,$matchId,$teamId,$formation,$slots,$arrows,$notes,$updatedAt)
+       ON CONFLICT(matchId, teamId) DO UPDATE SET formation = excluded.formation, slots = excluded.slots,
+         arrows = excluded.arrows, notes = excluded.notes, updatedAt = excluded.updatedAt`,
+      {
+        $id: uid(),
+        $matchId: matchId,
+        $teamId: teamId,
+        $formation: formation,
+        $slots: slots,
+        $arrows: arrows,
+        $notes: notes,
+        $updatedAt: nowIso(),
+      } as any
+    );
+  },
+  async byMatchTeam(matchId: string, teamId: string): Promise<Lineup | undefined> {
+    return get<Lineup>(
+      `SELECT id, matchId, teamId, formation, slots, arrows, notes, updatedAt FROM lineups WHERE matchId = $matchId AND teamId = $teamId`,
+      { $matchId: matchId, $teamId: teamId } as any
+    );
+  },
+};
+
+export interface MatchReport {
+  id: string;
+  matchId: string;
+  homeScore: number;
+  awayScore: number;
+  notes: string | null;
+  refereeName: string | null;
+  refereeSignature: string | null;
+  marshalName: string | null;
+  marshalSignature: string | null;
+  submittedAt: string;
+}
+
+const REPORT_COLUMNS = `id, matchId, homeScore, awayScore, notes, refereeName, refereeSignature, marshalName, marshalSignature, submittedAt`;
+
+export const MatchReports = {
+  async save(input: Omit<MatchReport, "id" | "submittedAt">): Promise<MatchReport> {
+    const row: MatchReport = { id: uid(), submittedAt: nowIso(), ...input };
+    await run(
+      `INSERT INTO match_reports (${REPORT_COLUMNS})
+       VALUES ($id,$matchId,$homeScore,$awayScore,$notes,$refereeName,$refereeSignature,$marshalName,$marshalSignature,$submittedAt)
+       ON CONFLICT(matchId) DO UPDATE SET homeScore = excluded.homeScore, awayScore = excluded.awayScore,
+         notes = excluded.notes, refereeName = excluded.refereeName, refereeSignature = excluded.refereeSignature,
+         marshalName = excluded.marshalName, marshalSignature = excluded.marshalSignature,
+         submittedAt = excluded.submittedAt`,
+      row as any
+    );
+    return row;
+  },
+  async byMatch(matchId: string): Promise<MatchReport | undefined> {
+    return get<MatchReport>(`SELECT ${REPORT_COLUMNS} FROM match_reports WHERE matchId = $matchId`, {
+      $matchId: matchId,
+    } as any);
+  },
+  // Signatures are large data URLs, so the "has it been signed" check that
+  // list views need never drags the images along with it.
+  async submittedMatchIds(tournamentId: string): Promise<Set<string>> {
+    const rows = await all<{ matchId: string }>(
+      `SELECT r.matchId FROM match_reports r JOIN matches m ON m.id = r.matchId WHERE m.tournamentId = $tournamentId`,
+      { $tournamentId: tournamentId } as any
+    );
+    return new Set(rows.map((r) => r.matchId));
+  },
+};
+
+export interface RefereeFee {
+  id: string;
+  matchId: string;
+  refereeId: string;
+  role: string;
+  feeCents: number;
+  paidAt: string | null;
+  recordedAt: string;
+}
+
+export const RefereeFees = {
+  async set(matchId: string, refereeId: string, role: string, feeCents: number): Promise<void> {
+    await run(`DELETE FROM referee_fees WHERE matchId = $matchId AND refereeId = $refereeId`, {
+      $matchId: matchId,
+      $refereeId: refereeId,
+    } as any);
+    await run(
+      `INSERT INTO referee_fees (id, matchId, refereeId, role, feeCents, paidAt, recordedAt)
+       VALUES ($id,$matchId,$refereeId,$role,$feeCents,NULL,$recordedAt)`,
+      {
+        $id: uid(),
+        $matchId: matchId,
+        $refereeId: refereeId,
+        $role: role,
+        $feeCents: feeCents,
+        $recordedAt: nowIso(),
+      } as any
+    );
+  },
+  async listByReferee(refereeId: string): Promise<RefereeFee[]> {
+    return all<RefereeFee>(
+      `SELECT id, matchId, refereeId, role, feeCents, paidAt, recordedAt FROM referee_fees WHERE refereeId = $refereeId ORDER BY recordedAt DESC`,
+      { $refereeId: refereeId } as any
+    );
+  },
+  async setPaid(id: string, paid: boolean): Promise<void> {
+    await run(`UPDATE referee_fees SET paidAt = $at WHERE id = $id`, { $id: id, $at: paid ? nowIso() : null } as any);
   },
 };
 
@@ -806,6 +1091,10 @@ export const Teams = {
 
 // ---------- Players ----------
 
+// Explicit column list rather than SELECT *, so adding a column to the table
+// never silently changes what every player read hands back.
+const PLAYER_COLUMNS = `id, teamId, userId, name, jerseyNumber, birthdate, passportId, position, secondaryPosition, graduationYear, videoUrl, videoPrivacy, createdAt`;
+
 export const Players = {
   async create(input: { teamId: string; name: string; jerseyNumber?: string | null; birthdate?: string | null }): Promise<Player> {
     const p: Player = {
@@ -816,26 +1105,50 @@ export const Players = {
       jerseyNumber: input.jerseyNumber ?? null,
       birthdate: input.birthdate ?? null,
       passportId: uid(),
+      position: null,
+      secondaryPosition: null,
+      graduationYear: null,
+      videoUrl: null,
+      // Private by default. A highlight reel of a minor is not something to
+      // publish because nobody got round to choosing.
+      videoPrivacy: "PRIVATE",
       createdAt: nowIso(),
     };
     await run(
-      `INSERT INTO players (id, teamId, userId, name, jerseyNumber, birthdate, passportId, createdAt)
-       VALUES ($id,$teamId,$userId,$name,$jerseyNumber,$birthdate,$passportId,$createdAt)`,
+      `INSERT INTO players (id, teamId, userId, name, jerseyNumber, birthdate, passportId, videoPrivacy, createdAt)
+       VALUES ($id,$teamId,$userId,$name,$jerseyNumber,$birthdate,$passportId,$videoPrivacy,$createdAt)`,
       p as any
     );
     return p;
   },
   async byId(id: string): Promise<Player | undefined> {
-    return get<Player>(`SELECT * FROM players WHERE id = $id`, { $id: id } as any);
+    return get<Player>(`SELECT ${PLAYER_COLUMNS} FROM players WHERE id = $id`, { $id: id } as any);
   },
   async byPassportId(passportId: string): Promise<Player | undefined> {
-    return get<Player>(`SELECT * FROM players WHERE passportId = $passportId`, { $passportId: passportId } as any);
+    return get<Player>(`SELECT ${PLAYER_COLUMNS} FROM players WHERE passportId = $passportId`, { $passportId: passportId } as any);
   },
   async listByTeam(teamId: string): Promise<Player[]> {
-    return all<Player>(`SELECT * FROM players WHERE teamId = $teamId ORDER BY createdAt ASC`, { $teamId: teamId } as any);
+    return all<Player>(`SELECT ${PLAYER_COLUMNS} FROM players WHERE teamId = $teamId ORDER BY createdAt ASC`, { $teamId: teamId } as any);
   },
   async byUserId(userId: string): Promise<Player | undefined> {
-    return get<Player>(`SELECT * FROM players WHERE userId = $userId`, { $userId: userId } as any);
+    return get<Player>(`SELECT ${PLAYER_COLUMNS} FROM players WHERE userId = $userId`, { $userId: userId } as any);
+  },
+  async updateProfile(
+    id: string,
+    input: {
+      jerseyNumber: string | null;
+      position: string | null;
+      secondaryPosition: string | null;
+      graduationYear: number | null;
+      videoUrl: string | null;
+      videoPrivacy: string;
+    }
+  ): Promise<void> {
+    await run(
+      `UPDATE players SET jerseyNumber=$jerseyNumber, position=$position, secondaryPosition=$secondaryPosition,
+         graduationYear=$graduationYear, videoUrl=$videoUrl, videoPrivacy=$videoPrivacy WHERE id=$id`,
+      { $id: id, ...Object.fromEntries(Object.entries(input).map(([k, v]) => [`$${k}`, v ?? null])) } as any
+    );
   },
   // Links a passport to a freshly created account. Guarded on userId
   // currently being NULL so a claim link can't be replayed to hijack a
@@ -1013,14 +1326,46 @@ export interface BusinessIdentity {
 
 // ---------- Referees ----------
 
+const REFEREE_COLUMNS = `id, tournamentId, name, contact, userId, certification, ratingPct`;
+
 export const Referees = {
   async create(input: { tournamentId: string; name: string; contact?: string | null }): Promise<Referee> {
-    const r: Referee = { id: uid(), tournamentId: input.tournamentId, name: input.name, contact: input.contact ?? null };
+    const r: Referee = {
+      id: uid(),
+      tournamentId: input.tournamentId,
+      name: input.name,
+      contact: input.contact ?? null,
+      userId: null,
+      certification: null,
+      ratingPct: null,
+    };
     await run(`INSERT INTO referees (id, tournamentId, name, contact) VALUES ($id,$tournamentId,$name,$contact)`, r as any);
     return r;
   },
+  async byId(id: string): Promise<Referee | undefined> {
+    return get<Referee>(`SELECT ${REFEREE_COLUMNS} FROM referees WHERE id = $id`, { $id: id } as any);
+  },
   async listByTournament(tournamentId: string): Promise<Referee[]> {
-    return all<Referee>(`SELECT * FROM referees WHERE tournamentId = $tournamentId ORDER BY name ASC`, { $tournamentId: tournamentId } as any);
+    return all<Referee>(`SELECT ${REFEREE_COLUMNS} FROM referees WHERE tournamentId = $tournamentId ORDER BY name ASC`, { $tournamentId: tournamentId } as any);
+  },
+  /** Every official record tied to one signed-in account, across events. */
+  async listByUserId(userId: string): Promise<Referee[]> {
+    return all<Referee>(`SELECT ${REFEREE_COLUMNS} FROM referees WHERE userId = $userId`, { $userId: userId } as any);
+  },
+  async updateProfile(
+    id: string,
+    input: { certification: string | null; ratingPct: number | null; contact: string | null; userId: string | null }
+  ): Promise<void> {
+    await run(
+      `UPDATE referees SET certification=$certification, ratingPct=$ratingPct, contact=$contact, userId=$userId WHERE id=$id`,
+      {
+        $id: id,
+        $certification: input.certification,
+        $ratingPct: input.ratingPct,
+        $contact: input.contact,
+        $userId: input.userId,
+      } as any
+    );
   },
 };
 
