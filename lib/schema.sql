@@ -148,6 +148,12 @@ CREATE TABLE IF NOT EXISTS applications (
   decidedAt TEXT
 );
 
+-- Live event status, shown to spectators. This is the rainout switch: an
+-- organizer flips it and every public page says so at once. Deliberately not
+-- weather data — Jogo has no weather provider — but the thing a parent in a
+-- car park actually needs to know, which is whether play is on.
+-- Added to `tournaments` via runMigrations(), not here.
+
 -- What happened in a match, one row per incident. This is the table the
 -- referee scorepad's own comment said was missing: without it a yellow card
 -- had nowhere to go, so the pad could only ever be a wireframe. Every player

@@ -95,6 +95,10 @@ export interface Tournament {
       tournaments created before divisions existed. */
   divisions: string | null;
   ownerId: string;
+  /** OPEN | DELAY | SUSPENDED — what the public page tells spectators. */
+  eventStatus: string;
+  eventStatusNote: string | null;
+  eventStatusAt: string | null;
   createdAt: string;
 }
 
@@ -121,6 +125,7 @@ export interface Application {
 
 export interface ApplicationMessage {
   id: string;
+  priority?: string;
   tournamentId: string;
   template: string | null;
   audience: string;
@@ -882,8 +887,19 @@ export const TournamentStaff = {
 // ---------- Tournaments ----------
 
 export const Tournaments = {
-  async create(input: Omit<Tournament, "id" | "createdAt">): Promise<Tournament> {
-    const t: Tournament = { ...input, id: uid(), createdAt: nowIso() };
+  async create(
+    input: Omit<Tournament, "id" | "createdAt" | "eventStatus" | "eventStatusNote" | "eventStatusAt">
+  ): Promise<Tournament> {
+    // Live status is not something a creation form asks about — a new event
+    // opens with its fields open, and the organizer flips it on the day.
+    const t: Tournament = {
+      ...input,
+      eventStatus: "OPEN",
+      eventStatusNote: null,
+      eventStatusAt: null,
+      id: uid(),
+      createdAt: nowIso(),
+    };
     await run(
       `INSERT INTO tournaments (id, slug, name, sport, teamFormat, format, status, location, startDate, endDate, feeCents, fieldsCount, groupsCount, advancePerGroup, supervisorName, supervisorEmail, supervisorPhone, divisions, ownerId, createdAt)
        VALUES ($id,$slug,$name,$sport,$teamFormat,$format,$status,$location,$startDate,$endDate,$feeCents,$fieldsCount,$groupsCount,$advancePerGroup,$supervisorName,$supervisorEmail,$supervisorPhone,$divisions,$ownerId,$createdAt)`,
@@ -913,6 +929,12 @@ export const Tournaments = {
   },
   async updateStatus(id: string, status: TournamentStatus): Promise<void> {
     await run(`UPDATE tournaments SET status = $status WHERE id = $id`, { $id: id, $status: status } as any);
+  },
+  async setEventStatus(id: string, status: string, note: string | null): Promise<void> {
+    await run(
+      `UPDATE tournaments SET eventStatus = $status, eventStatusNote = $note, eventStatusAt = $at WHERE id = $id`,
+      { $id: id, $status: status, $note: note, $at: nowIso() } as any
+    );
   },
   async slugExists(slug: string): Promise<boolean> {
     return !!(await Tournaments.bySlug(slug));
@@ -1776,14 +1798,29 @@ export const ApplicationMessages = {
       // QUEUED, not SENT: nothing delivers these yet. Recording them as sent
       // would be a lie the organizer would act on.
       status: "QUEUED",
+      priority: input.priority ?? "STANDARD",
       createdAt: nowIso(),
     };
     await run(
-      `INSERT INTO application_messages (id, tournamentId, template, audience, subject, body, recipients, recipientCount, status, createdAt)
-       VALUES ($id,$tournamentId,$template,$audience,$subject,$body,$recipients,$recipientCount,$status,$createdAt)`,
+      `INSERT INTO application_messages (id, tournamentId, template, audience, subject, body, recipients, recipientCount, status, priority, createdAt)
+       VALUES ($id,$tournamentId,$template,$audience,$subject,$body,$recipients,$recipientCount,$status,$priority,$createdAt)`,
       m as any
     );
     return m;
+  },
+  /**
+   * The most recent urgent broadcast still worth showing spectators. Capped by
+   * age rather than kept forever: a weather alert from last season on a public
+   * page is worse than no banner at all.
+   */
+  async latestUrgent(tournamentId: string, maxAgeHours = 12): Promise<ApplicationMessage | undefined> {
+    const cutoff = new Date(Date.now() - maxAgeHours * 3600_000).toISOString();
+    return get<ApplicationMessage>(
+      `SELECT * FROM application_messages
+        WHERE tournamentId = $tournamentId AND priority = 'URGENT' AND createdAt > $cutoff
+        ORDER BY createdAt DESC LIMIT 1`,
+      { $tournamentId: tournamentId, $cutoff: cutoff } as any
+    );
   },
   async listAllRecent(limit = 100): Promise<(ApplicationMessage & { tournamentName: string | null })[]> {
     return all<ApplicationMessage & { tournamentName: string | null }>(

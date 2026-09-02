@@ -23,6 +23,7 @@ export const adminNav = [
   { href: "/admin/users", label: "Accounts" },
   { href: "/admin/finance/platform", label: "Platform finance" },
   { href: "/admin/referees", label: "Referees" },
+  { href: "/communication", label: "Broadcasts" },
   { href: "/admin/tournaments", label: "All tournaments" },
 ];
 

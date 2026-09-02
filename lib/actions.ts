@@ -45,6 +45,8 @@ import {
 import type { Permission } from "@/lib/permissions";
 import { computeTotals, buildPaymentPlan, nextInvoiceNumber, money, formatDate } from "@/lib/invoices";
 import { quoteRegistration, dueReminders } from "@/lib/pricing";
+import { resolveAudience, isEventStatus } from "@/lib/broadcast";
+import type { AudienceScope } from "@/lib/broadcast";
 import { cookies } from "next/headers";
 import { getCurrentUser, hashPassword, verifyPassword, createSessionToken, sessionCookieName } from "@/lib/auth";
 import { generateGroupStage, generateRoundRobinOnly, generateKnockoutBracket } from "@/lib/bracket";
@@ -2051,5 +2053,104 @@ export async function setRefereeFee(
     );
     revalidatePath("/admin/referees");
     revalidatePath(`/referee/profile/${refereeId}`);
+  });
+}
+
+// ---------- Broadcasts & live event status ----------
+
+/**
+ * Sends one message to a resolved audience and records it in the same
+ * outbound log every other message in Jogo lands in.
+ *
+ * Recipients are resolved server-side from the scope, never taken from the
+ * form: a client-supplied recipient list on a broadcast endpoint is a way to
+ * mail arbitrary strangers through someone else's tournament.
+ */
+export async function sendBroadcast(
+  tournamentId: string,
+  formData: FormData
+): Promise<{ error?: string; detail: string; count: number }> {
+  try {
+    const { user, tournament } = await requireOwnedTournament(tournamentId);
+    requirePermission(user, "COMMUNICATION");
+
+    const subject = String(formData.get("subject") || "").trim();
+    const body = String(formData.get("body") || "").trim();
+    if (!subject || !body) throw new Error("Subject and message are both required");
+
+    const scopeRaw = String(formData.get("scope") || "ALL");
+    const scope = (["ALL", "DIVISION", "COACHES", "REFEREES", "MARSHALS"] as const).includes(scopeRaw as any)
+      ? (scopeRaw as AudienceScope)
+      : "ALL";
+    const division = String(formData.get("division") || "").trim() || null;
+    const priority = String(formData.get("priority") || "STANDARD") === "URGENT" ? "URGENT" : "STANDARD";
+
+    const [teams, referees, applications] = await Promise.all([
+      Teams.listByTournament(tournament.id),
+      Referees.listByTournament(tournament.id),
+      Applications.listByTournament(tournament.id),
+    ]);
+    const audience = resolveAudience(scope, division, { teams, referees, applications });
+
+    // Recorded even when it reaches nobody. An organizer who pressed send on a
+    // weather alert needs the log to show what happened, not silence.
+    const message = await ApplicationMessages.create({
+      tournamentId: tournament.id,
+      template: String(formData.get("template") || "") || null,
+      audience: scope === "DIVISION" && division ? `DIVISION:${division}` : scope,
+      subject,
+      body,
+      recipients: JSON.stringify(audience.emails),
+      recipientCount: audience.emails.length,
+      priority,
+    });
+
+    if (audience.emails.length === 0) {
+      revalidatePath("/communication");
+      return {
+        detail: audience.note || "Nobody in that audience has an email address on file, so nothing was sent.",
+        count: 0,
+      };
+    }
+
+    const result = await sendBulkEmail(audience.emails, subject, body);
+    if (result.ok) await ApplicationMessages.setStatus(message.id, "SENT");
+    else if (result.configured) await ApplicationMessages.setStatus(message.id, "FAILED");
+
+    revalidatePath("/communication");
+    revalidatePath("/admin/inbox");
+    revalidatePath(`/t/${tournament.slug}`);
+
+    return {
+      count: audience.emails.length,
+      detail: result.ok
+        ? `Sent to ${audience.emails.length} recipient${audience.emails.length === 1 ? "" : "s"}.${
+            priority === "URGENT" ? " It is also showing as a banner on the public event page." : ""
+          }`
+        : result.configured
+          ? `Not sent: ${result.reason}`
+          : `Recorded for ${audience.emails.length} recipient${audience.emails.length === 1 ? "" : "s"}, but nothing was emailed — no mail provider is configured.${
+              priority === "URGENT" ? " The public banner is live regardless." : ""
+            }`,
+    };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Something went wrong.", detail: "", count: 0 };
+  }
+}
+
+/** The rainout switch. One write, and every public surface says the same thing. */
+export async function setEventStatus(tournamentId: string, formData: FormData): Promise<ActionResult> {
+  return guarded(async () => {
+    const { user, tournament } = await requireOwnedTournament(tournamentId);
+    requirePermission(user, "COMMUNICATION");
+    const statusRaw = String(formData.get("eventStatus") || "OPEN");
+    if (!isEventStatus(statusRaw)) throw new Error("Unknown status");
+    await Tournaments.setEventStatus(
+      tournament.id,
+      statusRaw,
+      String(formData.get("eventStatusNote") || "").trim() || null
+    );
+    revalidatePath("/communication");
+    revalidatePath(`/t/${tournament.slug}`);
   });
 }

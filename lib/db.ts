@@ -218,6 +218,14 @@ async function runMigrations(pool: Pool) {
   await ensureColumn(pool, "referees", "certification", "certification TEXT");
   await ensureColumn(pool, "referees", "ratingpct", "ratingPct INTEGER");
   await ensureColumn(pool, "lineups", "arrows", "arrows TEXT");
+  // Live event status for spectators — OPEN | DELAY | SUSPENDED — plus the
+  // organizer's own words about it.
+  await ensureColumn(pool, "tournaments", "eventstatus", "eventStatus TEXT NOT NULL DEFAULT 'OPEN'");
+  await ensureColumn(pool, "tournaments", "eventstatusnote", "eventStatusNote TEXT");
+  await ensureColumn(pool, "tournaments", "eventstatusat", "eventStatusAt TEXT");
+  // Broadcast priority. Urgent messages also surface as a banner on the
+  // public page, which is what makes "in-app alert" mean anything.
+  await ensureColumn(pool, "application_messages", "priority", "priority TEXT NOT NULL DEFAULT 'STANDARD'");
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_match_events_match ON match_events(matchId);`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_match_events_player ON match_events(playerId);`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_match_events_tournament ON match_events(tournamentId);`);
@@ -269,6 +277,9 @@ const CAMEL_CASE_COLUMNS: Record<string, string> = {
   acceptcash: "acceptCash",
   awayscoreverified: "awayScoreVerified",
   clearedat: "clearedAt",
+  eventstatus: "eventStatus",
+  eventstatusat: "eventStatusAt",
+  eventstatusnote: "eventStatusNote",
   distancehundredths: "distanceHundredths",
   graduationyear: "graduationYear",
   marshalname: "marshalName",

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Tournaments, Teams, Matches, Players } from "@/lib/models";
+import { Tournaments, Teams, Matches, Players, ApplicationMessages } from "@/lib/models";
 import { computeStandings, groupNames } from "@/lib/standings";
 import { StandingsTable } from "@/components/StandingsTable";
 import { BracketView } from "@/components/BracketView";
@@ -14,6 +14,8 @@ import { FixtureList } from "@/components/FixtureList";
 import { TabPanel } from "@/components/TabPanel";
 import { FollowHeart, FollowBar, FieldMapCard } from "@/components/FollowTeam";
 import { getSportTheme } from "@/lib/sportTheme";
+import { EVENT_STATUS_CLASS, EVENT_STATUS_LABEL, isEventStatus, mapsUrl } from "@/lib/broadcast";
+import type { EventStatus } from "@/lib/broadcast";
 
 export const revalidate = 5;
 
@@ -43,6 +45,12 @@ export default async function PublicTournamentPage({
   const motmPlayers = new Map(motmPlayerIds.map((id, i) => [id, motmPlayerRows[i]]));
   const overallStandings = computeStandings(teams, matches);
   const standingByTeamId = new Map(overallStandings.map((r) => [r.team.id, r]));
+
+  // The two things a spectator standing in a car park needs: is play on, and
+  // has the organizer said anything in the last few hours.
+  const status = (isEventStatus(tournament.eventStatus) ? tournament.eventStatus : "OPEN") as EventStatus;
+  const urgent = await ApplicationMessages.latestUrgent(tournament.id);
+  const directions = mapsUrl(tournament.location);
 
   const upcoming = matches.filter((m) => m.status === "SCHEDULED");
   const finished = matches.filter((m) => m.status === "FINAL");
@@ -189,7 +197,42 @@ export default async function PublicTournamentPage({
               {new Date(tournament.endDate).toLocaleDateString()}
               {tournament.location ? ` · ${tournament.location}` : ""}
             </p>
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <span className={`badge ${EVENT_STATUS_CLASS[status]} text-[10px]`}>{EVENT_STATUS_LABEL[status]}</span>
+              {directions && (
+                <a
+                  href={directions}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="badge bg-neutralBadge text-ink2 border border-line text-[10px] hover:text-inkDisplay"
+                >
+                  Directions →
+                </a>
+              )}
+              {/* The page already revalidates every 5 seconds; saying so is
+                  what stops a parent pull-to-refreshing through a match. */}
+              <span className="badge bg-neutralBadge text-ink2 border border-line text-[10px]">
+                Live · refreshes automatically
+              </span>
+            </div>
+            {tournament.eventStatusNote && status !== "OPEN" && (
+              <p className="text-sm text-warning-500 mt-2">{tournament.eventStatusNote}</p>
+            )}
           </div>
+
+          {urgent && (
+            // The in-app half of an urgent broadcast: the same message that
+            // went out by email, pinned where anyone at the venue will see it.
+            <div className="reveal card p-5 mb-6 border-warning-500/40 bg-warning-500/5">
+              <div className="flex items-start gap-3">
+                <span className="badge badge-danger text-[10px] shrink-0 mt-0.5">ALERT</span>
+                <div className="min-w-0">
+                  <p className="font-semibold text-inkDisplay">{urgent.subject}</p>
+                  <p className="text-sm text-ink2 mt-1 whitespace-pre-line">{urgent.body}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {liveMatches.length > 0 && (
             <div className="reveal ticket-card rounded-2xl border border-volt-400/30 shadow-elevated mb-8" style={{ ["--ticket-cut" as any]: "52px" }}>
