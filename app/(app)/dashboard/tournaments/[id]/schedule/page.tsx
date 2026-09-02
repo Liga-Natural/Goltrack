@@ -1,4 +1,4 @@
-import { Tournaments, Teams, Matches } from "@/lib/models";
+import { Tournaments, Teams, Matches, Applications } from "@/lib/models";
 import { StandingsTable } from "@/components/StandingsTable";
 import { BracketView } from "@/components/BracketView";
 import { MatchStatusBadge } from "@/components/MatchStatusBadge";
@@ -20,6 +20,16 @@ export default async function SchedulePage({ params }: { params: { id: string } 
   const conflicts = findConflicts(matches, teams);
   const referees = await Referees.listByTournament(tournament.id);
 
+  // Division per entrant, taken from the application the organizer accepted.
+  // It is the only place a division is recorded, so the age-group tabs show
+  // exactly the divisions this event actually has — and none where the
+  // organizer never set one.
+  const applications = await Applications.listByTournament(tournament.id);
+  const divisionByTeamId: Record<string, string> = {};
+  for (const a of applications) {
+    if (a.teamId && a.division) divisionByTeamId[a.teamId] = a.division;
+  }
+
   return (
     <div>
       <VenueStatusBar conflicts={conflicts} />
@@ -27,7 +37,13 @@ export default async function SchedulePage({ params }: { params: { id: string } 
       {matches.length > 0 && (
         <div className="card p-5 sm:p-6 mb-6">
           <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-ink2 mb-4">Master grid</h2>
-          <ScheduleMatrix matches={matches} teams={teams} referees={referees} conflicts={conflicts} />
+          <ScheduleMatrix
+            matches={matches}
+            teams={teams}
+            referees={referees}
+            conflicts={conflicts}
+            divisionByTeamId={divisionByTeamId}
+          />
         </div>
       )}
 
