@@ -46,6 +46,7 @@ import type { Permission } from "@/lib/permissions";
 import { computeTotals, buildPaymentPlan, nextInvoiceNumber, money, formatDate } from "@/lib/invoices";
 import { quoteRegistration, dueReminders } from "@/lib/pricing";
 import { resolveAudience, isEventStatus } from "@/lib/broadcast";
+import { verificationFor, isRegisteredAccount } from "@/lib/verification";
 import type { AudienceScope } from "@/lib/broadcast";
 import { cookies } from "next/headers";
 import { getCurrentUser, hashPassword, verifyPassword, createSessionToken, sessionCookieName } from "@/lib/auth";
@@ -511,8 +512,11 @@ export async function checkInPlayerByPassport(tournamentId: string, passportId: 
   await requireOwnedTournament(tournamentId);
   const player = await Players.byPassportId(passportId.trim());
   if (!player) return { ok: false, message: "No player found with that passport ID." };
-  const team = await Teams.byId(player.teamId);
-  if (!team || team.tournamentId !== tournamentId) {
+  const team = player.teamId ? await Teams.byId(player.teamId) : null;
+  if (!team) {
+    return { ok: false, message: "That player has registered but no club has added them to a squad yet." };
+  }
+  if (team.tournamentId !== tournamentId) {
     return { ok: false, message: "That passport belongs to a different tournament." };
   }
   await CheckIns.create(tournamentId, player.id);
@@ -1691,11 +1695,17 @@ async function requireCoachTeam(teamId: string) {
   throw new Error("This team is not yours to manage.");
 }
 
+/** A player with no club has nobody who manages them, which is its own answer. */
+function requirePlayerTeam(player: { teamId: string | null }): string {
+  if (!player.teamId) throw new Error("That player is not on a squad yet");
+  return player.teamId;
+}
+
 export async function updatePlayerProfile(playerId: string, formData: FormData): Promise<ActionResult> {
   return guarded(async () => {
     const player = await Players.byId(playerId);
     if (!player) throw new Error("Player not found");
-    await requireCoachTeam(player.teamId);
+    await requireCoachTeam(requirePlayerTeam(player));
 
     const gradRaw = String(formData.get("graduationYear") || "").trim();
     const graduationYear = gradRaw ? Number(gradRaw) : null;
@@ -1737,7 +1747,7 @@ export async function recordPlayerMetrics(playerId: string, formData: FormData):
   return guarded(async () => {
     const player = await Players.byId(playerId);
     if (!player) throw new Error("Player not found");
-    const { user } = await requireCoachTeam(player.teamId);
+    const { user } = await requireCoachTeam(requirePlayerTeam(player));
 
     // Entered in display units, stored in hundredths so no measurement is
     // ever a float. Blank means "not tested", which is different from zero.
@@ -1842,7 +1852,7 @@ export async function setPlayerAvailability(
     if (!user) throw new Error("Not authenticated");
     // The player's own account may answer for themselves; otherwise this has
     // to be someone who manages the squad.
-    if (player.userId !== user.id) await requireCoachTeam(player.teamId);
+    if (player.userId !== user.id) await requireCoachTeam(requirePlayerTeam(player));
     await Availability.set(matchId, playerId, status as AvailabilityStatus);
     revalidatePath("/coach/dashboard");
     revalidatePath("/me");
@@ -1915,7 +1925,27 @@ export async function saveLineup(teamId: string, matchId: string, formData: Form
       throw new Error("Could not read that lineup");
     }
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("Could not read that lineup");
-    const squad = new Set((await Players.listByTeam(team.id)).map((p) => p.id));
+    const squadRows = await Players.listByTeam(team.id);
+    const squad = new Map(squadRows.map((p) => [p.id, p]));
+    // Compliance guard: a registered player who has not cleared both the face
+    // check and an organizer's decision on their proof of age cannot be named
+    // in a matchday squad. Refused with the reason rather than silently
+    // dropped from the sheet — a coach who saves a lineup and finds a slot
+    // empty learns nothing about why.
+    const blocked: string[] = [];
+    for (const pid of Object.values(parsed as Record<string, unknown>)) {
+      if (typeof pid !== "string") continue;
+      const player = squad.get(pid);
+      if (!player || !isRegisteredAccount(player)) continue;
+      const state = verificationFor(player);
+      if (!state.rosterEligible) blocked.push(`${player.name} — ${state.blockedReason}`);
+    }
+    if (blocked.length) {
+      throw new Error(
+        `Not saved. ${blocked.length === 1 ? "This player is" : "These players are"} not cleared for a matchday squad: ${blocked.join("; ")}.`
+      );
+    }
+
     const clean: Record<string, string> = {};
     for (const [slot, pid] of Object.entries(parsed as Record<string, unknown>)) {
       if (typeof pid === "string" && squad.has(pid)) clean[slot] = pid;
@@ -2157,5 +2187,181 @@ export async function setEventStatus(tournamentId: string, formData: FormData): 
     );
     revalidatePath("/communication");
     revalidatePath(`/t/${tournament.slug}`);
+  });
+}
+
+// ---------- Player self-registration & identity verification ----------
+
+const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
+const MAX_DOC_BYTES = 12 * 1024 * 1024;
+
+/** A headshot must be a real raster image; SVG is not a photograph. */
+async function validatePhotoFile(file: File): Promise<{ bytes: Uint8Array; mimeType: string }> {
+  if (file.size === 0) throw new Error("Choose a headshot photo");
+  if (file.size > MAX_PHOTO_BYTES) throw new Error("Photo must be 8MB or smaller");
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  if (bytes[0] === 0x89 && bytes[1] === 0x50) return { bytes, mimeType: "image/png" };
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return { bytes, mimeType: "image/jpeg" };
+  if (
+    bytes.length >= 12 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+    bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50
+  ) {
+    return { bytes, mimeType: "image/webp" };
+  }
+  throw new Error("Photo must be a PNG, JPG or WEBP image");
+}
+
+/** A birth certificate is usually a scan or a phone photo, so PDF counts too. */
+async function validateDocumentFile(file: File): Promise<{ bytes: Uint8Array; mimeType: string }> {
+  if (file.size === 0) throw new Error("Choose a document to upload");
+  if (file.size > MAX_DOC_BYTES) throw new Error("Document must be 12MB or smaller");
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) {
+    return { bytes, mimeType: "application/pdf" };
+  }
+  return validatePhotoFile(file);
+}
+
+/**
+ * Creates a player account: credentials, bio, face-checked headshot and a
+ * proof-of-age document, plus an optional request to join a club.
+ *
+ * The face result posted with the form is what the applicant's own browser
+ * reported, so it is recorded as a claim and never treated as proof — the
+ * account lands as PENDING either way and a person clears it.
+ */
+export async function registerPlayerAccount(
+  formData: FormData
+): Promise<{ error?: string; detail: string; playerId?: string }> {
+  try {
+    const email = String(formData.get("email") || "").trim().toLowerCase();
+    const password = String(formData.get("password") || "");
+    const name = String(formData.get("name") || "").trim();
+    const birthdate = String(formData.get("birthdate") || "").trim();
+
+    if (!email.includes("@")) throw new Error("Enter a valid email address");
+    if (password.length < 8) throw new Error("Password must be at least 8 characters");
+    if (!name) throw new Error("Enter the player's full name");
+    if (!birthdate) throw new Error("Enter the player's date of birth");
+    if (Number.isNaN(new Date(birthdate).getTime())) throw new Error("That date of birth is not a real date");
+    if (new Date(birthdate).getTime() > Date.now()) throw new Error("A date of birth cannot be in the future");
+    if (await Users.byEmail(email)) throw new Error("An account already exists for that email — sign in instead");
+
+    const photo = formData.get("photo");
+    if (!(photo instanceof File) || photo.size === 0) throw new Error("Upload a headshot photo");
+    const photoFile = await validatePhotoFile(photo);
+
+    const doc = formData.get("ageDoc");
+    if (!(doc instanceof File) || doc.size === 0) throw new Error("Upload a proof-of-age document");
+    const docFile = await validateDocumentFile(doc);
+
+    const docType = String(formData.get("ageDocType") || "BIRTH_CERTIFICATE");
+    if (!["BIRTH_CERTIFICATE", "PASSPORT", "GOVERNMENT_ID"].includes(docType)) {
+      throw new Error("Choose which document you are uploading");
+    }
+
+    // The client's own verdict. Recorded, not trusted: anything other than a
+    // clean PASSED is stored as FAILED so a tampered field cannot mint a
+    // verified photo, and either way an organizer still has to look.
+    const claimedStatus = String(formData.get("faceStatus") || "");
+    const claimedScore = Number(String(formData.get("faceScore") || "0"));
+    const face = {
+      status: claimedStatus === "PASSED" ? "PASSED" : "FAILED",
+      score: Number.isFinite(claimedScore) ? Math.max(0, Math.min(100, Math.round(claimedScore))) : 0,
+    };
+
+    const requestedTeamId = String(formData.get("requestedTeamId") || "").trim() || null;
+    if (requestedTeamId && !(await Teams.byId(requestedTeamId))) throw new Error("That club no longer exists");
+
+    const user = await Users.create(email, await hashPassword(password), name, "PLAYER");
+    const player = await Players.createSelfRegistered({
+      userId: user.id,
+      name,
+      birthdate,
+      gender: String(formData.get("gender") || "").trim() || null,
+      position: String(formData.get("position") || "").trim() || null,
+      requestedTeamId,
+    });
+    await Players.setPhoto(player.id, photoFile.bytes, photoFile.mimeType, face);
+    await Players.setAgeDocument(player.id, docFile.bytes, docFile.mimeType, docType);
+
+    const token = await createSessionToken(user.id);
+    cookies().set(sessionCookieName(), token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+    });
+
+    revalidatePath("/admin/verification");
+    revalidatePath("/coach/roster");
+    return {
+      playerId: player.id,
+      detail: requestedTeamId
+        ? "Your document is with the organizers for review, and your club request has gone to the coach."
+        : "Your document is with the organizers for review. A coach can add you to a squad once it clears.",
+    };
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Something went wrong.", detail: "" };
+  }
+}
+
+/** Adds a registered player account to a coach's squad. */
+export async function addPlayerToRoster(playerId: string, teamId: string): Promise<ActionResult> {
+  return guarded(async () => {
+    await requireCoachTeam(teamId);
+    const player = await Players.byId(playerId);
+    if (!player) throw new Error("Player account not found");
+    if (!player.userId) throw new Error("That player row is not an account, so it cannot be added this way");
+    if (player.teamId === teamId) throw new Error("That player is already on this squad");
+    if (player.teamId) throw new Error("That player is already on another squad — they must leave it first");
+    await Players.assignToTeam(playerId, teamId);
+    revalidatePath("/coach/roster");
+    revalidatePath("/coach/dashboard");
+  });
+}
+
+/** Removes a player from a squad without deleting their account. */
+export async function removePlayerFromRoster(playerId: string): Promise<ActionResult> {
+  return guarded(async () => {
+    const player = await Players.byId(playerId);
+    if (!player) throw new Error("Player account not found");
+    if (!player.teamId) throw new Error("That player is not on a squad");
+    if (!player.userId) throw new Error("That player row is not an account, so it cannot be removed this way");
+    await requireCoachTeam(player.teamId);
+    await Players.assignToTeam(playerId, null);
+    revalidatePath("/coach/roster");
+    revalidatePath("/coach/dashboard");
+  });
+}
+
+/**
+ * An organizer's or admin's decision on a proof-of-age document. This is the
+ * only thing that clears a player for a matchday roster — the browser's face
+ * check does not, and no document is read automatically.
+ */
+export async function decideAgeVerification(
+  playerId: string,
+  status: "VERIFIED" | "REJECTED",
+  formData?: FormData
+): Promise<ActionResult> {
+  return guarded(async () => {
+    const user = await getCurrentUser();
+    if (!user) throw new Error("Not authenticated");
+    if (user.role !== "ADMIN" && user.role !== "ORGANIZER") {
+      throw new Error("Only organizers and admins can decide an age verification");
+    }
+    const player = await Players.byId(playerId);
+    if (!player) throw new Error("Player not found");
+    if (!player.ageDocUploadedAt) throw new Error("That player has not uploaded a document");
+    await Players.setAgeStatus(
+      playerId,
+      status,
+      user.name,
+      String(formData?.get("note") || "").trim() || null
+    );
+    revalidatePath("/admin/verification");
+    revalidatePath("/coach/roster");
   });
 }

@@ -226,6 +226,30 @@ async function runMigrations(pool: Pool) {
   // Broadcast priority. Urgent messages also surface as a banner on the
   // public page, which is what makes "in-app alert" mean anything.
   await ensureColumn(pool, "application_messages", "priority", "priority TEXT NOT NULL DEFAULT 'STANDARD'");
+
+  // Player self-registration and identity verification.
+  await ensureColumn(pool, "players", "gender", "gender TEXT");
+  await ensureColumn(pool, "players", "photoblob", "photoBlob BYTEA");
+  await ensureColumn(pool, "players", "photomimetype", "photoMimeType TEXT");
+  await ensureColumn(pool, "players", "photoupdatedat", "photoUpdatedAt TEXT");
+  // What the browser's face detector reported when the headshot was uploaded.
+  // A pre-screen, not proof: it runs on the applicant's own machine, so the
+  // organizer's approval below is the thing that actually clears a player.
+  await ensureColumn(pool, "players", "facecheckstatus", "faceCheckStatus TEXT");
+  await ensureColumn(pool, "players", "facecheckscore", "faceCheckScore INTEGER");
+  await ensureColumn(pool, "players", "facecheckat", "faceCheckAt TEXT");
+  await ensureColumn(pool, "players", "agedocblob", "ageDocBlob BYTEA");
+  await ensureColumn(pool, "players", "agedocmimetype", "ageDocMimeType TEXT");
+  await ensureColumn(pool, "players", "agedoctype", "ageDocType TEXT");
+  await ensureColumn(pool, "players", "agedocuploadedat", "ageDocUploadedAt TEXT");
+  await ensureColumn(pool, "players", "agestatus", "ageStatus TEXT");
+  await ensureColumn(pool, "players", "ageverifiedat", "ageVerifiedAt TEXT");
+  await ensureColumn(pool, "players", "ageverifiedbyname", "ageVerifiedByName TEXT");
+  await ensureColumn(pool, "players", "agereviewnote", "ageReviewNote TEXT");
+  await ensureColumn(pool, "players", "requestedteamid", "requestedTeamId TEXT");
+  // A player who registers for themselves has no club until a coach adds
+  // them, so teamId stops being mandatory. Existing rows are unaffected.
+  await pool.query(`ALTER TABLE players ALTER COLUMN teamId DROP NOT NULL`).catch(() => {});
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_match_events_match ON match_events(matchId);`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_match_events_player ON match_events(playerId);`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_match_events_tournament ON match_events(tournamentId);`);
@@ -301,6 +325,13 @@ const CAMEL_CASE_COLUMNS: Record<string, string> = {
   acceptedat: "acceptedAt",
   acceptwire: "acceptWire",
   acceptzelle: "acceptZelle",
+  agedocmimetype: "ageDocMimeType",
+  agedoctype: "ageDocType",
+  agedocuploadedat: "ageDocUploadedAt",
+  agereviewnote: "ageReviewNote",
+  agestatus: "ageStatus",
+  ageverifiedat: "ageVerifiedAt",
+  ageverifiedbyname: "ageVerifiedByName",
   amountcents: "amountCents",
   balanceduedays: "balanceDueDays",
   depositbasis: "depositBasis",
@@ -309,6 +340,9 @@ const CAMEL_CASE_COLUMNS: Record<string, string> = {
   depositpercent: "depositPercent",
   earlybirddiscountcents: "earlyBirdDiscountCents",
   earlybirduntil: "earlyBirdUntil",
+  facecheckat: "faceCheckAt",
+  facecheckscore: "faceCheckScore",
+  facecheckstatus: "faceCheckStatus",
   flatcents: "flatCents",
   latefeeafter: "lateFeeAfter",
   latefeecents: "lateFeeCents",
@@ -351,7 +385,10 @@ const CAMEL_CASE_COLUMNS: Record<string, string> = {
   itemcount: "itemCount",
   paidat: "paidAt",
   paidcents: "paidCents",
+  photomimetype: "photoMimeType",
+  photoupdatedat: "photoUpdatedAt",
   processingfeecents: "processingFeeCents",
+  requestedteamid: "requestedTeamId",
   recordedat: "recordedAt",
   recordedbyname: "recordedByName",
   taxid: "taxId",
@@ -366,7 +403,9 @@ const CAMEL_CASE_COLUMNS: Record<string, string> = {
   contactemail: "contactEmail",
   contactname: "contactName",
   createdat: "createdAt",
+  agedocblob: "ageDocBlob",
   crestblob: "crestBlob",
+  photoblob: "photoBlob",
   crestmimetype: "crestMimeType",
   crestupdatedat: "crestUpdatedAt",
   enddate: "endDate",
@@ -413,10 +452,32 @@ const CAMEL_CASE_COLUMNS: Record<string, string> = {
   userid: "userId",
 };
 
-function camelizeRow<T>(row: Record<string, unknown>): T {
+// The fixed table above has to be edited by hand every time a camelCase
+// column or alias is added, and twice now a missed entry has silently handed
+// back `undefined` for a real value — a NaN invoice total, and an identity
+// document that read as missing. The query itself already names its columns
+// in camelCase, so the mapping can be recovered from the SQL text: every
+// camelCase identifier in the statement, indexed by its folded lowercase
+// form. That covers new columns and computed aliases the moment they are
+// written, with the curated table below as the fallback for `SELECT *`.
+const queryCamelCache = new Map<string, Record<string, string>>();
+
+function camelNamesIn(sql: string): Record<string, string> {
+  const cached = queryCamelCache.get(sql);
+  if (cached) return cached;
+  const map: Record<string, string> = {};
+  for (const match of sql.match(/\b[a-z][A-Za-z0-9_]*[A-Z][A-Za-z0-9_]*\b/g) ?? []) {
+    map[match.toLowerCase()] = match;
+  }
+  queryCamelCache.set(sql, map);
+  return map;
+}
+
+function camelizeRow<T>(row: Record<string, unknown>, sql?: string): T {
+  const fromQuery = sql ? camelNamesIn(sql) : null;
   const out: Record<string, unknown> = {};
   for (const key of Object.keys(row)) {
-    out[CAMEL_CASE_COLUMNS[key] ?? key] = row[key];
+    out[fromQuery?.[key] ?? CAMEL_CASE_COLUMNS[key] ?? key] = row[key];
   }
   return out as T;
 }
@@ -434,7 +495,7 @@ export async function get<T = any>(sql: string, params: Record<string, unknown> 
   const pool = getPool();
   const { sql: translated, values } = toPositionalParams(sql, params);
   const result = await pool.query(translated, values);
-  return result.rows[0] ? camelizeRow<T>(result.rows[0]) : undefined;
+  return result.rows[0] ? camelizeRow<T>(result.rows[0], sql) : undefined;
 }
 
 export async function all<T = any>(sql: string, params: Record<string, unknown> = {}): Promise<T[]> {
@@ -442,6 +503,6 @@ export async function all<T = any>(sql: string, params: Record<string, unknown> 
   const pool = getPool();
   const { sql: translated, values } = toPositionalParams(sql, params);
   const result = await pool.query(translated, values);
-  return result.rows.map((row) => camelizeRow<T>(row));
+  return result.rows.map((row) => camelizeRow<T>(row, sql));
 }
 

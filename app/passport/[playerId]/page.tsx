@@ -12,7 +12,9 @@ export const revalidate = 5;
 export default async function PassportPage({ params }: { params: { playerId: string } }) {
   const player = await Players.byId(params.playerId);
   if (!player) notFound();
-  const team = await Teams.byId(player.teamId);
+  // The passport is a club card: a player who has registered but not yet
+  // been added to a squad has no card to show, rather than a blank one.
+  const team = player.teamId ? await Teams.byId(player.teamId) : undefined;
   if (!team) notFound();
   const tournament = await Tournaments.byId(team.tournamentId);
   if (!tournament) notFound();

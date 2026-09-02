@@ -16,7 +16,8 @@ export default async function PlayerDashboardPage() {
     );
   }
 
-  const team = await Teams.byId(player.teamId);
+  // A self-registered player has no club until a coach adds them.
+  const team = player.teamId ? await Teams.byId(player.teamId) : undefined;
   const tournament = team ? await Tournaments.byId(team.tournamentId) : undefined;
   const allTournamentMatches = tournament ? await Matches.listByTournament(tournament.id) : [];
   const matches = allTournamentMatches.filter((m) => m.homeTeamId === team?.id || m.awayTeamId === team?.id);

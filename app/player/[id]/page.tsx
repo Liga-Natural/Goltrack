@@ -28,7 +28,7 @@ export default async function PlayerProfilePage({ params }: { params: { id: stri
 
   const [viewer, team, events, ownMetrics] = await Promise.all([
     getCurrentUser(),
-    Teams.byId(player.teamId),
+    player.teamId ? Teams.byId(player.teamId) : Promise.resolve(undefined),
     MatchEvents.listByPlayer(player.id),
     PlayerMetrics.listByPlayer(player.id),
   ]);

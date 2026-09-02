@@ -160,7 +160,8 @@ export interface Team {
 
 export interface Player {
   id: string;
-  teamId: string;
+  /** Null until a coach adds a self-registered player to their squad. */
+  teamId: string | null;
   userId: string | null; // the player/parent account, if the passport has been claimed
   name: string;
   jerseyNumber: string | null;
@@ -172,6 +173,25 @@ export interface Player {
   videoUrl: string | null;
   /** PUBLIC | SCOUTS | PRIVATE — enforced where the video renders. */
   videoPrivacy: string;
+  gender: string | null;
+  photoMimeType: string | null;
+  photoUpdatedAt: string | null;
+  /** PASSED | FAILED — what the browser's detector saw. A pre-screen only. */
+  faceCheckStatus: string | null;
+  /** Detector confidence, 0–100. */
+  faceCheckScore: number | null;
+  faceCheckAt: string | null;
+  /** BIRTH_CERTIFICATE | PASSPORT | GOVERNMENT_ID */
+  ageDocType: string | null;
+  ageDocMimeType: string | null;
+  ageDocUploadedAt: string | null;
+  /** PENDING | VERIFIED | REJECTED — decided by a human, never by the upload. */
+  ageStatus: string | null;
+  ageVerifiedAt: string | null;
+  ageVerifiedByName: string | null;
+  ageReviewNote: string | null;
+  /** The club the player asked to join, before a coach accepts them. */
+  requestedTeamId: string | null;
   createdAt: string;
 }
 
@@ -1031,6 +1051,12 @@ export const Teams = {
   async byLogoToken(token: string): Promise<Team | undefined> {
     return get<Team>(`SELECT ${TEAM_COLUMNS} FROM teams WHERE logoToken = $token`, { $token: token } as any);
   },
+  /** Every club on the platform, for the player registration club picker. */
+  async listAll(limit = 500): Promise<Team[]> {
+    return all<Team>(`SELECT ${TEAM_COLUMNS} FROM teams WHERE name <> '' ORDER BY name ASC LIMIT $limit`, {
+      $limit: limit,
+    } as any);
+  },
   async listByTournament(tournamentId: string): Promise<Team[]> {
     return all<Team>(`SELECT ${TEAM_COLUMNS} FROM teams WHERE tournamentId = $tournamentId ORDER BY createdAt ASC`, { $tournamentId: tournamentId } as any);
   },
@@ -1115,30 +1141,78 @@ export const Teams = {
 
 // Explicit column list rather than SELECT *, so adding a column to the table
 // never silently changes what every player read hands back.
-const PLAYER_COLUMNS = `id, teamId, userId, name, jerseyNumber, birthdate, passportId, position, secondaryPosition, graduationYear, videoUrl, videoPrivacy, createdAt`;
+// The blob columns are deliberately absent: a headshot and an identity
+// document are large and restricted, and they are read through their own
+// guarded accessors rather than riding along on every player list.
+const PLAYER_COLUMNS = `id, teamId, userId, name, jerseyNumber, birthdate, passportId, position, secondaryPosition, graduationYear, videoUrl, videoPrivacy, gender, photoMimeType, photoUpdatedAt, faceCheckStatus, faceCheckScore, faceCheckAt, ageDocType, ageDocMimeType, ageDocUploadedAt, ageStatus, ageVerifiedAt, ageVerifiedByName, ageReviewNote, requestedTeamId, createdAt`;
+
+function blankPlayer(input: Partial<Player>): Player {
+  return {
+    id: uid(),
+    teamId: null,
+    userId: null,
+    name: "",
+    jerseyNumber: null,
+    birthdate: null,
+    passportId: uid(),
+    position: null,
+    secondaryPosition: null,
+    graduationYear: null,
+    videoUrl: null,
+    // Private by default. A highlight reel of a minor is not something to
+    // publish because nobody got round to choosing.
+    videoPrivacy: "PRIVATE",
+    gender: null,
+    photoMimeType: null,
+    photoUpdatedAt: null,
+    faceCheckStatus: null,
+    faceCheckScore: null,
+    faceCheckAt: null,
+    ageDocType: null,
+    ageDocMimeType: null,
+    ageDocUploadedAt: null,
+    ageStatus: null,
+    ageVerifiedAt: null,
+    ageVerifiedByName: null,
+    ageReviewNote: null,
+    requestedTeamId: null,
+    createdAt: nowIso(),
+    ...input,
+  };
+}
 
 export const Players = {
   async create(input: { teamId: string; name: string; jerseyNumber?: string | null; birthdate?: string | null }): Promise<Player> {
-    const p: Player = {
-      id: uid(),
+    const p = blankPlayer({
       teamId: input.teamId,
-      userId: null,
       name: input.name,
       jerseyNumber: input.jerseyNumber ?? null,
       birthdate: input.birthdate ?? null,
-      passportId: uid(),
-      position: null,
-      secondaryPosition: null,
-      graduationYear: null,
-      videoUrl: null,
-      // Private by default. A highlight reel of a minor is not something to
-      // publish because nobody got round to choosing.
-      videoPrivacy: "PRIVATE",
-      createdAt: nowIso(),
-    };
+    });
     await run(
       `INSERT INTO players (id, teamId, userId, name, jerseyNumber, birthdate, passportId, videoPrivacy, createdAt)
        VALUES ($id,$teamId,$userId,$name,$jerseyNumber,$birthdate,$passportId,$videoPrivacy,$createdAt)`,
+      p as any
+    );
+    return p;
+  },
+
+  /**
+   * A player who signed themselves up. No club yet — a coach adds them from
+   * the roster hub, which is the step that sets teamId.
+   */
+  async createSelfRegistered(input: {
+    userId: string;
+    name: string;
+    birthdate: string | null;
+    gender: string | null;
+    position: string | null;
+    requestedTeamId: string | null;
+  }): Promise<Player> {
+    const p = blankPlayer({ ...input, ageStatus: "PENDING" });
+    await run(
+      `INSERT INTO players (id, teamId, userId, name, birthdate, passportId, videoPrivacy, gender, position, requestedTeamId, ageStatus, createdAt)
+       VALUES ($id,$teamId,$userId,$name,$birthdate,$passportId,$videoPrivacy,$gender,$position,$requestedTeamId,$ageStatus,$createdAt)`,
       p as any
     );
     return p;
@@ -1154,6 +1228,98 @@ export const Players = {
   },
   async byUserId(userId: string): Promise<Player | undefined> {
     return get<Player>(`SELECT ${PLAYER_COLUMNS} FROM players WHERE userId = $userId`, { $userId: userId } as any);
+  },
+
+  /**
+   * Player accounts a coach can add, matched on name, email or passport id.
+   * Only self-registered accounts (userId set) are searchable — a name typed
+   * onto someone else's roster is not an account anyone can be added from.
+   */
+  async searchAccounts(query: string, limit = 25): Promise<(Player & { email: string | null; teamName: string | null })[]> {
+    const q = `%${query.trim().toLowerCase()}%`;
+    return all<Player & { email: string | null; teamName: string | null }>(
+      `SELECT ${PLAYER_COLUMNS.split(", ").map((c) => `p.${c}`).join(", ")}, u.email AS email, t.name AS teamName
+         FROM players p
+         JOIN users u ON u.id = p.userId
+         LEFT JOIN teams t ON t.id = p.teamId
+        WHERE p.userId IS NOT NULL
+          AND (LOWER(p.name) LIKE $q OR LOWER(u.email) LIKE $q OR LOWER(p.passportId) LIKE $q)
+        ORDER BY p.createdAt DESC LIMIT $limit`,
+      { $q: q, $limit: limit } as any
+    );
+  },
+
+  /** Self-registered accounts not yet on any squad. */
+  async unassignedAccounts(limit = 50): Promise<(Player & { email: string | null; teamName: string | null })[]> {
+    return all<Player & { email: string | null; teamName: string | null }>(
+      `SELECT ${PLAYER_COLUMNS.split(", ").map((c) => `p.${c}`).join(", ")}, u.email AS email, NULL AS teamName
+         FROM players p JOIN users u ON u.id = p.userId
+        WHERE p.userId IS NOT NULL AND p.teamId IS NULL
+        ORDER BY p.createdAt DESC LIMIT $limit`,
+      { $limit: limit } as any
+    );
+  },
+
+  /** Identity documents awaiting a human decision. */
+  async pendingAgeReview(limit = 50): Promise<(Player & { email: string | null; teamName: string | null })[]> {
+    return all<Player & { email: string | null; teamName: string | null }>(
+      `SELECT ${PLAYER_COLUMNS.split(", ").map((c) => `p.${c}`).join(", ")}, u.email AS email, t.name AS teamName
+         FROM players p
+         LEFT JOIN users u ON u.id = p.userId
+         LEFT JOIN teams t ON t.id = p.teamId
+        WHERE p.ageDocUploadedAt IS NOT NULL AND COALESCE(p.ageStatus,'PENDING') = 'PENDING'
+        ORDER BY p.ageDocUploadedAt ASC LIMIT $limit`,
+      { $limit: limit } as any
+    );
+  },
+
+  async setPhoto(id: string, blob: Uint8Array, mimeType: string, face: { status: string; score: number }): Promise<void> {
+    await run(
+      `UPDATE players SET photoBlob = $blob, photoMimeType = $mimeType, photoUpdatedAt = $at,
+              faceCheckStatus = $status, faceCheckScore = $score, faceCheckAt = $at
+        WHERE id = $id`,
+      { $id: id, $blob: Buffer.from(blob), $mimeType: mimeType, $at: nowIso(), $status: face.status, $score: face.score } as any
+    );
+  },
+  async photoBytes(id: string): Promise<{ blob: Uint8Array; mimeType: string } | null> {
+    const row = await get<{ photoBlob: Uint8Array | null; photoMimeType: string | null }>(
+      `SELECT photoBlob, photoMimeType FROM players WHERE id = $id`,
+      { $id: id } as any
+    );
+    if (!row?.photoBlob || !row.photoMimeType) return null;
+    return { blob: row.photoBlob, mimeType: row.photoMimeType };
+  },
+
+  async setAgeDocument(id: string, blob: Uint8Array, mimeType: string, docType: string): Promise<void> {
+    await run(
+      `UPDATE players SET ageDocBlob = $blob, ageDocMimeType = $mimeType, ageDocType = $docType,
+              ageDocUploadedAt = $at, ageStatus = 'PENDING', ageVerifiedAt = NULL, ageVerifiedByName = NULL
+        WHERE id = $id`,
+      { $id: id, $blob: Buffer.from(blob), $mimeType: mimeType, $docType: docType, $at: nowIso() } as any
+    );
+  },
+  async ageDocBytes(id: string): Promise<{ blob: Uint8Array; mimeType: string } | null> {
+    const row = await get<{ ageDocBlob: Uint8Array | null; ageDocMimeType: string | null }>(
+      `SELECT ageDocBlob, ageDocMimeType FROM players WHERE id = $id`,
+      { $id: id } as any
+    );
+    if (!row?.ageDocBlob || !row.ageDocMimeType) return null;
+    return { blob: row.ageDocBlob, mimeType: row.ageDocMimeType };
+  },
+
+  async setAgeStatus(id: string, status: string, byName: string, note: string | null): Promise<void> {
+    await run(
+      `UPDATE players SET ageStatus = $status, ageVerifiedAt = $at, ageVerifiedByName = $byName, ageReviewNote = $note
+        WHERE id = $id`,
+      { $id: id, $status: status, $at: nowIso(), $byName: byName, $note: note } as any
+    );
+  },
+
+  async assignToTeam(id: string, teamId: string | null): Promise<void> {
+    await run(`UPDATE players SET teamId = $teamId, requestedTeamId = NULL WHERE id = $id`, {
+      $id: id,
+      $teamId: teamId,
+    } as any);
   },
   async updateProfile(
     id: string,
