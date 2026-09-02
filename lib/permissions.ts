@@ -4,10 +4,10 @@ import type { Role, User } from "@/lib/models";
 // itself between the UI that hides a button and the action that must refuse
 // the request. The UI is a convenience; the server-side check is the control.
 
-export type Permission = "FINANCE" | "SCHEDULE_OVERRIDE" | "ROSTER" | "COMMUNICATION";
+export type Permission = "FINANCE" | "SCHEDULE_OVERRIDE" | "ROSTER" | "COMMUNICATION" | "SETTINGS";
 export type AccountStatus = "ACTIVE" | "INVITED" | "SUSPENDED";
 
-export const ALL_PERMISSIONS: Permission[] = ["FINANCE", "SCHEDULE_OVERRIDE", "ROSTER", "COMMUNICATION"];
+export const ALL_PERMISSIONS: Permission[] = ["FINANCE", "SCHEDULE_OVERRIDE", "ROSTER", "COMMUNICATION", "SETTINGS"];
 
 export const PERMISSION_LABELS: Record<Permission, { label: string; detail: string }> = {
   FINANCE: {
@@ -25,6 +25,14 @@ export const PERMISSION_LABELS: Record<Permission, { label: string; detail: stri
   COMMUNICATION: {
     label: "Communication",
     detail: "Send broadcast messages to applicants and managers.",
+  },
+  // Added with the optional modules. ADMIN and ORGANIZER spread
+  // ALL_PERMISSIONS, so both pick this up without another edit, and a stored
+  // null still means "role defaults" — no existing account loses anything by
+  // the set growing.
+  SETTINGS: {
+    label: "Event settings",
+    detail: "Switch optional modules on or off, and configure sponsors, the venue map and fair-play rules.",
   },
 };
 

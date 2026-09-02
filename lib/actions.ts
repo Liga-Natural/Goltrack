@@ -42,11 +42,13 @@ import {
   effectivePermissions,
   PERMISSION_LABELS,
 } from "@/lib/permissions";
+import { TournamentModules, Sponsors, MediaItems } from "@/lib/models";
 import type { Permission } from "@/lib/permissions";
 import { computeTotals, buildPaymentPlan, nextInvoiceNumber, money, formatDate } from "@/lib/invoices";
 import { quoteRegistration, dueReminders } from "@/lib/pricing";
 import { resolveAudience, isEventStatus } from "@/lib/broadcast";
 import { verificationFor, isRegisteredAccount } from "@/lib/verification";
+import { defaultModules, type ModuleSettings } from "@/lib/modules";
 import type { AudienceScope } from "@/lib/broadcast";
 import { cookies } from "next/headers";
 import { getCurrentUser, hashPassword, verifyPassword, createSessionToken, sessionCookieName } from "@/lib/auth";
@@ -2363,5 +2365,207 @@ export async function decideAgeVerification(
     );
     revalidatePath("/admin/verification");
     revalidatePath("/coach/roster");
+  });
+}
+
+// ---------- Organizer-controlled modules ----------
+
+/**
+ * Reads the module settings for a tournament, falling back to "everything
+ * off" for an event whose organizer has never opened the settings screen.
+ * Every public surface goes through here, so a module is opt-in by absence
+ * as well as by choice.
+ */
+export async function moduleSettings(tournamentId: string): Promise<ModuleSettings> {
+  const row = await TournamentModules.forTournament(tournamentId);
+  const base = defaultModules(tournamentId);
+  if (!row) return base;
+  const num = (key: string, fallback: number) => {
+    const v = Number(row[key]);
+    return Number.isFinite(v) ? v : fallback;
+  };
+  return {
+    ...base,
+    matchCenterEnabled: Number(row.matchCenterEnabled) === 1,
+    venuePins: (row.venuePins as string) ?? null,
+    venueAddress: (row.venueAddress as string) ?? null,
+    sponsorsEnabled: Number(row.sponsorsEnabled) === 1,
+    fairPlayPublic: Number(row.fairPlayPublic) === 1,
+    fairPlayYellowPoints: num("fairPlayYellowPoints", base.fairPlayYellowPoints),
+    fairPlayRedPoints: num("fairPlayRedPoints", base.fairPlayRedPoints),
+    fairPlayAlertThreshold: num("fairPlayAlertThreshold", base.fairPlayAlertThreshold),
+    mediaEnabled: Number(row.mediaEnabled) === 1,
+    mediaUploadPolicy: (row.mediaUploadPolicy as string) ?? base.mediaUploadPolicy,
+    updatedAt: (row.updatedAt as string) ?? null,
+  };
+}
+
+/** Writes the whole settings row. The form posts every field every time. */
+export async function saveModuleSettings(tournamentId: string, formData: FormData): Promise<ActionResult> {
+  return guarded(async () => {
+    const { user, tournament } = await requireOwnedTournament(tournamentId);
+    requirePermission(user, "SETTINGS");
+    const current = await moduleSettings(tournament.id);
+    const on = (name: string) => (formData.get(name) != null ? 1 : 0);
+    const int = (name: string, fallback: number, min: number, max: number) => {
+      const raw = formData.get(name);
+      if (raw == null) return fallback;
+      const n = Number(String(raw));
+      if (!Number.isFinite(n)) return fallback;
+      return Math.max(min, Math.min(max, Math.round(n)));
+    };
+    // A section that is not on this form keeps what it had: the settings live
+    // on several screens, and posting one of them must not silently switch
+    // off a module configured on another.
+    const has = (name: string) => formData.has(name) || formData.has(`${name}__present`);
+
+    await TournamentModules.save(tournament.id, {
+      matchCenterEnabled: has("matchCenterEnabled__present") ? on("matchCenterEnabled") : current.matchCenterEnabled ? 1 : 0,
+      venuePins: formData.has("venuePins") ? String(formData.get("venuePins") || "") || null : current.venuePins,
+      venueAddress: formData.has("venueAddress")
+        ? String(formData.get("venueAddress") || "").trim() || null
+        : current.venueAddress,
+      sponsorsEnabled: has("sponsorsEnabled__present") ? on("sponsorsEnabled") : current.sponsorsEnabled ? 1 : 0,
+      fairPlayPublic: has("fairPlayPublic__present") ? on("fairPlayPublic") : current.fairPlayPublic ? 1 : 0,
+      fairPlayYellowPoints: int("fairPlayYellowPoints", current.fairPlayYellowPoints, 0, 20),
+      fairPlayRedPoints: int("fairPlayRedPoints", current.fairPlayRedPoints, 0, 50),
+      fairPlayAlertThreshold: int("fairPlayAlertThreshold", current.fairPlayAlertThreshold, 1, 200),
+      mediaEnabled: has("mediaEnabled__present") ? on("mediaEnabled") : current.mediaEnabled ? 1 : 0,
+      mediaUploadPolicy: formData.has("mediaUploadPolicy")
+        ? String(formData.get("mediaUploadPolicy")) === "OPEN"
+          ? "OPEN"
+          : "STAFF"
+        : current.mediaUploadPolicy,
+    });
+
+    revalidatePath(`/t/${tournament.slug}`);
+    revalidatePath("/organizer/settings/match-center");
+    revalidatePath("/organizer/settings/fair-play");
+    revalidatePath("/organizer/media");
+    revalidatePath("/organizer/analytics");
+  });
+}
+
+// ── Sponsors ──────────────────────────────────────────────────────────────
+
+export async function saveSponsor(tournamentId: string, formData: FormData): Promise<ActionResult> {
+  return guarded(async () => {
+    const { user, tournament } = await requireOwnedTournament(tournamentId);
+    requirePermission(user, "SETTINGS");
+
+    const name = String(formData.get("name") || "").trim();
+    if (!name) throw new Error("A sponsor needs a name");
+    const url = String(formData.get("url") || "").trim() || null;
+    // Only https, and only a URL: this ends up in an href on a public page.
+    if (url && !/^https:\/\/[^\s]+$/i.test(url)) throw new Error("The link must be a full https:// URL");
+
+    const fields = {
+      tournamentId: tournament.id,
+      name,
+      tagline: String(formData.get("tagline") || "").trim() || null,
+      url,
+      promoCode: String(formData.get("promoCode") || "").trim().toUpperCase() || null,
+      promoDetail: String(formData.get("promoDetail") || "").trim() || null,
+      priority: Math.max(0, Math.min(99, Number(String(formData.get("priority") || "0")) || 0)),
+      active: formData.get("active") != null ? 1 : 0,
+    };
+
+    const existingId = String(formData.get("sponsorId") || "").trim();
+    let sponsorId = existingId;
+    if (existingId) {
+      const sponsor = await Sponsors.byId(existingId);
+      if (!sponsor || sponsor.tournamentId !== tournament.id) throw new Error("Sponsor not found");
+      await Sponsors.update(existingId, fields);
+    } else {
+      sponsorId = (await Sponsors.create(fields)).id;
+    }
+
+    const logo = formData.get("logo");
+    if (logo instanceof File && logo.size > 0) {
+      const { bytes, mimeType } = await validateCrestFile(logo);
+      await Sponsors.setLogo(sponsorId, bytes, mimeType);
+    }
+
+    revalidatePath("/organizer/sponsors");
+    revalidatePath(`/t/${tournament.slug}`);
+  });
+}
+
+export async function deleteSponsor(tournamentId: string, sponsorId: string): Promise<ActionResult> {
+  return guarded(async () => {
+    const { user, tournament } = await requireOwnedTournament(tournamentId);
+    requirePermission(user, "SETTINGS");
+    const sponsor = await Sponsors.byId(sponsorId);
+    if (!sponsor || sponsor.tournamentId !== tournament.id) throw new Error("Sponsor not found");
+    await Sponsors.remove(sponsorId);
+    revalidatePath("/organizer/sponsors");
+    revalidatePath(`/t/${tournament.slug}`);
+  });
+}
+
+// ── Media hub ─────────────────────────────────────────────────────────────
+
+/**
+ * A photo upload. Who may post is the organizer's choice: STAFF means the
+ * people who run the event, OPEN adds any signed-in account. Either way the
+ * photo lands PENDING and a person decides before it is public.
+ */
+export async function uploadMedia(tournamentId: string, formData: FormData): Promise<ActionResult> {
+  return guarded(async () => {
+    const tournament = await Tournaments.byId(tournamentId);
+    if (!tournament) throw new Error("Tournament not found");
+    const settings = await moduleSettings(tournament.id);
+    if (!settings.mediaEnabled) throw new Error("The photo hub is switched off for this event");
+
+    const user = await getCurrentUser();
+    if (!user) throw new Error("Sign in to upload a photo");
+
+    if (settings.mediaUploadPolicy === "STAFF") {
+      const isStaff =
+        user.role === "ADMIN" ||
+        tournament.ownerId === user.id ||
+        (await TournamentStaff.isAssigned(tournament.id, user.id));
+      if (!isStaff) throw new Error("This event accepts photos from its official media staff only");
+    }
+
+    const file = formData.get("photo");
+    if (!(file instanceof File) || file.size === 0) throw new Error("Choose a photo to upload");
+    const { bytes, mimeType } = await validatePhotoFile(file);
+
+    const item = await MediaItems.create({
+      tournamentId: tournament.id,
+      teamId: String(formData.get("teamId") || "").trim() || null,
+      division: String(formData.get("division") || "").trim() || null,
+      caption: String(formData.get("caption") || "").trim() || null,
+      credit: String(formData.get("credit") || "").trim() || user.name,
+      uploadedByName: user.name,
+      uploadedByUserId: user.id,
+    });
+    await MediaItems.setImage(item.id, bytes, mimeType);
+
+    revalidatePath(`/media/${tournament.id}`);
+    revalidatePath("/organizer/media");
+  });
+}
+
+export async function decideMedia(
+  tournamentId: string,
+  mediaId: string,
+  decision: "APPROVED" | "REJECTED" | "FEATURE" | "UNFEATURE" | "DELETE"
+): Promise<ActionResult> {
+  return guarded(async () => {
+    const { user, tournament } = await requireOwnedTournament(tournamentId);
+    requirePermission(user, "ROSTER");
+    const item = await MediaItems.byId(mediaId);
+    if (!item || item.tournamentId !== tournament.id) throw new Error("Photo not found");
+
+    if (decision === "DELETE") await MediaItems.remove(mediaId);
+    else if (decision === "FEATURE") await MediaItems.setFeatured(mediaId, true);
+    else if (decision === "UNFEATURE") await MediaItems.setFeatured(mediaId, false);
+    else await MediaItems.decide(mediaId, decision, user.name);
+
+    revalidatePath(`/media/${tournament.id}`);
+    revalidatePath("/organizer/media");
+    revalidatePath(`/t/${tournament.slug}`);
   });
 }

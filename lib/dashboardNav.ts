@@ -25,6 +25,7 @@ export const adminNav = [
   { href: "/admin/referees", label: "Referees" },
   { href: "/admin/verification", label: "Verification" },
   { href: "/communication", label: "Broadcasts" },
+  { href: "/organizer/sponsors", label: "Event modules" },
   { href: "/admin/tournaments", label: "All tournaments" },
 ];
 

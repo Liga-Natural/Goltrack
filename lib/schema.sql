@@ -418,3 +418,70 @@ CREATE TABLE IF NOT EXISTS application_messages (
   status TEXT NOT NULL DEFAULT 'QUEUED',
   createdAt TEXT NOT NULL
 );
+
+-- ── Organizer-controlled modules ────────────────────────────────────────
+-- One row per tournament holding the switches for the optional modules.
+-- Kept as its own table rather than more columns on `tournaments` because
+-- these are settings an organizer edits together on one screen, and because
+-- a missing row is a meaningful state: it means "never configured", which
+-- the defaults in lib/modules.ts answer for.
+CREATE TABLE IF NOT EXISTS tournament_modules (
+  tournamentId TEXT PRIMARY KEY,
+  -- Live match centre
+  matchCenterEnabled INTEGER NOT NULL DEFAULT 0,
+  venuePins TEXT,                       -- JSON array of {kind,label,x,y}
+  venueAddress TEXT,
+  -- Sponsors
+  sponsorsEnabled INTEGER NOT NULL DEFAULT 0,
+  -- Fair play
+  fairPlayPublic INTEGER NOT NULL DEFAULT 0,
+  fairPlayYellowPoints INTEGER NOT NULL DEFAULT 1,
+  fairPlayRedPoints INTEGER NOT NULL DEFAULT 3,
+  fairPlayAlertThreshold INTEGER NOT NULL DEFAULT 6,
+  -- Media hub
+  mediaEnabled INTEGER NOT NULL DEFAULT 0,
+  mediaUploadPolicy TEXT NOT NULL DEFAULT 'STAFF',   -- STAFF | OPEN
+  updatedAt TEXT
+);
+
+-- Local sponsors an organizer sells space to. The logo is a blob for the
+-- same reason team crests are: the app has no object store, and a URL to
+-- someone else's server is a dead image the day they redesign their site.
+CREATE TABLE IF NOT EXISTS sponsors (
+  id TEXT PRIMARY KEY,
+  tournamentId TEXT NOT NULL,
+  name TEXT NOT NULL,
+  tagline TEXT,
+  url TEXT,
+  promoCode TEXT,
+  promoDetail TEXT,
+  priority INTEGER NOT NULL DEFAULT 0,
+  active INTEGER NOT NULL DEFAULT 1,
+  logoBlob BYTEA,
+  logoMimeType TEXT,
+  createdAt TEXT NOT NULL
+);
+
+-- Photos people upload. Every row starts PENDING: nothing reaches a public
+-- page until an organizer has looked at it, which is the whole point of a
+-- gallery that parents can post to.
+CREATE TABLE IF NOT EXISTS media_items (
+  id TEXT PRIMARY KEY,
+  tournamentId TEXT NOT NULL,
+  teamId TEXT,
+  division TEXT,
+  caption TEXT,
+  credit TEXT,
+  uploadedByName TEXT,
+  uploadedByUserId TEXT,
+  status TEXT NOT NULL DEFAULT 'PENDING',   -- PENDING | APPROVED | REJECTED
+  featured INTEGER NOT NULL DEFAULT 0,
+  reviewedByName TEXT,
+  reviewedAt TEXT,
+  imageBlob BYTEA,
+  imageMimeType TEXT,
+  createdAt TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_sponsors_tournament ON sponsors(tournamentId);
+CREATE INDEX IF NOT EXISTS idx_media_tournament ON media_items(tournamentId);

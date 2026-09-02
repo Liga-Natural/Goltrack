@@ -14,7 +14,7 @@ import { NextResponse, type NextRequest } from "next/server";
 // Kept as an explicit list of path prefixes rather than derived from the
 // route group, because middleware matches URLs and a route group is invisible
 // in a URL by design.
-const PROTECTED = ["/admin", "/dashboard", "/coach", "/communication", "/me", "/referee", "/team"];
+const PROTECTED = ["/admin", "/dashboard", "/coach", "/communication", "/me", "/organizer", "/referee", "/team"];
 
 const SESSION_COOKIE = "jogo_session";
 

@@ -2014,3 +2014,187 @@ export function slugify(name: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
 }
+
+// ---------- Organizer-controlled modules ----------
+
+export interface Sponsor {
+  id: string;
+  tournamentId: string;
+  name: string;
+  tagline: string | null;
+  url: string | null;
+  promoCode: string | null;
+  promoDetail: string | null;
+  priority: number;
+  active: number;
+  logoMimeType: string | null;
+  createdAt: string;
+}
+
+export interface MediaItem {
+  id: string;
+  tournamentId: string;
+  teamId: string | null;
+  division: string | null;
+  caption: string | null;
+  credit: string | null;
+  uploadedByName: string | null;
+  uploadedByUserId: string | null;
+  status: string;
+  featured: number;
+  reviewedByName: string | null;
+  reviewedAt: string | null;
+  imageMimeType: string | null;
+  createdAt: string;
+}
+
+const MODULE_COLUMNS = `tournamentId, matchCenterEnabled, venuePins, venueAddress, sponsorsEnabled, fairPlayPublic, fairPlayYellowPoints, fairPlayRedPoints, fairPlayAlertThreshold, mediaEnabled, mediaUploadPolicy, updatedAt`;
+
+export const TournamentModules = {
+  /** The stored row, or undefined when the organizer has never configured it. */
+  async forTournament(tournamentId: string): Promise<Record<string, unknown> | undefined> {
+    return get<Record<string, unknown>>(
+      `SELECT ${MODULE_COLUMNS} FROM tournament_modules WHERE tournamentId = $tournamentId`,
+      { $tournamentId: tournamentId } as any
+    );
+  },
+  async save(tournamentId: string, input: Record<string, unknown>): Promise<void> {
+    await run(
+      `INSERT INTO tournament_modules (${MODULE_COLUMNS})
+       VALUES ($tournamentId,$matchCenterEnabled,$venuePins,$venueAddress,$sponsorsEnabled,$fairPlayPublic,$fairPlayYellowPoints,$fairPlayRedPoints,$fairPlayAlertThreshold,$mediaEnabled,$mediaUploadPolicy,$updatedAt)
+       ON CONFLICT(tournamentId) DO UPDATE SET
+         matchCenterEnabled = excluded.matchCenterEnabled,
+         venuePins = excluded.venuePins,
+         venueAddress = excluded.venueAddress,
+         sponsorsEnabled = excluded.sponsorsEnabled,
+         fairPlayPublic = excluded.fairPlayPublic,
+         fairPlayYellowPoints = excluded.fairPlayYellowPoints,
+         fairPlayRedPoints = excluded.fairPlayRedPoints,
+         fairPlayAlertThreshold = excluded.fairPlayAlertThreshold,
+         mediaEnabled = excluded.mediaEnabled,
+         mediaUploadPolicy = excluded.mediaUploadPolicy,
+         updatedAt = excluded.updatedAt`,
+      { $tournamentId: tournamentId, $updatedAt: nowIso(), ...prefixed(input) } as any
+    );
+  },
+};
+
+const SPONSOR_COLUMNS = `id, tournamentId, name, tagline, url, promoCode, promoDetail, priority, active, logoMimeType, createdAt`;
+
+export const Sponsors = {
+  async create(input: Omit<Sponsor, "id" | "createdAt" | "logoMimeType">): Promise<Sponsor> {
+    const row: Sponsor = { ...input, id: uid(), logoMimeType: null, createdAt: nowIso() };
+    await run(
+      `INSERT INTO sponsors (id, tournamentId, name, tagline, url, promoCode, promoDetail, priority, active, createdAt)
+       VALUES ($id,$tournamentId,$name,$tagline,$url,$promoCode,$promoDetail,$priority,$active,$createdAt)`,
+      row as any
+    );
+    return row;
+  },
+  async byId(id: string): Promise<Sponsor | undefined> {
+    return get<Sponsor>(`SELECT ${SPONSOR_COLUMNS} FROM sponsors WHERE id = $id`, { $id: id } as any);
+  },
+  /** Highest priority first — the order banners are shown in. */
+  async listByTournament(tournamentId: string, activeOnly = false): Promise<Sponsor[]> {
+    return all<Sponsor>(
+      `SELECT ${SPONSOR_COLUMNS} FROM sponsors
+        WHERE tournamentId = $tournamentId ${activeOnly ? "AND active = 1" : ""}
+        ORDER BY priority DESC, createdAt ASC`,
+      { $tournamentId: tournamentId } as any
+    );
+  },
+  async update(id: string, input: Partial<Sponsor>): Promise<void> {
+    await run(
+      `UPDATE sponsors SET name = $name, tagline = $tagline, url = $url, promoCode = $promoCode,
+              promoDetail = $promoDetail, priority = $priority, active = $active
+        WHERE id = $id`,
+      { $id: id, ...prefixed(input) } as any
+    );
+  },
+  async setLogo(id: string, blob: Uint8Array, mimeType: string): Promise<void> {
+    await run(`UPDATE sponsors SET logoBlob = $blob, logoMimeType = $mimeType WHERE id = $id`, {
+      $id: id,
+      $blob: Buffer.from(blob),
+      $mimeType: mimeType,
+    } as any);
+  },
+  async logoBytes(id: string): Promise<{ blob: Uint8Array; mimeType: string } | null> {
+    const row = await get<{ logoBlob: Uint8Array | null; logoMimeType: string | null }>(
+      `SELECT logoBlob, logoMimeType FROM sponsors WHERE id = $id`,
+      { $id: id } as any
+    );
+    if (!row?.logoBlob || !row.logoMimeType) return null;
+    return { blob: row.logoBlob, mimeType: row.logoMimeType };
+  },
+  async remove(id: string): Promise<void> {
+    await run(`DELETE FROM sponsors WHERE id = $id`, { $id: id } as any);
+  },
+};
+
+const MEDIA_COLUMNS = `id, tournamentId, teamId, division, caption, credit, uploadedByName, uploadedByUserId, status, featured, reviewedByName, reviewedAt, imageMimeType, createdAt`;
+
+export const MediaItems = {
+  async create(input: Omit<MediaItem, "id" | "createdAt" | "status" | "featured" | "reviewedByName" | "reviewedAt" | "imageMimeType">): Promise<MediaItem> {
+    // PENDING, always. A photo of somebody's child does not appear on a
+    // public page because an upload succeeded.
+    const row: MediaItem = {
+      ...input,
+      id: uid(),
+      status: "PENDING",
+      featured: 0,
+      reviewedByName: null,
+      reviewedAt: null,
+      imageMimeType: null,
+      createdAt: nowIso(),
+    };
+    await run(
+      `INSERT INTO media_items (id, tournamentId, teamId, division, caption, credit, uploadedByName, uploadedByUserId, status, featured, createdAt)
+       VALUES ($id,$tournamentId,$teamId,$division,$caption,$credit,$uploadedByName,$uploadedByUserId,$status,$featured,$createdAt)`,
+      row as any
+    );
+    return row;
+  },
+  async byId(id: string): Promise<MediaItem | undefined> {
+    return get<MediaItem>(`SELECT ${MEDIA_COLUMNS} FROM media_items WHERE id = $id`, { $id: id } as any);
+  },
+  async listByTournament(tournamentId: string, status?: string): Promise<MediaItem[]> {
+    return all<MediaItem>(
+      `SELECT ${MEDIA_COLUMNS} FROM media_items
+        WHERE tournamentId = $tournamentId ${status ? "AND status = $status" : ""}
+        ORDER BY featured DESC, createdAt DESC`,
+      { $tournamentId: tournamentId, $status: status ?? null } as any
+    );
+  },
+  async setImage(id: string, blob: Uint8Array, mimeType: string): Promise<void> {
+    await run(`UPDATE media_items SET imageBlob = $blob, imageMimeType = $mimeType WHERE id = $id`, {
+      $id: id,
+      $blob: Buffer.from(blob),
+      $mimeType: mimeType,
+    } as any);
+  },
+  async imageBytes(id: string): Promise<{ blob: Uint8Array; mimeType: string } | null> {
+    const row = await get<{ imageBlob: Uint8Array | null; imageMimeType: string | null }>(
+      `SELECT imageBlob, imageMimeType FROM media_items WHERE id = $id`,
+      { $id: id } as any
+    );
+    if (!row?.imageBlob || !row.imageMimeType) return null;
+    return { blob: row.imageBlob, mimeType: row.imageMimeType };
+  },
+  async decide(id: string, status: string, byName: string): Promise<void> {
+    await run(`UPDATE media_items SET status = $status, reviewedByName = $byName, reviewedAt = $at WHERE id = $id`, {
+      $id: id,
+      $status: status,
+      $byName: byName,
+      $at: nowIso(),
+    } as any);
+  },
+  async setFeatured(id: string, featured: boolean): Promise<void> {
+    await run(`UPDATE media_items SET featured = $featured WHERE id = $id`, {
+      $id: id,
+      $featured: featured ? 1 : 0,
+    } as any);
+  },
+  async remove(id: string): Promise<void> {
+    await run(`DELETE FROM media_items WHERE id = $id`, { $id: id } as any);
+  },
+};

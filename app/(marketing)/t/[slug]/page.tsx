@@ -13,6 +13,10 @@ import { TeamInline } from "@/components/TeamInline";
 import { FixtureList } from "@/components/FixtureList";
 import { TabPanel } from "@/components/TabPanel";
 import { FollowHeart, FollowBar, FieldMapCard } from "@/components/FollowTeam";
+import { SponsorBanner } from "@/components/SponsorBanner";
+import { moduleSettings } from "@/lib/actions";
+import { Sponsors, MediaItems, MatchEvents } from "@/lib/models";
+import { fairPlayTable } from "@/lib/modules";
 import { getSportTheme } from "@/lib/sportTheme";
 import { EVENT_STATUS_CLASS, EVENT_STATUS_LABEL, isEventStatus, mapsUrl } from "@/lib/broadcast";
 import type { EventStatus } from "@/lib/broadcast";
@@ -51,6 +55,18 @@ export default async function PublicTournamentPage({
   const status = (isEventStatus(tournament.eventStatus) ? tournament.eventStatus : "OPEN") as EventStatus;
   const urgent = await ApplicationMessages.latestUrgent(tournament.id);
   const directions = mapsUrl(tournament.location);
+
+  // Optional modules. Each one is off until its organizer switches it on, so
+  // an event that has configured nothing renders exactly as it did before any
+  // of this existed — no empty sponsor strip, no orphan gallery link.
+  const modules = await moduleSettings(tournament.id);
+  const sponsors = modules.sponsorsEnabled ? await Sponsors.listByTournament(tournament.id, true) : [];
+  const galleryCount = modules.mediaEnabled
+    ? (await MediaItems.listByTournament(tournament.id, "APPROVED")).length
+    : 0;
+  const fairPlay = modules.fairPlayPublic
+    ? fairPlayTable(teams, matches, await MatchEvents.listByTournament(tournament.id), modules).slice(0, 8)
+    : [];
 
   const upcoming = matches.filter((m) => m.status === "SCHEDULED");
   const finished = matches.filter((m) => m.status === "FINAL");
@@ -272,6 +288,57 @@ export default async function PublicTournamentPage({
           <div className="reveal card p-5 sm:p-6">
             <TabPanel tabs={tabs} />
           </div>
+
+          {modules.matchCenterEnabled && matches.some((m) => m.status === "LIVE") && (
+            <div className="reveal card p-5 sm:p-6">
+              <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-ink2 mb-3">Live match centre</h2>
+              <div className="flex flex-wrap gap-2">
+                {matches
+                  .filter((m) => m.status === "LIVE")
+                  .map((m) => (
+                    <Link
+                      key={m.id}
+                      href={`/live/${m.id}`}
+                      className="text-xs px-4 py-2 rounded-full bg-surface2 text-inkDisplay clay-pill-raised"
+                    >
+                      {teams.find((t) => t.id === m.homeTeamId)?.name ?? "TBD"} v{" "}
+                      {teams.find((t) => t.id === m.awayTeamId)?.name ?? "TBD"} →
+                    </Link>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {fairPlay.length > 0 && (
+            <div className="reveal card p-5 sm:p-6">
+              <h2 className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-ink2 mb-3">Fair-play table</h2>
+              <div className="divide-y divide-lineSoft">
+                {fairPlay.map((row) => (
+                  <div key={row.team.id} className="flex items-center justify-between gap-3 py-2">
+                    <span className="text-sm text-inkDisplay truncate">{row.team.name}</span>
+                    <span className="font-score text-xs text-ink2 shrink-0">
+                      {row.yellows}Y · {row.reds}R · {row.perMatch}/match
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[11px] text-ink3 mt-2">
+                Lower is better. Counted from cards recorded by the referees at this event.
+              </p>
+            </div>
+          )}
+
+          {galleryCount > 0 && (
+            <Link href={`/media/${tournament.slug}`} className="reveal card-interactive p-5 sm:p-6 flex items-center justify-between gap-3">
+              <span>
+                <span className="block text-sm font-semibold text-inkDisplay">Photos from this event</span>
+                <span className="block text-[11px] text-ink3 mt-0.5">{galleryCount} approved</span>
+              </span>
+              <span className="text-ink2">→</span>
+            </Link>
+          )}
+
+          <SponsorBanner sponsors={sponsors} />
 
           <FollowBar matches={matches} teams={teams} />
 
