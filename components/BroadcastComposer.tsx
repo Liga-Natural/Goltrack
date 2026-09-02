@@ -12,7 +12,7 @@ import {
 import type { AudienceScope, EventStatus, Priority } from "@/lib/broadcast";
 import type { Team, Referee, Application, Tournament } from "@/lib/models";
 
-const SCOPES: AudienceScope[] = ["ALL", "DIVISION", "COACHES", "REFEREES", "MARSHALS"];
+const SCOPES: AudienceScope[] = ["ALL", "DIVISION", "COACHES", "REFEREES"];
 const STATUSES: EventStatus[] = ["OPEN", "DELAY", "SUSPENDED"];
 
 export function BroadcastComposer({

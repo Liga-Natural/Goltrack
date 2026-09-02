@@ -5,7 +5,10 @@ import type { Team, Referee, Application, Tournament, Match } from "@/lib/models
 // send list — a "send to 47 people" that turns out to mean 3 is the failure
 // mode this avoids.
 
-export type AudienceScope = "ALL" | "DIVISION" | "COACHES" | "REFEREES" | "MARSHALS";
+// No field marshal scope: on this platform the referee is the person on the
+// field, and they are the ones with contact details on file. A scope that
+// could only ever reach nobody was clutter in the composer.
+export type AudienceScope = "ALL" | "DIVISION" | "COACHES" | "REFEREES";
 export type Priority = "STANDARD" | "URGENT";
 
 export interface AudienceResult {
@@ -49,15 +52,6 @@ export function resolveAudience(
       };
     }
 
-    case "MARSHALS":
-      // Offered because organizers ask for it, and answered honestly: field
-      // marshals exist in this app only as a name typed on a match report.
-      // There is no contact for them to mail.
-      return {
-        emails: [],
-        note: "Jogo keeps no field marshal contact list — they are recorded by name on a match report only, so this scope cannot reach anyone yet.",
-      };
-
     case "DIVISION": {
       if (!division) return { emails: [], note: "Pick a division." };
       const matching = applications.filter((a) => a.division === division);
@@ -89,7 +83,6 @@ export const AUDIENCE_LABELS: Record<AudienceScope, string> = {
   DIVISION: "A specific division",
   COACHES: "Coaches & managers",
   REFEREES: "Referees",
-  MARSHALS: "Field marshals",
 };
 
 export interface BroadcastTemplate {

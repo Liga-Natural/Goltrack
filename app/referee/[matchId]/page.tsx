@@ -7,7 +7,7 @@ import { eligibilityFor } from "@/lib/playerStats";
 import { Logo } from "@/components/Logo";
 import { TournamentStaff } from "@/lib/models";
 
-// Deliberately outside the dashboard shell: a field marshal opens this on a
+// Deliberately outside the dashboard shell: the referee opens this on a
 // phone at the touchline, so it gets no sidebar, no breadcrumb and no nav —
 // one screen, thumb-sized targets, nothing else to tap by accident.
 export const dynamic = "force-dynamic";

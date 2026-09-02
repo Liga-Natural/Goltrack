@@ -497,14 +497,6 @@ function ReportForm({
       </label>
       <SignaturePad name="refereeSignature" label="Referee signature" />
 
-      <label className="block">
-        <span className="text-[11px] uppercase tracking-wide text-ink2 font-semibold block mb-1.5">
-          Field marshal
-        </span>
-        <input name="marshalName" className="input w-full" placeholder="Name" />
-      </label>
-      <SignaturePad name="marshalSignature" label="Field marshal signature" />
-
       <button type="submit" className="btn-primary w-full text-sm" disabled={pending}>
         {pending ? "Submitting…" : submittedAt ? "Resubmit report" : "Submit signed report"}
       </button>

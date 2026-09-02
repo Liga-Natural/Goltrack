@@ -1973,6 +1973,11 @@ export async function submitMatchReport(matchId: string, formData: FormData): Pr
       return raw;
     };
 
+    // The referee is the only signatory now. The marshal columns are no longer
+    // written by any form, so an older report that carries a countersignature
+    // keeps it through a resubmit rather than being blanked by absent fields.
+    const existing = await MatchReports.byMatch(matchId);
+
     await MatchReports.save({
       matchId,
       homeScore: home,
@@ -1980,8 +1985,8 @@ export async function submitMatchReport(matchId: string, formData: FormData): Pr
       notes: String(formData.get("notes") || "").trim() || null,
       refereeName: String(formData.get("refereeName") || "").trim() || user.name,
       refereeSignature: signature("refereeSignature"),
-      marshalName: String(formData.get("marshalName") || "").trim() || null,
-      marshalSignature: signature("marshalSignature"),
+      marshalName: existing?.marshalName ?? null,
+      marshalSignature: existing?.marshalSignature ?? null,
     });
 
     // The report is the record of the result, so the match itself is updated
@@ -2079,7 +2084,7 @@ export async function sendBroadcast(
     if (!subject || !body) throw new Error("Subject and message are both required");
 
     const scopeRaw = String(formData.get("scope") || "ALL");
-    const scope = (["ALL", "DIVISION", "COACHES", "REFEREES", "MARSHALS"] as const).includes(scopeRaw as any)
+    const scope = (["ALL", "DIVISION", "COACHES", "REFEREES"] as const).includes(scopeRaw as any)
       ? (scopeRaw as AudienceScope)
       : "ALL";
     const division = String(formData.get("division") || "").trim() || null;
